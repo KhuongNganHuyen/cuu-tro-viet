@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DiaDiemController;
 use App\Http\Controllers\ThienTaiController;
+use App\Http\Controllers\DanhMucHangController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -14,3 +15,4 @@ Route::get('/admin/dashboard', function () {
 
 Route::resource('/admin/dia-diem', DiaDiemController::class);
 Route::resource('/admin/thien-tai', ThienTaiController::class);
+Route::resource('/admin/danh-muc-hang', DanhMucHangController::class);
