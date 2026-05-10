@@ -39,123 +39,107 @@
   </div>
 </div>
 <!-- [ Pre-loader ] End -->
- <!-- [ Sidebar Menu ] start -->
+<!-- [ Sidebar Menu ] start -->
 <nav class="pc-sidebar">
   <div class="navbar-wrapper">
     <div class="m-header">
-      <a href="../dashboard/index.html" class="b-brand text-primary">
-        <!-- ========   Change your logo from here   ============ -->
-        <img src="{{ asset('mantis/assets') }}/images/logo-dark.svg" class="img-fluid logo-lg" alt="logo">
+      <a href="{{ url('/admin/dashboard') }}" class="b-brand text-primary">
+        <span class="fw-bold fs-5 text-primary">Cứu Trợ Việt</span>
       </a>
     </div>
+
     <div class="navbar-content">
       <ul class="pc-navbar">
         <li class="pc-item">
-          <a href="../dashboard/index.html" class="pc-link">
+          <a href="{{ url('/admin/dashboard') }}" class="pc-link">
             <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
-            <span class="pc-mtext">Dashboard</span>
+            <span class="pc-mtext">Tổng quan</span>
           </a>
         </li>
 
         <li class="pc-item pc-caption">
-          <label>UI Components</label>
-          <i class="ti ti-dashboard"></i>
+          <label>Quản lý tài khoản</label>
+          <i class="ti ti-users"></i>
         </li>
+
         <li class="pc-item">
-          <a href="../elements/bc_typography.html" class="pc-link">
-            <span class="pc-micon"><i class="ti ti-typography"></i></span>
-            <span class="pc-mtext">Typography</span>
+          <a href="{{ url('/admin/nguoi-dung') }}" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-user"></i></span>
+            <span class="pc-mtext">Người dùng</span>
           </a>
         </li>
+
         <li class="pc-item">
-          <a href="../elements/bc_color.html" class="pc-link">
-            <span class="pc-micon"><i class="ti ti-color-swatch"></i></span>
-            <span class="pc-mtext">Color</span>
-          </a>
-        </li>
-        <li class="pc-item">
-          <a href="../elements/icon-tabler.html" class="pc-link">
-            <span class="pc-micon"><i class="ti ti-plant-2"></i></span>
-            <span class="pc-mtext">Icons</span>
+          <a href="{{ url('/admin/nhom-tinh-nguyen') }}" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-users-group"></i></span>
+            <span class="pc-mtext">Nhóm tình nguyện</span>
           </a>
         </li>
 
         <li class="pc-item pc-caption">
-          <label>Pages</label>
-          <i class="ti ti-news"></i>
+          <label>Quản lý cứu trợ</label>
+          <i class="ti ti-heart-handshake"></i>
         </li>
+
         <li class="pc-item">
-          <a href="../pages/login.html" class="pc-link">
-            <span class="pc-micon"><i class="ti ti-lock"></i></span>
-            <span class="pc-mtext">Login</span>
+          <a href="{{ url('/admin/chien-dich') }}" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-flag"></i></span>
+            <span class="pc-mtext">Chiến dịch cứu trợ</span>
           </a>
         </li>
+
         <li class="pc-item">
-          <a href="../pages/register.html" class="pc-link">
-            <span class="pc-micon"><i class="ti ti-user-plus"></i></span>
-            <span class="pc-mtext">Register</span>
+          <a href="{{ url('/admin/yeu-cau-cuu-tro') }}" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-alert-circle"></i></span>
+            <span class="pc-mtext">Yêu cầu cứu trợ</span>
+          </a>
+        </li>
+
+        <li class="pc-item">
+          <a href="{{ url('/admin/dong-gop') }}" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-gift"></i></span>
+            <span class="pc-mtext">Đóng góp</span>
           </a>
         </li>
 
         <li class="pc-item pc-caption">
-          <label>Other</label>
-          <i class="ti ti-brand-chrome"></i>
+          <label>Danh mục hệ thống</label>
+          <i class="ti ti-category"></i>
         </li>
-        <li class="pc-item pc-hasmenu">
-          <a href="#!" class="pc-link"><span class="pc-micon"><i class="ti ti-menu"></i></span><span class="pc-mtext">Menu
-              levels</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
-          <ul class="pc-submenu">
-            <li class="pc-item"><a class="pc-link" href="#!">Level 2.1</a></li>
-            <li class="pc-item pc-hasmenu">
-              <a href="#!" class="pc-link">Level 2.2<span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
-              <ul class="pc-submenu">
-                <li class="pc-item"><a class="pc-link" href="#!">Level 3.1</a></li>
-                <li class="pc-item"><a class="pc-link" href="#!">Level 3.2</a></li>
-                <li class="pc-item pc-hasmenu">
-                  <a href="#!" class="pc-link">Level 3.3<span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
-                  <ul class="pc-submenu">
-                    <li class="pc-item"><a class="pc-link" href="#!">Level 4.1</a></li>
-                    <li class="pc-item"><a class="pc-link" href="#!">Level 4.2</a></li>
-                  </ul>
-                </li>
-              </ul>
-            </li>
-            <li class="pc-item pc-hasmenu">
-              <a href="#!" class="pc-link">Level 2.3<span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
-              <ul class="pc-submenu">
-                <li class="pc-item"><a class="pc-link" href="#!">Level 3.1</a></li>
-                <li class="pc-item"><a class="pc-link" href="#!">Level 3.2</a></li>
-                <li class="pc-item pc-hasmenu">
-                  <a href="#!" class="pc-link">Level 3.3<span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
-                  <ul class="pc-submenu">
-                    <li class="pc-item"><a class="pc-link" href="#!">Level 4.1</a></li>
-                    <li class="pc-item"><a class="pc-link" href="#!">Level 4.2</a></li>
-                  </ul>
-                </li>
-              </ul>
-            </li>
-          </ul>
-        </li>
+
         <li class="pc-item">
-          <a href="../other/sample-page.html" class="pc-link">
-            <span class="pc-micon"><i class="ti ti-brand-chrome"></i></span>
-            <span class="pc-mtext">Sample page</span>
+          <a href="{{ url('/admin/dia-diem') }}" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-map-pin"></i></span>
+            <span class="pc-mtext">Địa điểm</span>
+          </a>
+        </li>
+
+        <li class="pc-item">
+          <a href="{{ url('/admin/thien-tai') }}" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-cloud-storm"></i></span>
+            <span class="pc-mtext">Thiên tai</span>
+          </a>
+        </li>
+
+        <li class="pc-item">
+          <a href="{{ url('/admin/danh-muc-hang') }}" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-category-2"></i></span>
+            <span class="pc-mtext">Danh mục hàng</span>
+          </a>
+        </li>
+
+        <li class="pc-item">
+          <a href="{{ url('/admin/hang-hoa') }}" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-package"></i></span>
+            <span class="pc-mtext">Hàng hóa</span>
           </a>
         </li>
       </ul>
-      <div class="card text-center">
-        <div class="card-body">
-          <img src="{{ asset('mantis/assets') }}/images/img-navbar-card.png" alt="images" class="img-fluid mb-2">
-          <h5>Upgrade To Pro</h5>
-          <p>To get more features and components</p>
-          <a href="https://codedthemes.com/item/berry-bootstrap-5-admin-template/" target="_blank"
-          class="btn btn-success">Buy Now</a>
-        </div>
-      </div>
     </div>
   </div>
 </nav>
-<!-- [ Sidebar Menu ] end --> <!-- [ Header Topbar ] start -->
+<!-- [ Sidebar Menu ] end -->
+<!-- [ Header Topbar ] start -->
 <header class="pc-header">
   <div class="header-wrapper"> <!-- [Mobile Media Block] start -->
 <div class="me-auto pc-mob-drp">
