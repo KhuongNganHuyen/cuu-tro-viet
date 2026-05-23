@@ -58,6 +58,13 @@ class NguoiDungController extends Controller
         return redirect('/admin/nguoi-dung')->with('success', 'Thêm người dùng thành công.');
     }
 
+    public function show(int $id)
+    {
+        $nguoiDung = NguoiDung::findOrFail($id);
+
+        return view('admin.nguoi_dung.show', compact('nguoiDung'));
+    }
+
     public function edit(int $id)
     {
         $nguoiDung = NguoiDung::findOrFail($id);

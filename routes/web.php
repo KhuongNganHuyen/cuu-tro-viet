@@ -7,6 +7,9 @@ use App\Http\Controllers\DanhMucHangController;
 use App\Http\Controllers\NguoiDungController;
 use App\Http\Controllers\NhomTinhNguyenController;
 use App\Http\Controllers\ThanhVienNhomController;
+use App\Http\Controllers\ChienDichCuuTroController;
+use App\Http\Controllers\YeuCauCuuTroController;
+use App\Http\Controllers\TiepNhanYeuCauController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -25,3 +28,9 @@ Route::get('/admin/nhom-tinh-nguyen/{idNhom}/thanh-vien', [ThanhVienNhomControll
 Route::get('/admin/nhom-tinh-nguyen/{idNhom}/thanh-vien/create', [ThanhVienNhomController::class, 'create']);
 Route::post('/admin/nhom-tinh-nguyen/{idNhom}/thanh-vien', [ThanhVienNhomController::class, 'store']);
 Route::delete('/admin/thanh-vien-nhom/{idThanhVien}', [ThanhVienNhomController::class, 'destroy']);
+Route::resource('/admin/chien-dich', ChienDichCuuTroController::class);
+Route::resource('/admin/yeu-cau-cuu-tro', YeuCauCuuTroController::class);
+Route::get('/admin/tiep-nhan-yeu-cau', [TiepNhanYeuCauController::class, 'index']);
+Route::get('/admin/yeu-cau-cuu-tro/{idYeuCau}/tiep-nhan', [TiepNhanYeuCauController::class, 'create']);
+Route::post('/admin/yeu-cau-cuu-tro/{idYeuCau}/tiep-nhan', [TiepNhanYeuCauController::class, 'store']);
+Route::delete('/admin/tiep-nhan-yeu-cau/{idTiepNhan}', [TiepNhanYeuCauController::class, 'destroy']);

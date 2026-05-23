@@ -70,10 +70,10 @@
         </li>
 
         <li class="pc-item">
-        <a href="{{ url('/admin/nhom-tinh-nguyen') }}" class="pc-link">
+          <a href="{{ url('/admin/nhom-tinh-nguyen') }}" class="pc-link">
             <span class="pc-micon"><i class="ti ti-users"></i></span>
             <span class="pc-mtext">Nhóm tình nguyện</span>
-        </a>
+          </a>
         </li>
 
         <li class="pc-item pc-caption">
@@ -103,6 +103,25 @@
         </li>
 
         <li class="pc-item pc-caption">
+          <label>Quản lý phân phối</label>
+          <i class="ti ti-truck-delivery"></i>
+        </li>
+
+        <li class="pc-item">
+          <a href="{{ url('/admin/dot-phan-phoi') }}" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-calendar-event"></i></span>
+            <span class="pc-mtext">Đợt phân phối</span>
+          </a>
+        </li>
+
+        <li class="pc-item">
+          <a href="{{ url('/admin/chi-tiet-phan-phoi') }}" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-file-text"></i></span>
+            <span class="pc-mtext">Chi tiết phân phối</span>
+          </a>
+        </li>
+
+        <li class="pc-item pc-caption">
           <label>Danh mục hệ thống</label>
           <i class="ti ti-category"></i>
         </li>
@@ -115,16 +134,28 @@
         </li>
 
         <li class="pc-item">
-        <a href="{{ url('/admin/thien-tai') }}" class="pc-link">
+          <a href="{{ url('/admin/thien-tai') }}" class="pc-link">
             <span class="pc-micon"><i class="ti ti-cloud-storm"></i></span>
             <span class="pc-mtext">Thiên tai</span>
-        </a>
+          </a>
         </li>
 
         <li class="pc-item">
           <a href="{{ url('/admin/danh-muc-hang') }}" class="pc-link">
             <span class="pc-micon"><i class="ti ti-package"></i></span>
             <span class="pc-mtext">Danh mục hàng</span>
+          </a>
+        </li>
+
+        <li class="pc-item pc-caption">
+          <label>Báo cáo</label>
+          <i class="ti ti-chart-bar"></i>
+        </li>
+
+        <li class="pc-item">
+          <a href="{{ url('/admin/thong-ke') }}" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-chart-pie"></i></span>
+            <span class="pc-mtext">Thống kê báo cáo</span>
           </a>
         </li>
       </ul>
