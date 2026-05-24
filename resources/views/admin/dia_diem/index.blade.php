@@ -3,6 +3,28 @@
 @section('title', 'Quản lý địa điểm | Cứu Trợ Việt')
 
 @section('content')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<style>
+  #diaDiemMap {
+    height: 520px;
+    width: 100%;
+    border-radius: 12px;
+  }
+
+  .dia-diem-row {
+    cursor: pointer;
+  }
+
+  .dia-diem-row:hover {
+    background-color: #f5f7fb;
+  }
+
+  .map-note {
+    font-size: 13px;
+  }
+</style>
+
 <div class="page-header">
   <div class="page-block">
     <div class="row align-items-center">
@@ -21,66 +43,213 @@
   </div>
 </div>
 
-<div class="card">
-  <div class="card-header d-flex justify-content-between align-items-center">
-    <h5 class="mb-0">Danh sách địa điểm</h5>
-    <a href="{{ url('/admin/dia-diem/create') }}" class="btn btn-primary">
-      Thêm địa điểm
-    </a>
+@if (session('success'))
+  <div class="alert alert-success">
+    {{ session('success') }}
+  </div>
+@endif
+
+<div class="row">
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+          <h5 class="mb-0">Danh sách địa điểm</h5>
+        </div>
+
+        <a href="{{ url('/admin/dia-diem/create') }}" class="btn btn-primary">
+          Thêm
+        </a>
+      </div>
+
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr class="text-uppercase text-center">
+                <th style="width: 70px;">Mã</th>
+                <th class="text-start">Tỉnh/Thành</th>
+                <th class="text-start">Phường/Xã</th>
+                <th class="text-start">Chi tiết</th>
+                <th style="width: 120px;">Tọa độ</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @forelse ($diaDiems as $diaDiem)
+                <tr class="dia-diem-row"
+                    data-id="{{ $diaDiem->idDiaDiem }}"
+                    data-tinh-thanh="{{ $diaDiem->tinhThanh }}"
+                    data-phuong-xa="{{ $diaDiem->phuongXa }}"
+                    data-chi-tiet="{{ $diaDiem->chiTietDiaDiem }}"
+                    data-vi-do="{{ $diaDiem->viDo }}"
+                    data-kinh-do="{{ $diaDiem->kinhDo }}">
+                  <td class="text-center">{{ $diaDiem->idDiaDiem }}</td>
+
+                  <td>{{ $diaDiem->tinhThanh }}</td>
+
+                  <td>{{ $diaDiem->phuongXa ?? '-' }}</td>
+
+                  <td>{{ $diaDiem->chiTietDiaDiem ?? '-' }}</td>
+
+                  <td class="text-center">
+                    @if ($diaDiem->viDo && $diaDiem->kinhDo)
+                      <span class="d-inline-flex align-items-center gap-2">
+                        <span class="rounded-circle bg-success d-inline-block" style="width: 8px; height: 8px;"></span>
+                        Có
+                      </span>
+                    @else
+                      <span class="d-inline-flex align-items-center gap-2 text-muted">
+                        <span class="rounded-circle bg-secondary d-inline-block" style="width: 8px; height: 8px;"></span>
+                        Chưa có
+                      </span>
+                    @endif
+                  </td>
+                </tr>
+              @empty
+                <tr>
+                  <td colspan="5" class="text-center text-muted py-4">
+                    Chưa có địa điểm nào.
+                  </td>
+                </tr>
+              @endforelse
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
   </div>
 
-  <div class="card-body">
-    @if (session('success'))
-      <div class="alert alert-success">
-        {{ session('success') }}
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Bản đồ địa điểm</h5>
+        <small class="text-muted">Hiển thị địa điểm đã có tọa độ</small>
       </div>
-    @endif
 
-    <div class="table-responsive">
-      <table class="table table-hover table-bordered">
-        <thead>
-          <tr>
-            <th style="width: 80px;">Mã</th>
-            <th>Tỉnh/Thành</th>
-            <th>Phường/Xã</th>
-            <th>Chi tiết địa điểm</th>
-            <th>Vĩ độ</th>
-            <th>Kinh độ</th>
-            <th style="width: 160px;">Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          @forelse ($diaDiems as $diaDiem)
-            <tr>
-              <td>{{ $diaDiem->idDiaDiem }}</td>
-              <td>{{ $diaDiem->tinhThanh }}</td>
-              <td>{{ $diaDiem->phuongXa ?? '-' }}</td>
-              <td>{{ $diaDiem->chiTietDiaDiem ?? '-' }}</td>
-              <td>{{ $diaDiem->viDo ?? '-' }}</td>
-              <td>{{ $diaDiem->kinhDo ?? '-' }}</td>
-              <td>
-                <a href="{{ url('/admin/dia-diem/' . $diaDiem->idDiaDiem . '/edit') }}" class="btn btn-sm btn-warning">
-                  Sửa
-                </a>
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div>
+            <div class="fw-semibold" id="selectedTitle">Chưa chọn địa điểm</div>
+            <div class="text-muted" id="selectedAddress">
+              Click vào một hàng trong bảng để xem vị trí.
+            </div>
+            <small class="text-danger d-none" id="selectedWarning">
+              Địa điểm này chưa có tọa độ, cần bổ sung vĩ độ và kinh độ.
+            </small>
+          </div>
 
-                <form action="{{ url('/admin/dia-diem/' . $diaDiem->idDiaDiem) }}" method="POST" class="d-inline"
-                  onsubmit="return confirm('Bạn có chắc muốn xóa địa điểm này không?')">
-                  @csrf
-                  @method('DELETE')
-                  <button type="submit" class="btn btn-sm btn-danger">
-                    Xóa
-                  </button>
-                </form>
-              </td>
-            </tr>
-          @empty
-            <tr>
-              <td colspan="7" class="text-center">Chưa có địa điểm nào.</td>
-            </tr>
-          @endforelse
-        </tbody>
-      </table>
+          <a href="#" id="selectedDetailBtn" class="btn btn-sm btn-primary d-none">
+            Chi tiết
+          </a>
+        </div>
+
+        <div id="diaDiemMap"></div>
+      </div>
     </div>
   </div>
 </div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script id="diaDiemsData" type="application/json">
+  @json($diaDiems)
+</script>
+
+<script>
+  const diaDiems = JSON.parse(document.getElementById('diaDiemsData').textContent);
+
+  const defaultLat = 16.047079;
+  const defaultLng = 108.206230;
+
+  const map = L.map('diaDiemMap').setView([defaultLat, defaultLng], 6);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap'
+  }).addTo(map);
+
+  const markers = {};
+
+  function buildAddress(diaDiem) {
+    const parts = [];
+
+    if (diaDiem.chiTietDiaDiem) {
+      parts.push(diaDiem.chiTietDiaDiem);
+    }
+
+    if (diaDiem.phuongXa) {
+      parts.push(diaDiem.phuongXa);
+    }
+
+    if (diaDiem.tinhThanh) {
+      parts.push(diaDiem.tinhThanh);
+    }
+
+    return parts.length ? parts.join(', ') : 'Chưa có thông tin địa chỉ';
+  }
+
+  diaDiems.forEach(function(diaDiem) {
+    if (diaDiem.viDo && diaDiem.kinhDo) {
+      const lat = parseFloat(diaDiem.viDo);
+      const lng = parseFloat(diaDiem.kinhDo);
+
+      const popupContent = `
+        <strong>${diaDiem.tinhThanh ?? 'Địa điểm'}</strong><br>
+        ${buildAddress(diaDiem)}<br>
+        <small>Vĩ độ: ${lat}, Kinh độ: ${lng}</small>
+      `;
+
+      const marker = L.marker([lat, lng])
+        .addTo(map)
+        .bindPopup(popupContent);
+
+      markers[diaDiem.idDiaDiem] = marker;
+    }
+  });
+
+  const allMarkerList = Object.values(markers);
+
+  if (allMarkerList.length > 0) {
+    const group = L.featureGroup(allMarkerList);
+    map.fitBounds(group.getBounds().pad(0.2));
+  }
+
+  document.querySelectorAll('.dia-diem-row').forEach(function(row) {
+    row.addEventListener('click', function() {
+      const id = this.dataset.id;
+      const tinhThanh = this.dataset.tinhThanh || '';
+      const phuongXa = this.dataset.phuongXa || '';
+      const chiTiet = this.dataset.chiTiet || '';
+      const viDo = this.dataset.viDo;
+      const kinhDo = this.dataset.kinhDo;
+
+      document.getElementById('selectedTitle').innerText = tinhThanh || 'Địa điểm';
+      document.getElementById('selectedAddress').innerText =
+        [chiTiet, phuongXa, tinhThanh].filter(Boolean).join(', ') || 'Chưa có thông tin địa chỉ';
+
+      const detailBtn = document.getElementById('selectedDetailBtn');
+      const warningText = document.getElementById('selectedWarning');
+
+      detailBtn.href = '/admin/dia-diem/' + id;
+      detailBtn.classList.remove('d-none');
+
+      if (viDo && kinhDo) {
+        warningText.classList.add('d-none');
+
+        const lat = parseFloat(viDo);
+        const lng = parseFloat(kinhDo);
+
+        map.setView([lat, lng], 14);
+
+        if (markers[id]) {
+          markers[id].openPopup();
+        }
+      } else {
+        warningText.classList.remove('d-none');
+      }
+    });
+  });
+</script>
 @endsection

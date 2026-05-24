@@ -44,14 +44,21 @@ class DiaDiemController extends Controller
         return redirect('/admin/dia-diem')->with('success', 'Thêm địa điểm thành công.');
     }
 
-    public function edit($id)
+    public function show(int $id)
+    {
+        $diaDiem = DiaDiem::findOrFail($id);
+
+        return view('admin.dia_diem.show', compact('diaDiem'));
+    }
+
+    public function edit(int $id)
     {
         $diaDiem = DiaDiem::findOrFail($id);
 
         return view('admin.dia_diem.edit', compact('diaDiem'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id)
     {
         $request->validate([
             'tinhThanh' => 'required|string|max:255',
@@ -78,11 +85,24 @@ class DiaDiemController extends Controller
         return redirect('/admin/dia-diem')->with('success', 'Cập nhật địa điểm thành công.');
     }
 
-    public function destroy($id)
+    public function destroy(int $id)
     {
         $diaDiem = DiaDiem::findOrFail($id);
+
+        $dangDuocSuDung =
+            \App\Models\NhomTinhNguyen::where('idDiaDiem', $id)->exists()
+            || \App\Models\ChienDichCuuTro::where('idDiaDiem', $id)->exists()
+            || \App\Models\YeuCauCuuTro::where('idDiaDiem', $id)->exists()
+            || \App\Models\ChiTietPhanPhoi::where('idDiaDiem', $id)->exists();
+
+        if ($dangDuocSuDung) {
+            return redirect('/admin/dia-diem/' . $id)
+                ->with('error', 'Không thể xóa địa điểm này vì đang được sử dụng trong dữ liệu khác.');
+        }
+
         $diaDiem->delete();
 
-        return redirect('/admin/dia-diem')->with('success', 'Xóa địa điểm thành công.');
+        return redirect('/admin/dia-diem')
+            ->with('success', 'Xóa địa điểm thành công.');
     }
 }
