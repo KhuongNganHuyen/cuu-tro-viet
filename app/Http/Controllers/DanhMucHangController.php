@@ -61,8 +61,17 @@ class DanhMucHangController extends Controller
     public function destroy(int $id)
     {
         $danhMucHang = DanhMucHang::findOrFail($id);
+
+        $dangDuocSuDung = \App\Models\HangHoa::where('idDanhMucHang', $id)->exists();
+
+        if ($dangDuocSuDung) {
+            return redirect('/admin/danh-muc-hang')
+                ->with('error', 'Không thể xóa danh mục hàng này vì đang được sử dụng trong hàng hóa.');
+        }
+
         $danhMucHang->delete();
 
-        return redirect('/admin/danh-muc-hang')->with('success', 'Xóa danh mục hàng thành công.');
+        return redirect('/admin/danh-muc-hang')
+            ->with('success', 'Xóa danh mục hàng thành công.');
     }
 }

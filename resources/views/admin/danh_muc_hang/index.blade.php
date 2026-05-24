@@ -23,9 +23,12 @@
 
 <div class="card">
   <div class="card-header d-flex justify-content-between align-items-center">
-    <h5 class="mb-0">Danh sách danh mục hàng</h5>
+    <div>
+      <h5 class="mb-0">Danh sách danh mục hàng</h5>
+    </div>
+
     <a href="{{ url('/admin/danh-muc-hang/create') }}" class="btn btn-primary">
-      Thêm danh mục
+      Thêm
     </a>
   </div>
 
@@ -36,38 +39,56 @@
       </div>
     @endif
 
+    @if (session('error'))
+      <div class="alert alert-danger">
+        {{ session('error') }}
+      </div>
+    @endif
+
     <div class="table-responsive">
-      <table class="table table-hover table-bordered">
+      <table class="table table-hover mb-0">
         <thead>
-          <tr>
-            <th style="width: 100px;">Mã</th>
+          <tr class="text-uppercase">
+            <th class="text-center" style="width: 90px;">Mã</th>
             <th>Tên danh mục hàng</th>
-            <th style="width: 160px;">Thao tác</th>
+            <th class="text-center" style="width: 120px;"></th>
           </tr>
         </thead>
+
         <tbody>
           @forelse ($danhMucHangs as $danhMucHang)
             <tr>
-              <td>{{ $danhMucHang->idDanhMucHang }}</td>
-              <td>{{ $danhMucHang->tenDanhMucHang }}</td>
-              <td>
-                <a href="{{ url('/admin/danh-muc-hang/' . $danhMucHang->idDanhMucHang . '/edit') }}" class="btn btn-sm btn-warning">
-                  Sửa
-                </a>
+              <td class="text-center">{{ $danhMucHang->idDanhMucHang }}</td>
 
-                <form action="{{ url('/admin/danh-muc-hang/' . $danhMucHang->idDanhMucHang) }}" method="POST" class="d-inline"
-                  onsubmit="return confirm('Bạn có chắc muốn xóa danh mục hàng này không?')">
-                  @csrf
-                  @method('DELETE')
-                  <button type="submit" class="btn btn-sm btn-danger">
-                    Xóa
-                  </button>
-                </form>
+              <td class="fw-medium">
+                {{ $danhMucHang->tenDanhMucHang }}
+              </td>
+
+              <td class="text-center">
+                <div class="d-inline-flex gap-1">
+                  <a href="{{ url('/admin/danh-muc-hang/' . $danhMucHang->idDanhMucHang . '/edit') }}"
+                     class="btn btn-sm btn-light border"
+                     title="Sửa">
+                    <i class="ti ti-edit"></i>
+                  </a>
+
+                  <form action="{{ url('/admin/danh-muc-hang/' . $danhMucHang->idDanhMucHang) }}" method="POST"
+                    onsubmit="return confirm('Bạn có chắc muốn xóa danh mục hàng này không?')">
+                    @csrf
+                    @method('DELETE')
+
+                    <button type="submit" class="btn btn-sm btn-light border text-danger" title="Xóa">
+                      <i class="ti ti-trash"></i>
+                    </button>
+                  </form>
+                </div>
               </td>
             </tr>
           @empty
             <tr>
-              <td colspan="3" class="text-center">Chưa có danh mục hàng nào.</td>
+              <td colspan="3" class="text-center text-muted py-4">
+                Chưa có danh mục hàng nào.
+              </td>
             </tr>
           @endforelse
         </tbody>

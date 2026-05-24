@@ -71,8 +71,17 @@ class ThienTaiController extends Controller
     public function destroy(int $id)
     {
         $thienTai = ThienTai::findOrFail($id);
+
+        $dangDuocSuDung = \App\Models\ChienDichCuuTro::where('idThienTai', $id)->exists();
+
+        if ($dangDuocSuDung) {
+            return redirect('/admin/thien-tai')
+                ->with('error', 'Không thể xóa thiên tai này vì đang được sử dụng trong chiến dịch cứu trợ.');
+        }
+
         $thienTai->delete();
 
-        return redirect('/admin/thien-tai')->with('success', 'Xóa thiên tai thành công.');
+        return redirect('/admin/thien-tai')
+            ->with('success', 'Xóa thiên tai thành công.');
     }
 }
