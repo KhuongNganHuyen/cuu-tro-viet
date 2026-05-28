@@ -21,9 +21,12 @@
 
 <div class="card">
   <div class="card-header d-flex justify-content-between align-items-center">
-    <h5 class="mb-0">Danh sách người dùng</h5>
+    <div>
+      <h5 class="mb-0">Danh sách người dùng</h5>
+    </div>
+
     <a href="{{ url('/admin/nguoi-dung/create') }}" class="btn btn-primary">
-      Thêm người dùng
+      Thêm
     </a>
   </div>
 
@@ -31,6 +34,12 @@
     @if (session('success'))
       <div class="alert alert-success">
         {{ session('success') }}
+      </div>
+    @endif
+
+    @if (session('error'))
+      <div class="alert alert-danger">
+        {{ session('error') }}
       </div>
     @endif
 

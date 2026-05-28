@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\NhomTinhNguyen;
 use App\Models\NguoiDung;
 use App\Models\DiaDiem;
+use App\Models\ThanhVienNhom;
+use App\Models\ChienDichCuuTro;
+use App\Models\TiepNhanYeuCau;
 use Illuminate\Http\Request;
 
 class NhomTinhNguyenController extends Controller
@@ -24,7 +27,9 @@ class NhomTinhNguyenController extends Controller
             ->orderBy('hoTen')
             ->get();
 
-        $diaDiems = DiaDiem::orderBy('tinhThanh')->get();
+        $diaDiems = DiaDiem::orderBy('tinhThanh')
+            ->orderBy('phuongXa')
+            ->get();
 
         return view('admin.nhom_tinh_nguyen.create', compact('nguoiDungs', 'diaDiems'));
     }
@@ -46,7 +51,7 @@ class NhomTinhNguyenController extends Controller
             'trangThai.required' => 'Vui lòng chọn trạng thái.',
         ]);
 
-        NhomTinhNguyen::create([
+        $nhomTinhNguyen = NhomTinhNguyen::create([
             'tenNhom' => $request->tenNhom,
             'moTa' => $request->moTa,
             'idNhomTruong' => $request->idNhomTruong,
@@ -55,7 +60,30 @@ class NhomTinhNguyenController extends Controller
             'ngayTao' => now(),
         ]);
 
-        return redirect('/admin/nhom-tinh-nguyen')->with('success', 'Thêm nhóm tình nguyện thành công.');
+        return redirect('/admin/nhom-tinh-nguyen/' . $nhomTinhNguyen->idNhom)
+            ->with('success', 'Thêm nhóm tình nguyện thành công.');
+    }
+
+    public function show(int $id)
+    {
+        $nhomTinhNguyen = NhomTinhNguyen::with(['nhomTruong', 'diaDiem'])
+            ->findOrFail($id);
+
+        $thanhViens = ThanhVienNhom::with('nguoiDung')
+            ->where('idNhom', $id)
+            ->orderBy('idThanhVien', 'desc')
+            ->get();
+
+        $chienDichs = ChienDichCuuTro::with(['thienTai', 'diaDiem'])
+            ->where('idNhom', $id)
+            ->orderBy('idChienDich', 'desc')
+            ->get();
+
+        return view('admin.nhom_tinh_nguyen.show', compact(
+            'nhomTinhNguyen',
+            'thanhViens',
+            'chienDichs'
+        ));
     }
 
     public function edit(int $id)
@@ -63,10 +91,13 @@ class NhomTinhNguyenController extends Controller
         $nhomTinhNguyen = NhomTinhNguyen::findOrFail($id);
 
         $nguoiDungs = NguoiDung::where('trangThai', 'Hoạt động')
+            ->orWhere('idNguoiDung', $nhomTinhNguyen->idNhomTruong)
             ->orderBy('hoTen')
             ->get();
 
-        $diaDiems = DiaDiem::orderBy('tinhThanh')->get();
+        $diaDiems = DiaDiem::orderBy('tinhThanh')
+            ->orderBy('phuongXa')
+            ->get();
 
         return view('admin.nhom_tinh_nguyen.edit', compact('nhomTinhNguyen', 'nguoiDungs', 'diaDiems'));
     }
@@ -98,14 +129,48 @@ class NhomTinhNguyenController extends Controller
             'trangThai' => $request->trangThai,
         ]);
 
-        return redirect('/admin/nhom-tinh-nguyen')->with('success', 'Cập nhật nhóm tình nguyện thành công.');
+        return redirect('/admin/nhom-tinh-nguyen/' . $nhomTinhNguyen->idNhom)
+            ->with('success', 'Cập nhật nhóm tình nguyện thành công.');
     }
 
     public function destroy(int $id)
     {
         $nhomTinhNguyen = NhomTinhNguyen::findOrFail($id);
+
+        $dangDuocSuDung =
+            ThanhVienNhom::where('idNhom', $id)->exists()
+            || ChienDichCuuTro::where('idNhom', $id)->exists()
+            || TiepNhanYeuCau::where('idNhom', $id)->exists();
+
+        if ($dangDuocSuDung) {
+            return redirect('/admin/nhom-tinh-nguyen/' . $id)
+                ->with('error', 'Không thể xóa nhóm này vì đang có dữ liệu liên quan. Bạn có thể khóa nhóm thay vì xóa.');
+        }
+
         $nhomTinhNguyen->delete();
 
-        return redirect('/admin/nhom-tinh-nguyen')->with('success', 'Xóa nhóm tình nguyện thành công.');
+        return redirect('/admin/nhom-tinh-nguyen')
+            ->with('success', 'Xóa nhóm tình nguyện thành công.');
+    }
+
+    public function doiTrangThai(int $id)
+    {
+        $nhomTinhNguyen = NhomTinhNguyen::findOrFail($id);
+
+        if ($nhomTinhNguyen->trangThai == 'Đang hoạt động' || $nhomTinhNguyen->trangThai == 'Hoạt động') {
+            $nhomTinhNguyen->update([
+                'trangThai' => 'Bị khóa',
+            ]);
+
+            return redirect('/admin/nhom-tinh-nguyen/' . $id)
+                ->with('success', 'Khóa nhóm tình nguyện thành công.');
+        }
+
+        $nhomTinhNguyen->update([
+            'trangThai' => 'Đang hoạt động',
+        ]);
+
+        return redirect('/admin/nhom-tinh-nguyen/' . $id)
+            ->with('success', 'Mở khóa nhóm tình nguyện thành công.');
     }
 }
