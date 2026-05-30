@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AuthController;
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DiaDiemController;
 use App\Http\Controllers\ThienTaiController;
@@ -11,6 +13,7 @@ use App\Http\Controllers\ChienDichCuuTroController;
 use App\Http\Controllers\YeuCauCuuTroController;
 use App\Http\Controllers\TiepNhanYeuCauController;
 
+use App\Http\Controllers\User\UserDashboardController;
 /*
 |--------------------------------------------------------------------------
 | Trang chính
@@ -18,8 +21,22 @@ use App\Http\Controllers\TiepNhanYeuCauController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/login');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Auth - Đăng nhập / Đăng ký / Đăng xuất
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/login', [AuthController::class, 'showLogin']);
+Route::post('/login', [AuthController::class, 'login']);
+
+Route::get('/register', [AuthController::class, 'showRegister']);
+Route::post('/register', [AuthController::class, 'register']);
+
+Route::post('/logout', [AuthController::class, 'logout']);
 
 /*
 |--------------------------------------------------------------------------
@@ -100,3 +117,11 @@ Route::get('/admin/tiep-nhan-yeu-cau', [TiepNhanYeuCauController::class, 'index'
 Route::get('/admin/yeu-cau-cuu-tro/{idYeuCau}/tiep-nhan', [TiepNhanYeuCauController::class, 'create']);
 Route::post('/admin/yeu-cau-cuu-tro/{idYeuCau}/tiep-nhan', [TiepNhanYeuCauController::class, 'store']);
 Route::delete('/admin/tiep-nhan-yeu-cau/{idTiepNhan}', [TiepNhanYeuCauController::class, 'destroy']);
+
+/*
+|--------------------------------------------------------------------------
+| User - Người dùng / Nhà hảo tâm
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/user/dashboard', [UserDashboardController::class, 'index']);
