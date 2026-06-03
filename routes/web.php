@@ -1,8 +1,9 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\AuthController;
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DiaDiemController;
 use App\Http\Controllers\ThienTaiController;
 use App\Http\Controllers\DanhMucHangController;
@@ -14,6 +15,11 @@ use App\Http\Controllers\YeuCauCuuTroController;
 use App\Http\Controllers\TiepNhanYeuCauController;
 
 use App\Http\Controllers\User\UserDashboardController;
+use App\Http\Controllers\User\UserNhomController;
+
+use App\Http\Controllers\Nhom\NhomDashboardController;
+use App\Http\Controllers\Nhom\NhomThanhVienController;
+
 /*
 |--------------------------------------------------------------------------
 | Trang chính
@@ -73,6 +79,8 @@ Route::resource('/admin/nguoi-dung', NguoiDungController::class);
 |--------------------------------------------------------------------------
 */
 
+Route::patch('/admin/nhom-tinh-nguyen/{id}/duyet', [NhomTinhNguyenController::class, 'duyetNhom']);
+Route::patch('/admin/nhom-tinh-nguyen/{id}/tu-choi', [NhomTinhNguyenController::class, 'tuChoiNhom']);
 Route::patch('/admin/nhom-tinh-nguyen/{id}/doi-trang-thai', [NhomTinhNguyenController::class, 'doiTrangThai']);
 Route::resource('/admin/nhom-tinh-nguyen', NhomTinhNguyenController::class);
 
@@ -120,8 +128,24 @@ Route::delete('/admin/tiep-nhan-yeu-cau/{idTiepNhan}', [TiepNhanYeuCauController
 
 /*
 |--------------------------------------------------------------------------
-| User - Người dùng / Nhà hảo tâm
+| User - Người dân / Nhà hảo tâm
 |--------------------------------------------------------------------------
 */
 
 Route::get('/user/dashboard', [UserDashboardController::class, 'index']);
+Route::get('/user/nhom-cua-toi', [UserNhomController::class, 'index']);
+Route::get('/user/nhom-cua-toi/create', [UserNhomController::class, 'create']);
+Route::post('/user/nhom-cua-toi', [UserNhomController::class, 'store']);
+Route::get('/user/nhom-cua-toi/{id}', [UserNhomController::class, 'show']);
+
+/*
+|--------------------------------------------------------------------------
+| Nhom - Nhóm tình nguyện / Nhóm trưởng
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/nhom/{idNhom}/dashboard', [NhomDashboardController::class, 'index']);
+Route::get('/nhom/{idNhom}/thanh-vien', [NhomThanhVienController::class, 'index']);
+Route::get('/nhom/{idNhom}/thanh-vien/create', [NhomThanhVienController::class, 'create']);
+Route::post('/nhom/{idNhom}/thanh-vien', [NhomThanhVienController::class, 'store']);
+Route::delete('/nhom/{idNhom}/thanh-vien/{idThanhVien}', [NhomThanhVienController::class, 'destroy']);

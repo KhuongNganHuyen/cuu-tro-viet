@@ -60,6 +60,18 @@ class NhomTinhNguyenController extends Controller
             'ngayTao' => now(),
         ]);
 
+        if ($request->trangThai == 'Đang hoạt động' || $request->trangThai == 'Hoạt động') {
+            ThanhVienNhom::firstOrCreate(
+                [
+                    'idNhom' => $nhomTinhNguyen->idNhom,
+                    'idNguoiDung' => $request->idNhomTruong,
+                ],
+                [
+                    'vaiTro' => 'Nhóm trưởng',
+                    'ngayThamGia' => now(),
+                ]
+            );
+        }
         return redirect('/admin/nhom-tinh-nguyen/' . $nhomTinhNguyen->idNhom)
             ->with('success', 'Thêm nhóm tình nguyện thành công.');
     }
@@ -105,6 +117,7 @@ class NhomTinhNguyenController extends Controller
     public function update(Request $request, int $id)
     {
         $nhomTinhNguyen = NhomTinhNguyen::findOrFail($id);
+        $idNhomTruongCu = $nhomTinhNguyen->idNhomTruong;
 
         $request->validate([
             'tenNhom' => 'required|string|max:255',
@@ -128,6 +141,36 @@ class NhomTinhNguyenController extends Controller
             'idDiaDiem' => $request->idDiaDiem,
             'trangThai' => $request->trangThai,
         ]);
+
+        if ($request->trangThai == 'Đang hoạt động' || $request->trangThai == 'Hoạt động') {
+            $thanhVienMoi = ThanhVienNhom::firstOrCreate(
+                [
+                    'idNhom' => $nhomTinhNguyen->idNhom,
+                    'idNguoiDung' => $request->idNhomTruong,
+                ],
+                [
+                    'vaiTro' => 'Nhóm trưởng',
+                    'ngayThamGia' => now(),
+                ]
+            );
+
+            $thanhVienMoi->update([
+                'vaiTro' => 'Nhóm trưởng',
+            ]);
+
+            if ($idNhomTruongCu != $request->idNhomTruong) {
+                $thanhVienCu = ThanhVienNhom::where('idNhom', $nhomTinhNguyen->idNhom)
+                    ->where('idNguoiDung', $idNhomTruongCu)
+                    ->where('vaiTro', 'Nhóm trưởng')
+                    ->first();
+
+                if ($thanhVienCu) {
+                    $thanhVienCu->update([
+                        'vaiTro' => 'Thành viên',
+                    ]);
+                }
+            }
+        }
 
         return redirect('/admin/nhom-tinh-nguyen/' . $nhomTinhNguyen->idNhom)
             ->with('success', 'Cập nhật nhóm tình nguyện thành công.');
@@ -157,6 +200,16 @@ class NhomTinhNguyenController extends Controller
     {
         $nhomTinhNguyen = NhomTinhNguyen::findOrFail($id);
 
+        if ($nhomTinhNguyen->trangThai == 'Chờ duyệt') {
+            return redirect('/admin/nhom-tinh-nguyen/' . $id)
+                ->with('error', 'Nhóm đang chờ duyệt. Vui lòng dùng chức năng Duyệt nhóm hoặc Từ chối.');
+        }
+
+        if ($nhomTinhNguyen->trangThai == 'Từ chối') {
+            return redirect('/admin/nhom-tinh-nguyen/' . $id)
+                ->with('error', 'Nhóm đã bị từ chối, không thể khóa/mở trạng thái như nhóm đang hoạt động.');
+        }
+
         if ($nhomTinhNguyen->trangThai == 'Đang hoạt động' || $nhomTinhNguyen->trangThai == 'Hoạt động') {
             $nhomTinhNguyen->update([
                 'trangThai' => 'Bị khóa',
@@ -166,11 +219,64 @@ class NhomTinhNguyenController extends Controller
                 ->with('success', 'Khóa nhóm tình nguyện thành công.');
         }
 
+        if ($nhomTinhNguyen->trangThai == 'Bị khóa' || $nhomTinhNguyen->trangThai == 'Tạm ngưng') {
+            $nhomTinhNguyen->update([
+                'trangThai' => 'Đang hoạt động',
+            ]);
+
+            return redirect('/admin/nhom-tinh-nguyen/' . $id)
+                ->with('success', 'Mở nhóm tình nguyện thành công.');
+        }
+
+        return redirect('/admin/nhom-tinh-nguyen/' . $id)
+            ->with('error', 'Trạng thái nhóm không hợp lệ.');
+    }
+
+    public function duyetNhom(int $id)
+    {
+        $nhomTinhNguyen = NhomTinhNguyen::findOrFail($id);
+
+        if ($nhomTinhNguyen->trangThai != 'Chờ duyệt') {
+            return redirect('/admin/nhom-tinh-nguyen/' . $id)
+                ->with('error', 'Chỉ có thể duyệt nhóm đang ở trạng thái Chờ duyệt.');
+        }
+
         $nhomTinhNguyen->update([
             'trangThai' => 'Đang hoạt động',
         ]);
 
+        // Sau khi duyệt, tự thêm người đăng ký làm nhóm trưởng trong bảng thành viên nhóm
+        $daLaThanhVien = ThanhVienNhom::where('idNhom', $nhomTinhNguyen->idNhom)
+            ->where('idNguoiDung', $nhomTinhNguyen->idNhomTruong)
+            ->exists();
+
+        if (!$daLaThanhVien) {
+            ThanhVienNhom::create([
+                'idNhom' => $nhomTinhNguyen->idNhom,
+                'idNguoiDung' => $nhomTinhNguyen->idNhomTruong,
+                'vaiTro' => 'Nhóm trưởng',
+                'ngayThamGia' => now(),
+            ]);
+        }
+
         return redirect('/admin/nhom-tinh-nguyen/' . $id)
-            ->with('success', 'Mở khóa nhóm tình nguyện thành công.');
+            ->with('success', 'Duyệt nhóm tình nguyện thành công.');
+    }
+
+    public function tuChoiNhom(int $id)
+    {
+        $nhomTinhNguyen = NhomTinhNguyen::findOrFail($id);
+
+        if ($nhomTinhNguyen->trangThai != 'Chờ duyệt') {
+            return redirect('/admin/nhom-tinh-nguyen/' . $id)
+                ->with('error', 'Chỉ có thể từ chối nhóm đang ở trạng thái Chờ duyệt.');
+        }
+
+        $nhomTinhNguyen->update([
+            'trangThai' => 'Từ chối',
+        ]);
+
+        return redirect('/admin/nhom-tinh-nguyen/' . $id)
+            ->with('success', 'Đã từ chối đăng ký tạo nhóm.');
     }
 }

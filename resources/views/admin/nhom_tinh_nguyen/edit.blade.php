@@ -114,11 +114,6 @@
           <div class="mb-3">
             <label class="form-label">Trạng thái</label>
             <select name="trangThai" class="form-control">
-              <option value="Chờ duyệt"
-                {{ old('trangThai', $nhomTinhNguyen->trangThai) == 'Chờ duyệt' ? 'selected' : '' }}>
-                Chờ duyệt
-              </option>
-
               <option value="Đang hoạt động"
                 {{ old('trangThai', $nhomTinhNguyen->trangThai) == 'Đang hoạt động' ? 'selected' : '' }}>
                 Đang hoạt động

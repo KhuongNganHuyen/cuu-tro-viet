@@ -61,35 +61,63 @@
         </p>
 
         <div class="d-grid gap-2">
-          <a href="{{ url('/admin/nhom-tinh-nguyen/' . $nhomTinhNguyen->idNhom . '/edit') }}" class="btn btn-warning">
-            Sửa thông tin
-          </a>
+          @if ($nhomTinhNguyen->trangThai == 'Chờ duyệt')
+            <form action="{{ url('/admin/nhom-tinh-nguyen/' . $nhomTinhNguyen->idNhom . '/duyet') }}" method="POST"
+              onsubmit="return confirm('Bạn có chắc muốn duyệt nhóm tình nguyện này không?')">
+              @csrf
+              @method('PATCH')
 
-          <form action="{{ url('/admin/nhom-tinh-nguyen/' . $nhomTinhNguyen->idNhom . '/doi-trang-thai') }}" method="POST"
-            onsubmit="return confirm('Bạn có chắc muốn thay đổi trạng thái nhóm này không?')">
-            @csrf
-            @method('PATCH')
+              <button type="submit" class="btn btn-success w-100">
+                Duyệt nhóm
+              </button>
+            </form>
 
-            @if ($nhomTinhNguyen->trangThai == 'Đang hoạt động' || $nhomTinhNguyen->trangThai == 'Hoạt động')
+            <form action="{{ url('/admin/nhom-tinh-nguyen/' . $nhomTinhNguyen->idNhom . '/tu-choi') }}" method="POST"
+              onsubmit="return confirm('Bạn có chắc muốn từ chối đăng ký tạo nhóm này không?')">
+              @csrf
+              @method('PATCH')
+
               <button type="submit" class="btn btn-outline-danger w-100">
-                Khóa nhóm
+                Từ chối
               </button>
-            @else
-              <button type="submit" class="btn btn-outline-success w-100">
-                Mở nhóm
+            </form>
+
+          @elseif ($nhomTinhNguyen->trangThai == 'Từ chối')
+            <div class="alert alert-warning mb-0">
+              Đăng ký tạo nhóm này đã bị từ chối.
+            </div>
+
+          @else
+            <a href="{{ url('/admin/nhom-tinh-nguyen/' . $nhomTinhNguyen->idNhom . '/edit') }}" class="btn btn-warning">
+              Sửa thông tin
+            </a>
+
+            <form action="{{ url('/admin/nhom-tinh-nguyen/' . $nhomTinhNguyen->idNhom . '/doi-trang-thai') }}" method="POST"
+              onsubmit="return confirm('Bạn có chắc muốn thay đổi trạng thái nhóm này không?')">
+              @csrf
+              @method('PATCH')
+
+              @if ($nhomTinhNguyen->trangThai == 'Đang hoạt động' || $nhomTinhNguyen->trangThai == 'Hoạt động')
+                <button type="submit" class="btn btn-outline-danger w-100">
+                  Khóa nhóm
+                </button>
+              @else
+                <button type="submit" class="btn btn-outline-success w-100">
+                  Mở nhóm
+                </button>
+              @endif
+            </form>
+
+            <form action="{{ url('/admin/nhom-tinh-nguyen/' . $nhomTinhNguyen->idNhom) }}" method="POST"
+              onsubmit="return confirm('Bạn có chắc muốn xóa nhóm tình nguyện này không?')">
+              @csrf
+              @method('DELETE')
+
+              <button type="submit" class="btn btn-outline-danger w-100">
+                Xóa nhóm
               </button>
-            @endif
-          </form>
-
-          <form action="{{ url('/admin/nhom-tinh-nguyen/' . $nhomTinhNguyen->idNhom) }}" method="POST"
-            onsubmit="return confirm('Bạn có chắc muốn xóa nhóm tình nguyện này không?')">
-            @csrf
-            @method('DELETE')
-
-            <button type="submit" class="btn btn-outline-danger w-100">
-              Xóa nhóm
-            </button>
-          </form>
+            </form>
+          @endif
 
           <a href="{{ url('/admin/nhom-tinh-nguyen') }}" class="btn btn-secondary">
             Quay lại danh sách
