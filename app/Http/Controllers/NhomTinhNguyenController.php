@@ -21,18 +21,51 @@ class NhomTinhNguyenController extends Controller
         return view('admin.nhom_tinh_nguyen.index', compact('nhomTinhNguyens'));
     }
 
-    public function create()
-    {
-        $nguoiDungs = NguoiDung::where('trangThai', 'Hoạt động')
-            ->orderBy('hoTen')
-            ->get();
+public function create()
+{
+    $nguoiDungs = NguoiDung::where('trangThai', 'Hoạt động')
+        ->where('vaiTro', '!=', 'Quản trị viên')
+        ->orderBy('hoTen')
+        ->get();
 
-        $diaDiems = DiaDiem::orderBy('tinhThanh')
-            ->orderBy('phuongXa')
-            ->get();
+    $diaDiems = DiaDiem::orderBy('tinhThanh')
+        ->orderBy('phuongXa')
+        ->get();
 
-        return view('admin.nhom_tinh_nguyen.create', compact('nguoiDungs', 'diaDiems'));
-    }
+    $nguoiDungJson = $nguoiDungs->map(function ($nguoiDung) {
+        return [
+            'idNguoiDung' => $nguoiDung->idNguoiDung,
+            'hoTen' => $nguoiDung->hoTen,
+            'tenDangNhap' => $nguoiDung->tenDangNhap,
+            'email' => $nguoiDung->email,
+            'sdt' => $nguoiDung->sdt,
+            'label' => $nguoiDung->hoTen . ' - ' . $nguoiDung->tenDangNhap,
+        ];
+    })->values()->toJson();
+
+    $diaDiemJson = $diaDiems->map(function ($diaDiem) {
+        return [
+            'idDiaDiem' => $diaDiem->idDiaDiem,
+            'tinhThanh' => $diaDiem->tinhThanh,
+            'phuongXa' => $diaDiem->phuongXa,
+            'chiTietDiaDiem' => $diaDiem->chiTietDiaDiem,
+            'viDo' => $diaDiem->viDo,
+            'kinhDo' => $diaDiem->kinhDo,
+            'label' => trim(
+                ($diaDiem->chiTietDiaDiem ? $diaDiem->chiTietDiaDiem . ', ' : '') .
+                ($diaDiem->phuongXa ? $diaDiem->phuongXa . ', ' : '') .
+                $diaDiem->tinhThanh
+            ),
+        ];
+    })->values()->toJson();
+
+    return view('admin.nhom_tinh_nguyen.create', compact(
+        'nguoiDungs',
+        'diaDiems',
+        'nguoiDungJson',
+        'diaDiemJson'
+    ));
+}
 
     public function store(Request $request)
     {
@@ -40,22 +73,53 @@ class NhomTinhNguyenController extends Controller
             'tenNhom' => 'required|string|max:255',
             'moTa' => 'nullable|string|max:255',
             'idNhomTruong' => 'required|exists:NguoiDung,idNguoiDung',
-            'idDiaDiem' => 'required|exists:DiaDiem,idDiaDiem',
+
+            'idDiaDiemCoSan' => 'nullable|exists:DiaDiem,idDiaDiem',
+            'tinhThanh' => 'required|string|max:255',
+            'phuongXa' => 'required|string|max:255',
+            'chiTietDiaDiem' => 'required|string|max:255',
+            'viDo' => 'required|numeric',
+            'kinhDo' => 'required|numeric',
+
             'trangThai' => 'required|string|max:255',
         ], [
             'tenNhom.required' => 'Vui lòng nhập tên nhóm.',
-            'idNhomTruong.required' => 'Vui lòng chọn nhóm trưởng.',
+            'idNhomTruong.required' => 'Vui lòng chọn nhóm trưởng hợp lệ từ danh sách gợi ý.',
             'idNhomTruong.exists' => 'Nhóm trưởng không hợp lệ.',
-            'idDiaDiem.required' => 'Vui lòng chọn địa điểm.',
-            'idDiaDiem.exists' => 'Địa điểm không hợp lệ.',
-            'trangThai.required' => 'Vui lòng chọn trạng thái.',
+
+            'tinhThanh.required' => 'Vui lòng chọn tỉnh/thành.',
+            'phuongXa.required' => 'Vui lòng chọn phường/xã.',
+            'chiTietDiaDiem.required' => 'Vui lòng nhập địa chỉ chi tiết.',
+            'viDo.required' => 'Vui lòng chọn vị trí trên bản đồ để lấy vĩ độ.',
+            'kinhDo.required' => 'Vui lòng chọn vị trí trên bản đồ để lấy kinh độ.',
         ]);
+
+        $diaDiem = null;
+
+        if ($request->idDiaDiemCoSan) {
+            $diaDiem = DiaDiem::findOrFail($request->idDiaDiemCoSan);
+        } else {
+            $diaDiem = DiaDiem::where('tinhThanh', $request->tinhThanh)
+                ->where('phuongXa', $request->phuongXa)
+                ->where('chiTietDiaDiem', $request->chiTietDiaDiem)
+                ->first();
+
+            if (!$diaDiem) {
+                $diaDiem = DiaDiem::create([
+                    'tinhThanh' => $request->tinhThanh,
+                    'phuongXa' => $request->phuongXa,
+                    'chiTietDiaDiem' => $request->chiTietDiaDiem,
+                    'viDo' => $request->viDo,
+                    'kinhDo' => $request->kinhDo,
+                ]);
+            }
+        }
 
         $nhomTinhNguyen = NhomTinhNguyen::create([
             'tenNhom' => $request->tenNhom,
             'moTa' => $request->moTa,
             'idNhomTruong' => $request->idNhomTruong,
-            'idDiaDiem' => $request->idDiaDiem,
+            'idDiaDiem' => $diaDiem->idDiaDiem,
             'trangThai' => $request->trangThai,
             'ngayTao' => now(),
         ]);
@@ -83,6 +147,7 @@ class NhomTinhNguyenController extends Controller
 
         $thanhViens = ThanhVienNhom::with('nguoiDung')
             ->where('idNhom', $id)
+            ->orderByRaw("CASE WHEN vaiTro = 'Nhóm trưởng' THEN 0 ELSE 1 END")
             ->orderBy('idThanhVien', 'desc')
             ->get();
 
@@ -100,9 +165,11 @@ class NhomTinhNguyenController extends Controller
 
     public function edit(int $id)
     {
-        $nhomTinhNguyen = NhomTinhNguyen::findOrFail($id);
+        $nhomTinhNguyen = NhomTinhNguyen::with(['diaDiem', 'nhomTruong'])
+            ->findOrFail($id);
 
         $nguoiDungs = NguoiDung::where('trangThai', 'Hoạt động')
+            ->where('vaiTro', '!=', 'Quản trị viên')
             ->orWhere('idNguoiDung', $nhomTinhNguyen->idNhomTruong)
             ->orderBy('hoTen')
             ->get();
@@ -111,7 +178,45 @@ class NhomTinhNguyenController extends Controller
             ->orderBy('phuongXa')
             ->get();
 
-        return view('admin.nhom_tinh_nguyen.edit', compact('nhomTinhNguyen', 'nguoiDungs', 'diaDiems'));
+        $nguoiDungJson = $nguoiDungs->map(function ($nguoiDung) {
+            return [
+                'idNguoiDung' => $nguoiDung->idNguoiDung,
+                'hoTen' => $nguoiDung->hoTen,
+                'tenDangNhap' => $nguoiDung->tenDangNhap,
+                'email' => $nguoiDung->email,
+                'sdt' => $nguoiDung->sdt,
+                'label' => $nguoiDung->hoTen . ' - ' . $nguoiDung->tenDangNhap,
+            ];
+        })->values()->toJson();
+
+        $diaDiemJson = $diaDiems->map(function ($diaDiem) {
+            return [
+                'idDiaDiem' => $diaDiem->idDiaDiem,
+                'tinhThanh' => $diaDiem->tinhThanh,
+                'phuongXa' => $diaDiem->phuongXa,
+                'chiTietDiaDiem' => $diaDiem->chiTietDiaDiem,
+                'viDo' => $diaDiem->viDo,
+                'kinhDo' => $diaDiem->kinhDo,
+                'label' => trim(
+                    ($diaDiem->chiTietDiaDiem ? $diaDiem->chiTietDiaDiem . ', ' : '') .
+                    ($diaDiem->phuongXa ? $diaDiem->phuongXa . ', ' : '') .
+                    $diaDiem->tinhThanh
+                ),
+            ];
+        })->values()->toJson();
+
+        $tenNhomTruongHienThi = $nhomTinhNguyen->nhomTruong
+            ? $nhomTinhNguyen->nhomTruong->hoTen . ' - ' . $nhomTinhNguyen->nhomTruong->tenDangNhap
+            : '';
+
+        return view('admin.nhom_tinh_nguyen.edit', compact(
+            'nhomTinhNguyen',
+            'nguoiDungs',
+            'diaDiems',
+            'nguoiDungJson',
+            'diaDiemJson',
+            'tenNhomTruongHienThi'
+        ));
     }
 
     public function update(Request $request, int $id)
@@ -123,22 +228,61 @@ class NhomTinhNguyenController extends Controller
             'tenNhom' => 'required|string|max:255',
             'moTa' => 'nullable|string|max:255',
             'idNhomTruong' => 'required|exists:NguoiDung,idNguoiDung',
-            'idDiaDiem' => 'required|exists:DiaDiem,idDiaDiem',
+
+            'idDiaDiemCoSan' => 'nullable|exists:DiaDiem,idDiaDiem',
+            'tinhThanh' => 'required|string|max:255',
+            'phuongXa' => 'required|string|max:255',
+            'chiTietDiaDiem' => 'required|string|max:255',
+            'viDo' => 'required|numeric',
+            'kinhDo' => 'required|numeric',
+
             'trangThai' => 'required|string|max:255',
         ], [
             'tenNhom.required' => 'Vui lòng nhập tên nhóm.',
-            'idNhomTruong.required' => 'Vui lòng chọn nhóm trưởng.',
+            'idNhomTruong.required' => 'Vui lòng chọn nhóm trưởng hợp lệ từ danh sách gợi ý.',
             'idNhomTruong.exists' => 'Nhóm trưởng không hợp lệ.',
-            'idDiaDiem.required' => 'Vui lòng chọn địa điểm.',
-            'idDiaDiem.exists' => 'Địa điểm không hợp lệ.',
+
+            'tinhThanh.required' => 'Vui lòng chọn tỉnh/thành.',
+            'phuongXa.required' => 'Vui lòng chọn phường/xã.',
+            'chiTietDiaDiem.required' => 'Vui lòng nhập địa chỉ chi tiết.',
+            'viDo.required' => 'Vui lòng chọn vị trí trên bản đồ để lấy vĩ độ.',
+            'kinhDo.required' => 'Vui lòng chọn vị trí trên bản đồ để lấy kinh độ.',
+            'viDo.numeric' => 'Vĩ độ phải là số.',
+            'kinhDo.numeric' => 'Kinh độ phải là số.',
+
             'trangThai.required' => 'Vui lòng chọn trạng thái.',
         ]);
+        
+        $tinhThanh = trim($request->tinhThanh);
+        $phuongXa = trim($request->phuongXa);
+        $chiTietDiaDiem = trim($request->chiTietDiaDiem);
+
+        $diaDiem = null;
+
+        if ($request->idDiaDiemCoSan) {
+            $diaDiem = DiaDiem::findOrFail($request->idDiaDiemCoSan);
+        } else {
+            $diaDiem = DiaDiem::where('tinhThanh', $tinhThanh)
+                ->where('phuongXa', $phuongXa)
+                ->where('chiTietDiaDiem', $chiTietDiaDiem)
+                ->first();
+
+            if (!$diaDiem) {
+                $diaDiem = DiaDiem::create([
+                    'tinhThanh' => $tinhThanh,
+                    'phuongXa' => $phuongXa,
+                    'chiTietDiaDiem' => $chiTietDiaDiem,
+                    'viDo' => $request->viDo,
+                    'kinhDo' => $request->kinhDo,
+                ]);
+            }
+        }
 
         $nhomTinhNguyen->update([
             'tenNhom' => $request->tenNhom,
             'moTa' => $request->moTa,
             'idNhomTruong' => $request->idNhomTruong,
-            'idDiaDiem' => $request->idDiaDiem,
+            'idDiaDiem' => $diaDiem->idDiaDiem,
             'trangThai' => $request->trangThai,
         ]);
 

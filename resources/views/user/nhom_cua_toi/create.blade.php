@@ -3,6 +3,16 @@
 @section('title', 'Đăng ký tạo nhóm tình nguyện | Cứu Trợ Việt')
 
 @section('content')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<style>
+  #nhomDiaDiemMap {
+    height: 380px;
+    width: 100%;
+    border-radius: 12px;
+  }
+</style>
+
 <div class="page-header">
   <div class="page-block">
     <div class="row align-items-center">
@@ -49,7 +59,7 @@
             <label class="form-label">Tên nhóm <span class="text-danger">*</span></label>
             <input type="text" name="tenNhom" class="form-control"
               value="{{ old('tenNhom') }}"
-              placeholder="Ví dụ: Nhóm cứu trợ Hòa Khánh">
+              placeholder="Ví dụ: Nhóm cứu trợ Đà Nẵng">
           </div>
 
           <div class="mb-3">
@@ -66,46 +76,73 @@
         </div>
 
         <div class="card-body">
-          <div class="mb-3">
-            <label class="form-label">Tỉnh/Thành <span class="text-danger">*</span></label>
-            <input type="text" name="tinhThanh" class="form-control"
-              value="{{ old('tinhThanh') }}"
-              placeholder="Ví dụ: Đà Nẵng">
+          <input type="hidden" name="idDiaDiemCoSan" id="idDiaDiemCoSan"
+            value="{{ old('idDiaDiemCoSan') }}">
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Tỉnh/Thành <span class="text-danger">*</span></label>
+              <select name="tinhThanh" id="tinhThanh" class="form-control">
+                <option value="">-- Chọn tỉnh/thành --</option>
+
+                @foreach ($diaDiems->pluck('tinhThanh')->unique()->values() as $tinhThanh)
+                  <option value="{{ $tinhThanh }}" {{ old('tinhThanh') == $tinhThanh ? 'selected' : '' }}>
+                    {{ $tinhThanh }}
+                  </option>
+                @endforeach
+              </select>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Phường/Xã <span class="text-danger">*</span></label>
+              <select name="phuongXa" id="phuongXa" class="form-control">
+                <option value="">-- Chọn phường/xã --</option>
+              </select>
+            </div>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Phường/Xã</label>
-            <input type="text" name="phuongXa" class="form-control"
-              value="{{ old('phuongXa') }}"
-              placeholder="Ví dụ: Hòa Khánh Bắc">
-          </div>
+            <label class="form-label">Địa chỉ chi tiết <span class="text-danger">*</span></label>
 
-          <div class="mb-3">
-            <label class="form-label">Chi tiết địa điểm</label>
-            <input type="text" name="chiTietDiaDiem" class="form-control"
+            <input type="text" name="chiTietDiaDiem" id="chiTietDiaDiem" class="form-control"
+              list="danhSachDiaDiem"
               value="{{ old('chiTietDiaDiem') }}"
-              placeholder="Ví dụ: Nhà văn hóa khu A, đường Nguyễn Lương Bằng">
+              placeholder="Ví dụ: 48 Cao Thắng">
+
+            <datalist id="danhSachDiaDiem"></datalist>
+          </div>
+
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label mb-0">Chọn vị trí trên bản đồ <span class="text-danger">*</span></label>
+
+              <button type="button" id="btnTimTrenBanDo" class="btn btn-sm btn-outline-primary">
+                Tìm trên bản đồ
+              </button>
+            </div>
+
+            <small class="text-muted">
+              Bấm “Tìm trên bản đồ” để hệ thống gợi ý vị trí gần đúng.
+            </small>
+
+            <div id="nhomDiaDiemMap" class="mt-2"></div>
           </div>
 
           <div class="row">
             <div class="col-md-6 mb-3">
               <label class="form-label">Vĩ độ</label>
-              <input type="text" name="viDo" class="form-control"
+              <input type="text" name="viDo" id="viDo" class="form-control"
                 value="{{ old('viDo') }}"
-                placeholder="Ví dụ: 16.047079">
+                readonly>
             </div>
 
             <div class="col-md-6 mb-3">
               <label class="form-label">Kinh độ</label>
-              <input type="text" name="kinhDo" class="form-control"
+              <input type="text" name="kinhDo" id="kinhDo" class="form-control"
                 value="{{ old('kinhDo') }}"
-                placeholder="Ví dụ: 108.206230">
+                readonly>
             </div>
           </div>
-
-          <small class="text-muted">
-            Tọa độ có thể bổ sung sau. Khi hoàn thiện, hệ thống sẽ cho chọn vị trí trực tiếp trên bản đồ.
-          </small>
         </div>
       </div>
 
@@ -141,4 +178,202 @@
     </div>
   </div>
 </form>
+
+<input type="hidden" id="oldPhuongXa" value="{{ old('phuongXa') }}">
+
+<script id="diaDiemData" type="application/json">
+{!! $diaDiemJson !!}
+</script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const diaDiems = JSON.parse(document.getElementById('diaDiemData').textContent);
+
+    const tinhThanhSelect = document.getElementById('tinhThanh');
+    const phuongXaSelect = document.getElementById('phuongXa');
+    const oldPhuongXa = document.getElementById('oldPhuongXa').value;
+
+    const chiTietDiaDiemInput = document.getElementById('chiTietDiaDiem');
+    const idDiaDiemCoSanInput = document.getElementById('idDiaDiemCoSan');
+    const danhSachDiaDiem = document.getElementById('danhSachDiaDiem');
+
+    const viDoInput = document.getElementById('viDo');
+    const kinhDoInput = document.getElementById('kinhDo');
+    const btnTimTrenBanDo = document.getElementById('btnTimTrenBanDo');
+
+    function loadPhuongXa() {
+      const tinhThanh = tinhThanhSelect.value;
+
+      phuongXaSelect.innerHTML = '<option value="">-- Chọn phường/xã --</option>';
+
+      if (!tinhThanh) {
+        return;
+      }
+
+      const phuongXas = [...new Set(
+        diaDiems
+          .filter(function (item) {
+            return item.tinhThanh === tinhThanh && item.phuongXa;
+          })
+          .map(function (item) {
+            return item.phuongXa;
+          })
+      )];
+
+      phuongXas.forEach(function (phuongXa) {
+        const option = document.createElement('option');
+        option.value = phuongXa;
+        option.textContent = phuongXa;
+
+        if (oldPhuongXa && oldPhuongXa === phuongXa) {
+          option.selected = true;
+        }
+
+        phuongXaSelect.appendChild(option);
+      });
+
+      loadDiaDiemOptions();
+    }
+
+    function loadDiaDiemOptions() {
+      const tinhThanh = tinhThanhSelect.value;
+      const phuongXa = phuongXaSelect.value;
+
+      danhSachDiaDiem.innerHTML = '';
+
+      const diaDiemPhuHop = diaDiems.filter(function (item) {
+        return item.tinhThanh === tinhThanh
+          && item.phuongXa === phuongXa
+          && item.chiTietDiaDiem;
+      });
+
+      diaDiemPhuHop.forEach(function (diaDiem) {
+        const option = document.createElement('option');
+        option.value = diaDiem.chiTietDiaDiem;
+        danhSachDiaDiem.appendChild(option);
+      });
+    }
+
+    tinhThanhSelect.addEventListener('change', function () {
+      idDiaDiemCoSanInput.value = '';
+      chiTietDiaDiemInput.value = '';
+      loadPhuongXa();
+
+      const diaDiemTheoTinh = diaDiems.find(function (item) {
+        return item.tinhThanh === tinhThanhSelect.value && item.viDo && item.kinhDo;
+      });
+
+      if (diaDiemTheoTinh) {
+        map.setView([parseFloat(diaDiemTheoTinh.viDo), parseFloat(diaDiemTheoTinh.kinhDo)], 12);
+      }
+    });
+
+    phuongXaSelect.addEventListener('change', function () {
+      idDiaDiemCoSanInput.value = '';
+      chiTietDiaDiemInput.value = '';
+      loadDiaDiemOptions();
+
+      const diaDiemTheoPhuong = diaDiems.find(function (item) {
+        return item.tinhThanh === tinhThanhSelect.value
+          && item.phuongXa === phuongXaSelect.value
+          && item.viDo
+          && item.kinhDo;
+      });
+
+      if (diaDiemTheoPhuong) {
+        map.setView([parseFloat(diaDiemTheoPhuong.viDo), parseFloat(diaDiemTheoPhuong.kinhDo)], 14);
+      }
+    });
+
+    chiTietDiaDiemInput.addEventListener('input', function () {
+      const diaDiem = diaDiems.find(function (item) {
+        return item.tinhThanh === tinhThanhSelect.value
+          && item.phuongXa === phuongXaSelect.value
+          && item.chiTietDiaDiem === chiTietDiaDiemInput.value;
+      });
+
+      if (diaDiem) {
+        idDiaDiemCoSanInput.value = diaDiem.idDiaDiem;
+
+        if (diaDiem.viDo && diaDiem.kinhDo) {
+          setLocation(parseFloat(diaDiem.viDo), parseFloat(diaDiem.kinhDo));
+        }
+      } else {
+        idDiaDiemCoSanInput.value = '';
+      }
+    });
+
+    const defaultLat = parseFloat(viDoInput.value) || 16.047079;
+    const defaultLng = parseFloat(kinhDoInput.value) || 108.206230;
+
+    const map = L.map('nhomDiaDiemMap').setView([defaultLat, defaultLng], 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    let marker = null;
+
+    function setLocation(lat, lng) {
+      viDoInput.value = lat.toFixed(7);
+      kinhDoInput.value = lng.toFixed(7);
+
+      if (marker) {
+        marker.setLatLng([lat, lng]);
+      } else {
+        marker = L.marker([lat, lng]).addTo(map);
+      }
+
+      map.setView([lat, lng], 16);
+    }
+
+    if (viDoInput.value && kinhDoInput.value) {
+      setLocation(defaultLat, defaultLng);
+    }
+
+    map.on('click', function (e) {
+      setLocation(e.latlng.lat, e.latlng.lng);
+    });
+
+    btnTimTrenBanDo.addEventListener('click', function () {
+      const chiTiet = chiTietDiaDiemInput.value.trim();
+      const phuongXa = phuongXaSelect.value.trim();
+      const tinhThanh = tinhThanhSelect.value.trim();
+
+      const diaChi = [chiTiet, phuongXa, tinhThanh, 'Việt Nam']
+        .filter(Boolean)
+        .join(', ');
+
+      if (!tinhThanh && !phuongXa && !chiTiet) {
+        alert('Vui lòng nhập ít nhất một thông tin địa chỉ trước khi tìm.');
+        return;
+      }
+
+      fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(diaChi))
+        .then(function (response) {
+          return response.json();
+        })
+        .then(function (data) {
+          if (!data || data.length === 0) {
+            alert('Không tìm thấy địa điểm phù hợp. Bạn có thể click trực tiếp trên bản đồ để chọn vị trí.');
+            return;
+          }
+
+          const lat = parseFloat(data[0].lat);
+          const lng = parseFloat(data[0].lon);
+
+          setLocation(lat, lng);
+        })
+        .catch(function () {
+          alert('Không thể tìm địa điểm lúc này. Bạn có thể click trực tiếp trên bản đồ để chọn vị trí.');
+        });
+    });
+
+    loadPhuongXa();
+    loadDiaDiemOptions();
+  });
+</script>
 @endsection

@@ -33,35 +33,10 @@
   </div>
 @endif
 
-<div class="row">
-  <div class="col-md-6 col-xl-6">
-    <div class="card">
-      <div class="card-body">
-        <h6 class="mb-2 f-w-400 text-muted">Nhóm tham gia</h6>
-        <h4 class="mb-3">{{ $nhomThamGias->count() }}</h4>
-        <p class="mb-0 text-muted text-sm">Nhóm bạn đang tham gia hoặc quản lý</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-6 col-xl-6">
-    <div class="card">
-      <div class="card-body">
-        <h6 class="mb-2 f-w-400 text-muted">Đang chờ duyệt</h6>
-        <h4 class="mb-3">{{ $nhomChoDuyets->count() }}</h4>
-        <p class="mb-0 text-muted text-sm">Đăng ký tạo nhóm đang chờ admin duyệt</p>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div class="card">
   <div class="card-header d-flex justify-content-between align-items-center">
     <div>
       <h5 class="mb-0">Nhóm tình nguyện của tôi</h5>
-      <small class="text-muted">
-        Theo dõi nhóm bạn tham gia và các đăng ký tạo nhóm đang chờ duyệt.
-      </small>
     </div>
 
     <a href="{{ url('/user/nhom-cua-toi/create') }}" class="btn btn-primary">
@@ -74,14 +49,14 @@
       <li class="nav-item" role="presentation">
         <button class="nav-link active" id="tham-gia-tab" data-bs-toggle="tab" data-bs-target="#tham-gia"
           type="button" role="tab">
-          Nhóm tham gia
+          Nhóm tham gia ({{ $nhomThamGias->count() }})
         </button>
       </li>
 
       <li class="nav-item" role="presentation">
         <button class="nav-link" id="cho-duyet-tab" data-bs-toggle="tab" data-bs-target="#cho-duyet"
           type="button" role="tab">
-          Chờ duyệt
+          Chờ duyệt ({{ $nhomChoDuyets->count() }})
         </button>
       </li>
     </ul>
@@ -92,7 +67,7 @@
           <table class="table table-hover mb-0">
             <thead>
               <tr class="text-uppercase text-center">
-                <th style="width: 90px;">Mã TV</th>
+                <th style="width: 90px;">Mã</th>
                 <th class="text-start">Tên nhóm</th>
                 <th class="text-start">Nhóm trưởng</th>
                 <th class="text-start">Địa điểm</th>

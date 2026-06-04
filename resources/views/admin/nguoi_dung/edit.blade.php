@@ -114,7 +114,6 @@
               <select name="vaiTro" class="form-control">
                 <option value="Người dùng" {{ old('vaiTro', $nguoiDung->vaiTro) == 'Người dùng' ? 'selected' : '' }}>Người dùng</option>
                 <option value="Tình nguyện viên" {{ old('vaiTro', $nguoiDung->vaiTro) == 'Tình nguyện viên' ? 'selected' : '' }}>Tình nguyện viên</option>
-                <option value="Quản trị viên" {{ old('vaiTro', $nguoiDung->vaiTro) == 'Quản trị viên' ? 'selected' : '' }}>Quản trị viên</option>
               </select>
             </div>
 

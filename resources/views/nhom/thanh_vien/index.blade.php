@@ -36,124 +36,88 @@
   </div>
 @endif
 
-<div class="row">
-  <div class="col-lg-4">
-    <div class="card">
-      <div class="card-body text-center">
-        <h4 class="fw-bold mb-2">{{ $nhom->tenNhom }}</h4>
-
-        <span class="d-inline-flex align-items-center justify-content-center gap-2 mb-3">
-          <span class="rounded-circle bg-success d-inline-block" style="width: 8px; height: 8px;"></span>
-          {{ $nhom->trangThai }}
-        </span>
-
-        <p class="text-muted mb-3">
-          {{ $nhom->moTa ?? 'Chưa có mô tả cho nhóm này.' }}
-        </p>
-
-        <div class="alert alert-info mb-0 text-start">
-          <strong>Vai trò của bạn:</strong> {{ $vaiTroTrongNhom }}
-        </div>
-      </div>
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <div>
+      <h5 class="mb-0">Danh sách thành viên</h5>
     </div>
+
+    @if ($laNhomTruong)
+      <a href="{{ url('/nhom/' . $nhom->idNhom . '/thanh-vien/create') }}" class="btn btn-primary">
+        Thêm thành viên
+      </a>
+    @endif
   </div>
 
-  <div class="col-lg-8">
-    <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <div>
-          <h5 class="mb-0">Danh sách thành viên</h5>
-          <small class="text-muted">
-            Theo dõi các thành viên đang tham gia nhóm tình nguyện.
-          </small>
-        </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr class="text-uppercase text-center">
+            <th style="width: 90px;">Mã TV</th>
+            <th class="text-start">Họ tên</th>
+            <th class="text-start">Tên đăng nhập</th>
+            <th class="text-start">Email</th>
+            <th style="width: 150px;">SĐT</th>
+            <th style="width: 170px;">Vai trò nhóm</th>
+            <th style="width: 170px;">Ngày tham gia</th>
+            @if ($laNhomTruong)
+              <th style="width: 90px;"> </th>
+            @endif
+          </tr>
+        </thead>
 
-        @if ($laNhomTruong)
-          <a href="{{ url('/nhom/' . $nhom->idNhom . '/thanh-vien/create') }}" class="btn btn-primary">
-            Thêm thành viên
-          </a>
-        @endif
-      </div>
+        <tbody>
+          @forelse ($thanhViens as $thanhVien)
+            <tr>
+              <td class="text-center">{{ $thanhVien->idThanhVien }}</td>
 
-      <div class="card-body">
-        <div class="table-responsive">
-          <table class="table table-hover mb-0">
-            <thead>
-              <tr class="text-uppercase text-center">
-                <th style="width: 90px;">Mã TV</th>
-                <th class="text-start">Họ tên</th>
-                <th class="text-start">Tên đăng nhập</th>
-                <th class="text-start">Email</th>
-                <th style="width: 150px;">SĐT</th>
-                <th style="width: 170px;">Vai trò nhóm</th>
-                <th style="width: 170px;">Ngày tham gia</th>
-                @if ($laNhomTruong)
-                  <th style="width: 120px;">Thao tác</th>
-                @endif
-              </tr>
-            </thead>
+              <td>
+                <div class="fw-semibold">
+                  {{ $thanhVien->nguoiDung->hoTen ?? '-' }}
+                </div>
+              </td>
 
-            <tbody>
-              @forelse ($thanhViens as $thanhVien)
-                <tr>
-                  <td class="text-center">{{ $thanhVien->idThanhVien }}</td>
+              <td>{{ $thanhVien->nguoiDung->tenDangNhap ?? '-' }}</td>
+              <td>{{ $thanhVien->nguoiDung->email ?? '-' }}</td>
+              <td class="text-center">{{ $thanhVien->nguoiDung->sdt ?? '-' }}</td>
 
-                  <td>
-                    <div class="fw-semibold">
-                      {{ $thanhVien->nguoiDung->hoTen ?? '-' }}
-                    </div>
-                  </td>
+              <td class="text-center">
+                {{ $thanhVien->vaiTro ?? 'Thành viên' }}
+              </td>
 
-                  <td>{{ $thanhVien->nguoiDung->tenDangNhap ?? '-' }}</td>
-                  <td>{{ $thanhVien->nguoiDung->email ?? '-' }}</td>
-                  <td class="text-center">{{ $thanhVien->nguoiDung->sdt ?? '-' }}</td>
+              <td class="text-center">
+                {{ $thanhVien->ngayThamGia ?? '-' }}
+              </td>
 
-                  <td class="text-center">
-                    @if ($thanhVien->vaiTro == 'Nhóm trưởng')
-                      <span class="badge bg-light-primary text-primary">
-                        Nhóm trưởng
-                      </span>
-                    @else
-                      <span class="badge bg-light-secondary text-secondary">
-                        {{ $thanhVien->vaiTro ?? 'Thành viên' }}
-                      </span>
-                    @endif
-                  </td>
+              @if ($laNhomTruong)
+                <td class="text-center">
+                  @if ($thanhVien->vaiTro != 'Nhóm trưởng')
+                    <form action="{{ url('/nhom/' . $nhom->idNhom . '/thanh-vien/' . $thanhVien->idThanhVien) }}"
+                      method="POST"
+                      onsubmit="return confirm('Bạn có chắc muốn xóa thành viên này khỏi nhóm không?')">
+                      @csrf
+                      @method('DELETE')
 
-                  <td class="text-center">
-                    {{ $thanhVien->ngayThamGia ?? '-' }}
-                  </td>
-
-                  @if ($laNhomTruong)
-                    <td class="text-center">
-                      @if ($thanhVien->vaiTro != 'Nhóm trưởng')
-                        <form action="{{ url('/nhom/' . $nhom->idNhom . '/thanh-vien/' . $thanhVien->idThanhVien) }}"
-                          method="POST"
-                          onsubmit="return confirm('Bạn có chắc muốn xóa thành viên này khỏi nhóm không?')">
-                          @csrf
-                          @method('DELETE')
-
-                          <button type="submit" class="btn btn-sm btn-outline-danger">
-                            Xóa
-                          </button>
-                        </form>
-                      @else
-                        -
-                      @endif
-                    </td>
+                      <button type="submit" class="btn btn-sm btn-light border text-danger" title="Xóa">
+                        <i class="ti ti-trash"></i>
+                      </button>
+                    </form>
+                  @else
+                    -
                   @endif
-                </tr>
-              @empty
-                <tr>
-                  <td colspan="{{ $laNhomTruong ? 8 : 7 }}" class="text-center text-muted py-4">
-                    Nhóm chưa có thành viên nào.
-                  </td>
-                </tr>
-              @endforelse
-            </tbody>
-          </table>
-        </div>
-      </div>
+                </td>
+              @endif
+            </tr>
+          @empty
+            <tr>
+              <td colspan="{{ $laNhomTruong ? 8 : 7 }}" class="text-center text-muted py-4">
+                Nhóm chưa có thành viên nào.
+              </td>
+            </tr>
+          @endforelse
+        </tbody>
+      </table>
     </div>
   </div>
 </div>

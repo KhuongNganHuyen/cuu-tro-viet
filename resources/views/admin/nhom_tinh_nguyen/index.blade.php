@@ -25,9 +25,6 @@
   <div class="card-header d-flex justify-content-between align-items-center">
     <div>
       <h5 class="mb-0">Danh sách nhóm tình nguyện</h5>
-      <small class="text-muted">
-        Theo dõi các nhóm tình nguyện, nhóm trưởng, khu vực hoạt động và trạng thái nhóm
-      </small>
     </div>
 
     <a href="{{ url('/admin/nhom-tinh-nguyen/create') }}" class="btn btn-primary">

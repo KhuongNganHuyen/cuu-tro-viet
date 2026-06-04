@@ -46,74 +46,94 @@
 <form action="{{ url('/nhom/' . $nhom->idNhom . '/thanh-vien') }}" method="POST">
   @csrf
 
-  <div class="row">
-    <div class="col-lg-8">
-      <div class="card">
-        <div class="card-header">
-          <h5 class="mb-0">Thông tin thành viên</h5>
-        </div>
-
-        <div class="card-body">
-          <div class="mb-3">
-            <label class="form-label">Người dùng <span class="text-danger">*</span></label>
-            <select name="idNguoiDung" class="form-control">
-              <option value="">-- Chọn người dùng --</option>
-
-              @foreach ($nguoiDungs as $nguoiDung)
-                <option value="{{ $nguoiDung->idNguoiDung }}"
-                  {{ old('idNguoiDung') == $nguoiDung->idNguoiDung ? 'selected' : '' }}>
-                  {{ $nguoiDung->hoTen }} - {{ $nguoiDung->tenDangNhap }}
-                </option>
-              @endforeach
-            </select>
-
-            <small class="text-muted">
-              Chỉ hiển thị người dùng đang hoạt động và chưa thuộc nhóm này.
-            </small>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Vai trò trong nhóm <span class="text-danger">*</span></label>
-            <select name="vaiTro" class="form-control">
-              <option value="Thành viên" {{ old('vaiTro', 'Thành viên') == 'Thành viên' ? 'selected' : '' }}>
-                Thành viên
-              </option>
-              <option value="Tình nguyện viên" {{ old('vaiTro') == 'Tình nguyện viên' ? 'selected' : '' }}>
-                Tình nguyện viên
-              </option>
-              <option value="Điều phối viên" {{ old('vaiTro') == 'Điều phối viên' ? 'selected' : '' }}>
-                Điều phối viên
-              </option>
-            </select>
-          </div>
-
-          <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary">
-              Lưu
-            </button>
-
-            <a href="{{ url('/nhom/' . $nhom->idNhom . '/thanh-vien') }}" class="btn btn-secondary">
-              Quay lại
-            </a>
-          </div>
-        </div>
-      </div>
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">Thông tin thành viên</h5>
     </div>
 
-    <div class="col-lg-4">
-      <div class="card">
-        <div class="card-header">
-          <h5 class="mb-0">Ghi chú</h5>
-        </div>
+    <div class="card-body">
+      <div class="mb-3">
+        <label class="form-label">Người dùng <span class="text-danger">*</span></label>
 
-        <div class="card-body">
-          <p class="text-muted mb-0">
-            Nhóm trưởng có thể thêm người dùng đã có tài khoản vào nhóm.
-            Chức năng người dùng tự gửi yêu cầu tham gia nhóm có thể phát triển ở phiên bản sau.
-          </p>
-        </div>
+        <input type="text" id="nguoiDungInput" class="form-control"
+          list="danhSachNguoiDung"
+          value="{{ old('tenNguoiDungHienThi') }}"
+          placeholder="Nhập họ tên hoặc tên đăng nhập để thêm thành viên">
+
+        <input type="hidden" name="idNguoiDung" id="idNguoiDung"
+          value="{{ old('idNguoiDung') }}">
+
+        <datalist id="danhSachNguoiDung"></datalist>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Vai trò trong nhóm</label>
+
+        <input type="text" name="vaiTro" id="vaiTro" class="form-control"
+          value="{{ old('vaiTro') }}"
+          placeholder="Thành viên">
+
+        <small class="text-muted">
+          Hệ thống sẽ mặc định là “Thành viên”. Không nhập “Nhóm trưởng” tại đây.
+        </small>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">
+          Lưu
+        </button>
+
+        <a href="{{ url('/nhom/' . $nhom->idNhom . '/thanh-vien') }}" class="btn btn-secondary">
+          Quay lại
+        </a>
       </div>
     </div>
   </div>
 </form>
+
+<script id="nguoiDungData" type="application/json">
+{!! $nguoiDungJson !!}
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const nguoiDungs = JSON.parse(document.getElementById('nguoiDungData').textContent);
+
+    const nguoiDungInput = document.getElementById('nguoiDungInput');
+    const idNguoiDungInput = document.getElementById('idNguoiDung');
+    const danhSachNguoiDung = document.getElementById('danhSachNguoiDung');
+
+    const vaiTroInput = document.getElementById('vaiTro');
+
+    function loadNguoiDungOptions() {
+      danhSachNguoiDung.innerHTML = '';
+
+      nguoiDungs.forEach(function (nguoiDung) {
+        const option = document.createElement('option');
+        option.value = nguoiDung.label;
+        danhSachNguoiDung.appendChild(option);
+      });
+    }
+
+    nguoiDungInput.addEventListener('input', function () {
+      const selected = nguoiDungs.find(function (nguoiDung) {
+        return nguoiDung.label === nguoiDungInput.value;
+      });
+
+      idNguoiDungInput.value = selected ? selected.idNguoiDung : '';
+    });
+
+    vaiTroInput.addEventListener('input', function () {
+      const vaiTro = vaiTroInput.value.trim().toLowerCase();
+
+      if (vaiTro === 'nhóm trưởng' || vaiTro === 'nhom truong') {
+        vaiTroInput.setCustomValidity('Không thêm Nhóm trưởng tại đây. Nếu muốn chuyển nhượng nhóm trưởng, vui lòng vào phần Sửa thông tin nhóm.');
+      } else {
+        vaiTroInput.setCustomValidity('');
+      }
+    });
+
+    loadNguoiDungOptions();
+  });
+</script>
 @endsection

@@ -101,11 +101,27 @@ class NhomThanhVienController extends Controller
             ->toArray();
 
         $nguoiDungs = NguoiDung::where('trangThai', 'Hoạt động')
+            ->where('vaiTro', '!=', 'Quản trị viên')
             ->whereNotIn('idNguoiDung', $idThanhVienDaCo)
             ->orderBy('hoTen')
             ->get();
 
-        return view('nhom.thanh_vien.create', compact('nhom', 'nguoiDungs'));
+        $nguoiDungJson = $nguoiDungs->map(function ($nguoiDung) {
+            return [
+                'idNguoiDung' => $nguoiDung->idNguoiDung,
+                'hoTen' => $nguoiDung->hoTen,
+                'tenDangNhap' => $nguoiDung->tenDangNhap,
+                'email' => $nguoiDung->email,
+                'sdt' => $nguoiDung->sdt,
+                'label' => $nguoiDung->hoTen . ' - ' . $nguoiDung->tenDangNhap,
+            ];
+        })->values()->toJson();
+
+        return view('nhom.thanh_vien.create', compact(
+            'nhom',
+            'nguoiDungs',
+            'nguoiDungJson'
+        ));
     }
 
     public function store(Request $request, int $idNhom)
@@ -123,11 +139,11 @@ class NhomThanhVienController extends Controller
 
         $request->validate([
             'idNguoiDung' => 'required|exists:NguoiDung,idNguoiDung',
-            'vaiTro' => 'required|string|max:255',
+            'vaiTro' => 'nullable|string|max:255',
         ], [
-            'idNguoiDung.required' => 'Vui lòng chọn người dùng.',
+            'idNguoiDung.required' => 'Vui lòng chọn người dùng hợp lệ từ danh sách gợi ý.',
             'idNguoiDung.exists' => 'Người dùng không hợp lệ.',
-            'vaiTro.required' => 'Vui lòng chọn vai trò trong nhóm.',
+            'vaiTro.max' => 'Vai trò trong nhóm không được vượt quá 255 ký tự.',
         ]);
 
         $daTonTai = ThanhVienNhom::where('idNhom', $idNhom)
@@ -140,17 +156,24 @@ class NhomThanhVienController extends Controller
                 ->with('error', 'Người dùng này đã là thành viên của nhóm.');
         }
 
-        // Không cho thêm một nhóm trưởng thứ hai bằng form này
-        if ($request->vaiTro == 'Nhóm trưởng') {
+        $vaiTroNhap = trim($request->vaiTro ?? '');
+
+        if ($vaiTroNhap == '') {
+            $vaiTroNhap = 'Thành viên';
+        }
+
+        $vaiTroKiemTra = mb_strtolower($vaiTroNhap, 'UTF-8');
+
+        if ($vaiTroKiemTra == 'nhóm trưởng' || $vaiTroKiemTra == 'nhom truong') {
             return back()
                 ->withInput()
-                ->with('error', 'Nhóm trưởng được quản lý qua thông tin nhóm, không thêm tại đây.');
+                ->with('error', 'Không thể thêm thành viên với vai trò Nhóm trưởng tại đây. Nếu muốn chuyển nhượng nhóm trưởng, vui lòng vào phần Sửa thông tin nhóm.');
         }
 
         ThanhVienNhom::create([
             'idNhom' => $idNhom,
             'idNguoiDung' => $request->idNguoiDung,
-            'vaiTro' => $request->vaiTro,
+            'vaiTro' => $vaiTroNhap,
             'ngayThamGia' => now(),
         ]);
 
