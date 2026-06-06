@@ -57,7 +57,9 @@
 
         <tbody>
           @forelse ($danhMucHangs as $danhMucHang)
-            <tr>
+            <tr class="clickable-row"
+              data-href="{{ url('/admin/danh-muc-hang/' . $danhMucHang->idDanhMucHang . '/hang-hoa') }}"
+              style="cursor: pointer;">
               <td class="text-center">{{ $danhMucHang->idDanhMucHang }}</td>
 
               <td class="fw-medium">
@@ -96,4 +98,22 @@
     </div>
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.clickable-row').forEach(function (row) {
+      row.addEventListener('click', function (e) {
+        if (e.target.closest('a') || e.target.closest('button') || e.target.closest('form')) {
+          return;
+        }
+
+        const href = row.getAttribute('data-href');
+
+        if (href) {
+          window.location.href = href;
+        }
+      });
+    });
+  });
+</script>
 @endsection

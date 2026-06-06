@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             DiaDiemSeeder::class,
             ThienTaiSeeder::class,
             DanhMucHangSeeder::class,
+            HangHoaSeeder::class,
             TaiKhoanAdminSeeder::class,
         ]);
     }

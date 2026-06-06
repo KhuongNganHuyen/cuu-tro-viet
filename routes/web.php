@@ -7,6 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DiaDiemController;
 use App\Http\Controllers\ThienTaiController;
 use App\Http\Controllers\DanhMucHangController;
+use App\Http\Controllers\HangHoaController;
 use App\Http\Controllers\NguoiDungController;
 use App\Http\Controllers\NhomTinhNguyenController;
 use App\Http\Controllers\ThanhVienNhomController;
@@ -16,9 +17,11 @@ use App\Http\Controllers\TiepNhanYeuCauController;
 
 use App\Http\Controllers\User\UserDashboardController;
 use App\Http\Controllers\User\UserNhomController;
+use App\Http\Controllers\User\UserDongGopController;
 
 use App\Http\Controllers\Nhom\NhomDashboardController;
 use App\Http\Controllers\Nhom\NhomThanhVienController;
+use App\Http\Controllers\Nhom\NhomChienDichController;
 
 /*
 |--------------------------------------------------------------------------
@@ -63,6 +66,13 @@ Route::get('/admin/dashboard', function () {
 Route::resource('/admin/dia-diem', DiaDiemController::class);
 Route::resource('/admin/thien-tai', ThienTaiController::class);
 Route::resource('/admin/danh-muc-hang', DanhMucHangController::class);
+Route::get('/admin/danh-muc-hang/{idDanhMucHang}/hang-hoa', [HangHoaController::class, 'index']);
+Route::get('/admin/danh-muc-hang/{idDanhMucHang}/hang-hoa/create', [HangHoaController::class, 'create']);
+Route::post('/admin/danh-muc-hang/{idDanhMucHang}/hang-hoa', [HangHoaController::class, 'store']);
+
+Route::get('/admin/hang-hoa/{idHangHoa}/edit', [HangHoaController::class, 'edit']);
+Route::put('/admin/hang-hoa/{idHangHoa}', [HangHoaController::class, 'update']);
+Route::patch('/admin/hang-hoa/{idHangHoa}/doi-trang-thai', [HangHoaController::class, 'doiTrangThai']);
 
 /*
 |--------------------------------------------------------------------------
@@ -137,15 +147,30 @@ Route::get('/user/nhom-cua-toi', [UserNhomController::class, 'index']);
 Route::get('/user/nhom-cua-toi/create', [UserNhomController::class, 'create']);
 Route::post('/user/nhom-cua-toi', [UserNhomController::class, 'store']);
 Route::get('/user/nhom-cua-toi/{id}', [UserNhomController::class, 'show']);
+Route::get('/user/dong-gop', [UserDongGopController::class, 'index']);
+Route::get('/user/dong-gop/create', [UserDongGopController::class, 'create']);
+Route::post('/user/dong-gop', [UserDongGopController::class, 'store']);
 
 /*
 |--------------------------------------------------------------------------
-| Nhom - Nhóm tình nguyện / Nhóm trưởng
+| Nhom - Nhóm tình nguyện
 |--------------------------------------------------------------------------
 */
 
 Route::get('/nhom/{idNhom}/dashboard', [NhomDashboardController::class, 'index']);
+
 Route::get('/nhom/{idNhom}/thanh-vien', [NhomThanhVienController::class, 'index']);
 Route::get('/nhom/{idNhom}/thanh-vien/create', [NhomThanhVienController::class, 'create']);
 Route::post('/nhom/{idNhom}/thanh-vien', [NhomThanhVienController::class, 'store']);
 Route::delete('/nhom/{idNhom}/thanh-vien/{idThanhVien}', [NhomThanhVienController::class, 'destroy']);
+
+Route::get('/nhom/{idNhom}/chien-dich', [NhomChienDichController::class, 'index']);
+Route::get('/nhom/{idNhom}/chien-dich/create', [NhomChienDichController::class, 'create']);
+Route::post('/nhom/{idNhom}/chien-dich', [NhomChienDichController::class, 'store']);
+Route::get('/nhom/{idNhom}/chien-dich/{idChienDich}', [NhomChienDichController::class, 'show']);
+Route::get('/nhom/{idNhom}/chien-dich/{idChienDich}/edit', [NhomChienDichController::class, 'edit']);
+Route::put('/nhom/{idNhom}/chien-dich/{idChienDich}', [NhomChienDichController::class, 'update']);
+Route::get('/nhom/{idNhom}/chien-dich/{idChienDich}/cap-nhat/create', [NhomChienDichController::class, 'createCapNhat']);
+Route::post('/nhom/{idNhom}/chien-dich/{idChienDich}/cap-nhat', [NhomChienDichController::class, 'storeCapNhat']);
+Route::patch('/nhom/{idNhom}/chien-dich/{idChienDich}/dong-gop/{idChiTietDongGop}/xac-nhan', [NhomChienDichController::class, 'xacNhanChiTietDongGop']);
+Route::patch('/nhom/{idNhom}/chien-dich/{idChienDich}/dong-gop/{idChiTietDongGop}/tu-choi', [NhomChienDichController::class, 'tuChoiChiTietDongGop']);
