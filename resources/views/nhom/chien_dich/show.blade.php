@@ -190,6 +190,13 @@
       </li>
 
       <li class="nav-item" role="presentation">
+        <button class="nav-link" id="yeu-cau-tab" data-bs-toggle="tab" data-bs-target="#yeu-cau"
+          type="button" role="tab">
+          Yêu cầu cứu trợ
+        </button>
+      </li>
+
+      <li class="nav-item" role="presentation">
         <button class="nav-link" id="dong-gop-tab" data-bs-toggle="tab" data-bs-target="#dong-gop"
           type="button" role="tab">
           Đóng góp
@@ -261,6 +268,97 @@
             Chưa có cập nhật tiến độ cho chiến dịch này.
           </div>
         @endforelse
+      </div>
+
+      <div class="tab-pane fade" id="yeu-cau" role="tabpanel">
+        <div class="mb-3">
+          <h5 class="mb-0">Yêu cầu cứu trợ thuộc chiến dịch</h5>
+          <small class="text-muted">
+            Danh sách các yêu cầu đã được nhóm tiếp nhận và gắn vào chiến dịch này.
+          </small>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr class="text-uppercase text-center">
+                <th style="width: 90px;">Mã</th>
+                <th class="text-start">Thông tin yêu cầu</th>
+                <th style="width: 120px;">Số hộ</th>
+                <th style="width: 140px;">Mức độ</th>
+                <th style="width: 150px;">Trạng thái</th>
+                <th style="width: 180px;">Dự kiến hỗ trợ</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @forelse ($tiepNhanYeuCaus as $tiepNhan)
+                <tr class="clickable-row"
+                    data-href="{{ url('/nhom/' . $nhom->idNhom . '/yeu-cau-cuu-tro/' . $tiepNhan->idYeuCau) }}"
+                    style="cursor: pointer;">
+                  <td class="text-center">
+                    {{ $tiepNhan->yeuCau->idYeuCau ?? '-' }}
+                  </td>
+
+                  <td>
+                    <div class="fw-semibold">
+                      {{ $tiepNhan->yeuCau->loaiYeuCau ?? '-' }}
+                    </div>
+
+                    <small class="text-muted">
+                      Người gửi: {{ $tiepNhan->yeuCau->nguoiGui->hoTen ?? '-' }}
+                    </small>
+
+                    <br>
+
+                    <small class="text-muted">
+                      {{ $tiepNhan->yeuCau->diaDiem->chiTietDiaDiem ?? '' }},
+                      {{ $tiepNhan->yeuCau->diaDiem->phuongXa ?? '' }},
+                      {{ $tiepNhan->yeuCau->diaDiem->tinhThanh ?? '' }}
+                    </small>
+
+                    @if ($tiepNhan->noiDungDamNhan)
+                      <div class="mt-1">
+                        <small>
+                          <strong>Nội dung đảm nhận:</strong>
+                          {{ $tiepNhan->noiDungDamNhan }}
+                        </small>
+                      </div>
+                    @endif
+                  </td>
+
+                  <td class="text-center">
+                    {{ $tiepNhan->yeuCau->soHoDan ?? '-' }}
+                  </td>
+
+                  <td class="text-center">
+                    @if (($tiepNhan->yeuCau->mucDoKhanCap ?? '') == 'Khẩn cấp')
+                      <span class="text-danger fw-semibold">Khẩn cấp</span>
+                    @elseif (($tiepNhan->yeuCau->mucDoKhanCap ?? '') == 'Cao')
+                      <span class="text-warning fw-semibold">Cao</span>
+                    @else
+                      {{ $tiepNhan->yeuCau->mucDoKhanCap ?? '-' }}
+                    @endif
+                  </td>
+
+                  <td class="text-center">
+                    {{ $tiepNhan->trangThai ?? '-' }}
+                  </td>
+
+                  <td class="text-center">
+                    {{ $tiepNhan->thoiGianDuKienHoTro ?? '-' }}
+                  </td>
+                </tr>
+              @empty
+                <tr>
+                  <td colspan="6" class="text-center text-muted py-4">
+                    Chưa có yêu cầu cứu trợ nào được gắn vào chiến dịch này.
+                  </td>
+                </tr>
+              @endforelse
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div class="tab-pane fade" id="dong-gop" role="tabpanel">
@@ -455,11 +553,119 @@
       </div>
 
       <div class="tab-pane fade" id="phan-phoi" role="tabpanel">
-        <div class="text-center text-muted py-4">
-          Chưa có dữ liệu phân phối cho chiến dịch này.
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h5 class="mb-0">Đợt phân phối</h5>
+            <small class="text-muted">
+              Danh sách các đợt phân phối hàng cứu trợ từ nguồn lực chiến dịch.
+            </small>
+          </div>
+
+          <a href="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich/' . $chienDich->idChienDich . '/phan-phoi/create') }}"
+            class="btn btn-primary">
+            Tạo đợt phân phối
+          </a>
         </div>
+
+        @forelse ($dotPhanPhois as $dotPhanPhoi)
+          <div class="border rounded p-3 mb-3">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <div class="fw-semibold">
+                  Đợt phân phối #{{ $dotPhanPhoi->idDotPhanPhoi }}
+                </div>
+
+                <small class="text-muted">
+                  Ngày phân phối: {{ $dotPhanPhoi->ngayPhanPhoi ?? '-' }}
+                </small>
+              </div>
+
+              <div class="text-end">
+                <span>{{ $dotPhanPhoi->trangThai ?? '-' }}</span>
+              </div>
+            </div>
+
+            @if ($dotPhanPhoi->ghiChu)
+              <p class="mb-2">
+                <strong>Ghi chú:</strong> {{ $dotPhanPhoi->ghiChu }}
+              </p>
+            @endif
+
+            <div class="table-responsive">
+              <table class="table table-sm table-bordered mb-0">
+                <thead>
+                  <tr class="text-center">
+                    <th class="text-start">Nguồn lực</th>
+                    <th style="width: 130px;">Số lượng giao</th>
+                    <th class="text-start">Yêu cầu nhận hỗ trợ</th>
+                    <th style="width: 160px;">Người nhận</th>
+                    <th style="width: 140px;">Trạng thái</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  @foreach ($dotPhanPhoi->chiTietPhanPhois as $chiTiet)
+                    <tr>
+                      <td>
+                        {{ $chiTiet->nguonLuc->hangHoa->tenHangHoa ?? '-' }}
+                        @if ($chiTiet->nguonLuc?->hangHoa?->donViTinh)
+                          <small class="text-muted">
+                            ({{ $chiTiet->nguonLuc->hangHoa->donViTinh }})
+                          </small>
+                        @endif
+                      </td>
+
+                      <td class="text-center">
+                        {{ $chiTiet->soLuongGiao }}
+                      </td>
+
+                      <td>
+                        #{{ $chiTiet->tiepNhan->yeuCau->idYeuCau ?? '-' }}
+                        - {{ $chiTiet->tiepNhan->yeuCau->loaiYeuCau ?? '-' }}
+
+                        <br>
+
+                        <small class="text-muted">
+                          {{ $chiTiet->tiepNhan->yeuCau->diaDiem->chiTietDiaDiem ?? '' }},
+                          {{ $chiTiet->tiepNhan->yeuCau->diaDiem->phuongXa ?? '' }},
+                          {{ $chiTiet->tiepNhan->yeuCau->diaDiem->tinhThanh ?? '' }}
+                        </small>
+                      </td>
+
+                      <td class="text-center">
+                        {{ $chiTiet->nguoiNhan ?? '-' }}
+                      </td>
+
+                      <td class="text-center">
+                        {{ $chiTiet->trangThai ?? '-' }}
+                      </td>
+                    </tr>
+                  @endforeach
+                </tbody>
+              </table>
+            </div>
+          </div>
+        @empty
+          <div class="text-center text-muted py-4">
+            Chưa có đợt phân phối nào cho chiến dịch này.
+          </div>
+        @endforelse
       </div>
     </div>
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.clickable-row').forEach(function (row) {
+      row.addEventListener('click', function () {
+        const href = row.getAttribute('data-href');
+
+        if (href) {
+          window.location.href = href;
+        }
+      });
+    });
+  });
+</script>
 @endsection

@@ -12,7 +12,11 @@ use App\Models\CapNhatChienDich;
 use App\Models\DongGop;
 use App\Models\ChiTietDongGop;
 use App\Models\NguonLucChienDich;
+use App\Models\TiepNhanYeuCau;
 use Illuminate\Http\Request;
+use App\Models\DotPhanPhoi;
+use App\Models\ChiTietPhanPhoi;
+use Illuminate\Support\Facades\DB;
 
 class NhomChienDichController extends Controller
 {
@@ -253,6 +257,26 @@ class NhomChienDichController extends Controller
             ->where('idChienDich', $idChienDich)
             ->orderBy('idNguonLuc', 'desc')
             ->get();
+        
+        $tiepNhanYeuCaus = TiepNhanYeuCau::with([
+                'yeuCau.nguoiGui',
+                'yeuCau.diaDiem',
+                'nhom'
+            ])
+            ->where('idChienDich', $idChienDich)
+            ->where('idNhom', $idNhom)
+            ->orderBy('idTiepNhan', 'desc')
+            ->get();
+
+        $dotPhanPhois = DotPhanPhoi::with([
+                'chiTietPhanPhois.nguonLuc.hangHoa',
+                'chiTietPhanPhois.diaDiem',
+                'chiTietPhanPhois.tiepNhan.yeuCau.nguoiGui',
+                'chiTietPhanPhois.tiepNhan.yeuCau.diaDiem',
+            ])
+            ->where('idChienDich', $idChienDich)
+            ->orderBy('idDotPhanPhoi', 'desc')
+            ->get();
             
         return view('nhom.chien_dich.show', compact(
             'nhom',
@@ -260,7 +284,9 @@ class NhomChienDichController extends Controller
             'laNhomTruong',
             'capNhats',
             'dongGops',
-            'nguonLucs'
+            'nguonLucs',
+            'tiepNhanYeuCaus',
+            'dotPhanPhois'
         ));
     }
 
@@ -569,5 +595,132 @@ class NhomChienDichController extends Controller
         ]);
 
         return back()->with('success', 'Đã từ chối chi tiết đóng góp.');
+    }
+
+    public function createDotPhanPhoi(int $idNhom, int $idChienDich)
+    {
+        $kiemTra = $this->kiemTraThanhVien($idNhom);
+
+        if (!$kiemTra['hopLe']) {
+            return $kiemTra['redirect'];
+        }
+
+        $nhom = $kiemTra['nhom'];
+        $laNhomTruong = $kiemTra['laNhomTruong'];
+
+        $chienDich = ChienDichCuuTro::where('idNhom', $idNhom)
+            ->where('idChienDich', $idChienDich)
+            ->firstOrFail();
+
+        $tiepNhanYeuCaus = TiepNhanYeuCau::with(['yeuCau.nguoiGui', 'yeuCau.diaDiem'])
+            ->where('idChienDich', $idChienDich)
+            ->where('idNhom', $idNhom)
+            ->orderBy('idTiepNhan', 'desc')
+            ->get();
+
+        $nguonLucs = NguonLucChienDich::with('hangHoa')
+            ->where('idChienDich', $idChienDich)
+            ->where('soLuongHienCo', '>', 0)
+            ->orderBy('idNguonLuc', 'desc')
+            ->get();
+
+        return view('nhom.chien_dich.phan_phoi_create', compact(
+            'nhom',
+            'chienDich',
+            'laNhomTruong',
+            'tiepNhanYeuCaus',
+            'nguonLucs'
+        ));
+    }
+
+    public function storeDotPhanPhoi(Request $request, int $idNhom, int $idChienDich)
+    {
+        $kiemTra = $this->kiemTraThanhVien($idNhom);
+
+        if (!$kiemTra['hopLe']) {
+            return $kiemTra['redirect'];
+        }
+
+        $chienDich = ChienDichCuuTro::where('idNhom', $idNhom)
+            ->where('idChienDich', $idChienDich)
+            ->firstOrFail();
+
+        $request->validate([
+            'idTiepNhan' => 'required|exists:TiepNhanYeuCau,idTiepNhan',
+            'ngayPhanPhoi' => 'required|date',
+            'nguoiNhan' => 'nullable|string|max:255',
+            'ghiChu' => 'nullable|string',
+
+            'idNguonLuc' => 'required|array|min:1',
+            'idNguonLuc.*' => 'required|exists:NguonLucChienDich,idNguonLuc',
+
+            'soLuongGiao' => 'required|array|min:1',
+            'soLuongGiao.*' => 'required|numeric|min:1',
+        ], [
+            'idTiepNhan.required' => 'Vui lòng chọn yêu cầu cứu trợ cần phân phối.',
+            'ngayPhanPhoi.required' => 'Vui lòng chọn ngày phân phối.',
+            'idNguonLuc.required' => 'Vui lòng chọn ít nhất một nguồn lực.',
+            'soLuongGiao.*.required' => 'Vui lòng nhập số lượng giao.',
+            'soLuongGiao.*.min' => 'Số lượng giao phải lớn hơn 0.',
+        ]);
+
+        $tiepNhan = TiepNhanYeuCau::with('yeuCau.diaDiem')
+            ->where('idTiepNhan', $request->idTiepNhan)
+            ->where('idChienDich', $idChienDich)
+            ->where('idNhom', $idNhom)
+            ->firstOrFail();
+
+        DB::transaction(function () use ($request, $chienDich, $tiepNhan) {
+            $dotPhanPhoi = DotPhanPhoi::create([
+                'idChienDich' => $chienDich->idChienDich,
+                'ngayPhanPhoi' => $request->ngayPhanPhoi,
+                'trangThai' => 'Đã phân phối',
+                'ghiChu' => $request->ghiChu,
+            ]);
+
+            foreach ($request->idNguonLuc as $index => $idNguonLuc) {
+                $soLuongGiao = (float) $request->soLuongGiao[$index];
+
+                $nguonLuc = NguonLucChienDich::where('idChienDich', $chienDich->idChienDich)
+                    ->where('idNguonLuc', $idNguonLuc)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                if ($soLuongGiao > $nguonLuc->soLuongHienCo) {
+                    throw new \Exception('Số lượng giao không được lớn hơn số lượng hiện có của nguồn lực.');
+                }
+
+                ChiTietPhanPhoi::create([
+                    'idDotPhanPhoi' => $dotPhanPhoi->idDotPhanPhoi,
+                    'idNguonLuc' => $nguonLuc->idNguonLuc,
+                    'idDiaDiem' => $tiepNhan->yeuCau->idDiaDiem,
+                    'idTiepNhan' => $tiepNhan->idTiepNhan,
+                    'nguoiNhan' => $request->nguoiNhan,
+                    'soLuongGiao' => $soLuongGiao,
+                    'hinhAnh' => null,
+                    'thoiGianGiao' => $request->ngayPhanPhoi,
+                    'trangThai' => 'Đã giao',
+                ]);
+
+                $soLuongConLai = $nguonLuc->soLuongHienCo - $soLuongGiao;
+
+                $nguonLuc->update([
+                    'soLuongHienCo' => $soLuongConLai,
+                    'trangThai' => $soLuongConLai > 0 ? 'Còn hàng' : 'Hết hàng',
+                    'ngayCapNhat' => now(),
+                ]);
+            }
+
+            $tiepNhan->update([
+                'trangThai' => 'Đang hỗ trợ',
+            ]);
+
+            $tiepNhan->yeuCau->update([
+                'trangThai' => 'Đang hỗ trợ',
+            ]);
+        });
+
+        return redirect('/nhom/' . $idNhom . '/chien-dich/' . $idChienDich)
+            ->with('success', 'Tạo đợt phân phối và trừ nguồn lực thành công.');
     }
 }

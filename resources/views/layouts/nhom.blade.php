@@ -81,9 +81,9 @@
           </li>
 
           <li class="pc-item">
-            <a href="{{ url('/nhom/' . $idNhomLayout . '/yeu-cau') }}" class="pc-link">
+            <a href="{{ url('/nhom/' . request()->route('idNhom') . '/yeu-cau-cuu-tro') }}" class="pc-link">
               <span class="pc-micon"><i class="ti ti-alert-circle"></i></span>
-              <span class="pc-mtext">Yêu cầu tiếp nhận</span>
+              <span class="pc-mtext">Yêu cầu cứu trợ</span>
             </a>
           </li>
 

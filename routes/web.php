@@ -18,10 +18,12 @@ use App\Http\Controllers\TiepNhanYeuCauController;
 use App\Http\Controllers\User\UserDashboardController;
 use App\Http\Controllers\User\UserNhomController;
 use App\Http\Controllers\User\UserDongGopController;
+use App\Http\Controllers\User\UserYeuCauCuuTroController;
 
 use App\Http\Controllers\Nhom\NhomDashboardController;
 use App\Http\Controllers\Nhom\NhomThanhVienController;
 use App\Http\Controllers\Nhom\NhomChienDichController;
+use App\Http\Controllers\Nhom\NhomYeuCauCuuTroController;
 
 /*
 |--------------------------------------------------------------------------
@@ -151,6 +153,11 @@ Route::get('/user/dong-gop', [UserDongGopController::class, 'index']);
 Route::get('/user/dong-gop/create', [UserDongGopController::class, 'create']);
 Route::post('/user/dong-gop', [UserDongGopController::class, 'store']);
 
+Route::get('/user/yeu-cau-cuu-tro', [UserYeuCauCuuTroController::class, 'index']);
+Route::get('/user/yeu-cau-cuu-tro/create', [UserYeuCauCuuTroController::class, 'create']);
+Route::post('/user/yeu-cau-cuu-tro', [UserYeuCauCuuTroController::class, 'store']);
+Route::get('/user/yeu-cau-cuu-tro/{idYeuCau}', [UserYeuCauCuuTroController::class, 'show']);
+
 /*
 |--------------------------------------------------------------------------
 | Nhom - Nhóm tình nguyện
@@ -174,3 +181,16 @@ Route::get('/nhom/{idNhom}/chien-dich/{idChienDich}/cap-nhat/create', [NhomChien
 Route::post('/nhom/{idNhom}/chien-dich/{idChienDich}/cap-nhat', [NhomChienDichController::class, 'storeCapNhat']);
 Route::patch('/nhom/{idNhom}/chien-dich/{idChienDich}/dong-gop/{idChiTietDongGop}/xac-nhan', [NhomChienDichController::class, 'xacNhanChiTietDongGop']);
 Route::patch('/nhom/{idNhom}/chien-dich/{idChienDich}/dong-gop/{idChiTietDongGop}/tu-choi', [NhomChienDichController::class, 'tuChoiChiTietDongGop']);
+Route::get('/nhom/{idNhom}/yeu-cau-cuu-tro', [NhomYeuCauCuuTroController::class, 'index']);
+
+Route::get('/nhom/{idNhom}/yeu-cau-cuu-tro/{idYeuCau}', [NhomYeuCauCuuTroController::class, 'show']);
+
+Route::get('/nhom/{idNhom}/yeu-cau-cuu-tro/{idYeuCau}/tiep-nhan', [NhomYeuCauCuuTroController::class, 'createTiepNhan']);
+
+Route::post('/nhom/{idNhom}/yeu-cau-cuu-tro/{idYeuCau}/tiep-nhan', [NhomYeuCauCuuTroController::class, 'storeTiepNhan']);
+Route::get('/nhom/{idNhom}/yeu-cau-cuu-tro/{idYeuCau}/tao-chien-dich', [NhomYeuCauCuuTroController::class, 'createChienDichTuYeuCau']);
+
+Route::post('/nhom/{idNhom}/yeu-cau-cuu-tro/{idYeuCau}/tao-chien-dich', [NhomYeuCauCuuTroController::class, 'storeChienDichTuYeuCau']);
+Route::get('/nhom/{idNhom}/chien-dich/{idChienDich}/phan-phoi/create', [NhomChienDichController::class, 'createDotPhanPhoi']);
+
+Route::post('/nhom/{idNhom}/chien-dich/{idChienDich}/phan-phoi', [NhomChienDichController::class, 'storeDotPhanPhoi']);
