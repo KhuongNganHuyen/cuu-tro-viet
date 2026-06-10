@@ -40,14 +40,16 @@ class UserDongGopController extends Controller
             return redirect('/login')->with('error', 'Vui lòng đăng nhập để tiếp tục.');
         }
 
-        $chienDichs = ChienDichCuuTro::with(['nhom', 'thienTai', 'diaDiem'])
+        $chienDichs = ChienDichCuuTro::with(['nhom', 'suKien', 'diaDiem'])
             ->where('trangThai', 'Đang hoạt động')
             ->orderBy('idChienDich', 'desc')
             ->get();
 
         $hangHoas = HangHoa::with('danhMucHang')
-            ->where('trangThai', 'Đang sử dụng')
-            ->orWhere('trangThai', 'Hoạt động')
+            ->where(function ($query) {
+                $query->where('trangThai', 'Đang sử dụng')
+                    ->orWhere('trangThai', 'Hoạt động');
+            })
             ->orderBy('tenHangHoa')
             ->get();
 

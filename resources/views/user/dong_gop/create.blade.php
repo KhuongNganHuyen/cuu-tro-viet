@@ -41,8 +41,15 @@
   </div>
 @endif
 
-<form action="{{ url('/user/dong-gop') }}" method="POST">
+<form action="{{ url('/user/dong-gop') }}"
+      method="POST"
+      onsubmit="return confirm('Bạn hãy kiểm tra kỹ thông tin trước khi gửi. Sau khi gửi đăng ký đóng góp, bạn sẽ không thể tự chỉnh sửa nội dung này. Bạn chắc chắn muốn gửi đăng ký đóng góp không?')">
   @csrf
+
+  <div class="alert alert-warning">
+    <strong>Lưu ý:</strong> Sau khi gửi đăng ký đóng góp, bạn sẽ không thể tự chỉnh sửa nội dung đã gửi.
+    Vui lòng kiểm tra kỹ chiến dịch, hàng hóa, số lượng, hạn sử dụng và ghi chú trước khi bấm gửi.
+  </div>
 
   <div class="card mb-3">
     <div class="card-header">
@@ -59,6 +66,7 @@
             <option value="{{ $chienDich->idChienDich }}"
               {{ old('idChienDich') == $chienDich->idChienDich ? 'selected' : '' }}>
               {{ $chienDich->tenChienDich }}
+              - {{ $chienDich->suKien->tenSuKien ?? 'Sự kiện chưa rõ' }}
               - {{ $chienDich->nhom->tenNhom ?? 'Nhóm chưa rõ' }}
             </option>
           @endforeach
