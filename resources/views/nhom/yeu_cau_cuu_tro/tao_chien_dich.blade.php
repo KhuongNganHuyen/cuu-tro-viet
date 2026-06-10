@@ -50,8 +50,8 @@
 
       <div class="card-body">
         <p>
-          <strong>Loại yêu cầu:</strong><br>
-          {{ $yeuCau->loaiYeuCau }}
+          <strong>Tiêu đề yêu cầu:</strong><br>
+          {{ $yeuCau->tieuDeYeuCau }}
         </p>
 
         <p>
@@ -60,8 +60,8 @@
         </p>
 
         <p>
-          <strong>Số hộ dân:</strong>
-          {{ $yeuCau->soHoDan ?? '-' }}
+          <strong>Số người:</strong>
+          {{ $yeuCau->soNguoi ?? '-' }}
         </p>
 
         <p>
@@ -99,13 +99,14 @@
           @csrf
 
           <div class="mb-3">
-            <label class="form-label">Thiên tai <span class="text-danger">*</span></label>
-            <select name="idThienTai" class="form-control">
-              <option value="">-- Chọn thiên tai --</option>
-              @foreach ($thienTais as $thienTai)
-                <option value="{{ $thienTai->idThienTai }}"
-                  {{ old('idThienTai') == $thienTai->idThienTai ? 'selected' : '' }}>
-                  {{ $thienTai->tenThienTai ?? ('Thiên tai #' . $thienTai->idThienTai) }}
+            <label class="form-label">Sự kiện cứu trợ <span class="text-danger">*</span></label>
+            <select name="idSuKien" class="form-control">
+              <option value="">-- Chọn sự kiện cứu trợ --</option>
+
+              @foreach ($suKiens as $suKien)
+                <option value="{{ $suKien->idSuKien }}"
+                  {{ old('idSuKien') == $suKien->idSuKien ? 'selected' : '' }}>
+                  {{ $suKien->tenSuKien }} - {{ $suKien->loaiSuKien }}
                 </option>
               @endforeach
             </select>
@@ -121,7 +122,7 @@
           <div class="mb-3">
             <label class="form-label">Mô tả chiến dịch</label>
             <textarea name="moTa" class="form-control" rows="4"
-              placeholder="Mô tả mục tiêu, phạm vi và nội dung hỗ trợ của chiến dịch.">{{ old('moTa', 'Chiến dịch được tạo dựa trên yêu cầu cứu trợ: ' . $yeuCau->loaiYeuCau . '. ' . $yeuCau->moTa) }}</textarea>
+              placeholder="Mô tả mục tiêu, phạm vi và nội dung hỗ trợ của chiến dịch.">{{ old('moTa', 'Chiến dịch được tạo dựa trên yêu cầu cứu trợ: ' . $yeuCau->tieuDeYeuCau . '. ' . $yeuCau->moTa) }}</textarea>
           </div>
 
           <div class="row">
@@ -141,11 +142,14 @@
           <div class="mb-3">
             <label class="form-label">Trạng thái chiến dịch <span class="text-danger">*</span></label>
             <select name="trangThaiChienDich" class="form-control">
-              <option value="Đang diễn ra" {{ old('trangThaiChienDich', 'Đang diễn ra') == 'Đang diễn ra' ? 'selected' : '' }}>
-                Đang diễn ra
+              <option value="Đang hoạt động" {{ old('trangThaiChienDich', 'Đang hoạt động') == 'Đang hoạt động' ? 'selected' : '' }}>
+                Đang hoạt động
               </option>
-              <option value="Sắp diễn ra" {{ old('trangThaiChienDich') == 'Sắp diễn ra' ? 'selected' : '' }}>
-                Sắp diễn ra
+              <option value="Tạm ngưng" {{ old('trangThaiChienDich') == 'Tạm ngưng' ? 'selected' : '' }}>
+                Tạm ngưng
+              </option>
+              <option value="Hoàn thành" {{ old('trangThaiChienDich') == 'Hoàn thành' ? 'selected' : '' }}>
+                Hoàn thành
               </option>
             </select>
           </div>
@@ -155,8 +159,8 @@
           <h6 class="mb-3">Thông tin tiếp nhận yêu cầu</h6>
 
           <div class="mb-3">
-            <label class="form-label">Thời gian dự kiến hỗ trợ</label>
-            <input type="datetime-local" name="thoiGianDuKienHoTro" class="form-control"
+            <label class="form-label">Ngày dự kiến hỗ trợ</label>
+            <input type="date" name="thoiGianDuKienHoTro" class="form-control"
               value="{{ old('thoiGianDuKienHoTro') }}">
           </div>
 
@@ -180,24 +184,28 @@
 
           <hr>
 
-          <h6 class="mb-3">Thông báo UBND</h6>
+          <h6 class="mb-3">Xác nhận cứu trợ</h6>
 
           <div class="mb-3">
-            <label class="form-label">Trạng thái thông báo UBND</label>
-                <select name="daThongBaoUBND" class="form-control">
-                <option value="0" {{ old('daThongBaoUBND', '0') == '0' ? 'selected' : '' }}>
-                    Chưa thông báo
-                </option>
-                <option value="1" {{ old('daThongBaoUBND') == '1' ? 'selected' : '' }}>
-                    Đã thông báo
-                </option>
-                </select>
+            <label class="form-label">Trạng thái xác nhận</label>
+            <select name="daXacNhanCuuTro" class="form-control">
+              <option value="0" {{ old('daXacNhanCuuTro', '0') == '0' ? 'selected' : '' }}>
+                Chưa xác nhận
+              </option>
+              <option value="1" {{ old('daXacNhanCuuTro') == '1' ? 'selected' : '' }}>
+                Đã xác nhận
+              </option>
+            </select>
+
+            <small class="text-muted">
+              Có thể là xác nhận từ địa phương, cơ sở tiếp nhận, hoặc trường hợp không cần xác nhận do hỗ trợ cá nhân trực tiếp.
+            </small>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Ghi chú UBND</label>
-            <textarea name="ghiChuUBND" class="form-control" rows="3"
-              placeholder="Nhập ghi chú nếu đã thông báo hoặc cần phối hợp với địa phương.">{{ old('ghiChuUBND') }}</textarea>
+            <label class="form-label">Ghi chú xác nhận</label>
+            <textarea name="ghiChuXacNhan" class="form-control" rows="3"
+              placeholder="Ví dụ: Đã thông báo UBND phường..., đã được cơ sở tiếp nhận xác nhận, hoặc không cần xác nhận do hỗ trợ cá nhân.">{{ old('ghiChuXacNhan') }}</textarea>
           </div>
 
           <div class="d-flex gap-2">

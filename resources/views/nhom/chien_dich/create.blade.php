@@ -65,65 +65,84 @@
     <div class="card-body">
       <div class="mb-3">
         <label class="form-label">Tên chiến dịch <span class="text-danger">*</span></label>
-        <input type="text" name="tenChienDich" class="form-control"
-          value="{{ old('tenChienDich') }}"
-          placeholder="Ví dụ: Cứu trợ mưa lũ Hòa Khánh">
+        <input type="text"
+               name="tenChienDich"
+               class="form-control"
+               value="{{ old('tenChienDich') }}"
+               placeholder="Ví dụ: Cứu trợ mưa lũ Hòa Khánh, Tặng áo ấm vùng cao">
       </div>
 
       <div class="mb-3">
-        <label class="form-label">Thiên tai <span class="text-danger">*</span></label>
-        <select name="idThienTai" class="form-control">
-          <option value="">-- Chọn thiên tai --</option>
+        <label class="form-label">Sự kiện cứu trợ <span class="text-danger">*</span></label>
+        <select name="idSuKien" class="form-control">
+          <option value="">-- Chọn sự kiện cứu trợ --</option>
 
-          @foreach ($thienTais as $thienTai)
-            <option value="{{ $thienTai->idThienTai }}"
-              {{ old('idThienTai') == $thienTai->idThienTai ? 'selected' : '' }}>
-              {{ $thienTai->tenThienTai }}
-              @if ($thienTai->namXayRa)
-                - {{ $thienTai->namXayRa }}
-              @endif
+          @foreach ($suKiens as $suKien)
+            <option value="{{ $suKien->idSuKien }}"
+              {{ old('idSuKien') == $suKien->idSuKien ? 'selected' : '' }}>
+              {{ $suKien->tenSuKien }} - {{ $suKien->loaiSuKien }}
             </option>
           @endforeach
         </select>
+
+        <small class="text-muted">
+          Sự kiện cứu trợ là chủ đề/bối cảnh chung, ví dụ: Bão lũ miền Trung, Hỗ trợ hộ nghèo, Hỗ trợ trẻ em khó khăn.
+        </small>
       </div>
 
       <div class="row">
         <div class="col-md-6 mb-3">
           <label class="form-label">Ngày bắt đầu</label>
-          <input type="date" name="ngayBatDau" class="form-control"
-            value="{{ old('ngayBatDau') }}">
+          <input type="date"
+                 name="ngayBatDau"
+                 class="form-control"
+                 value="{{ old('ngayBatDau') }}">
         </div>
 
         <div class="col-md-6 mb-3">
           <label class="form-label">Ngày kết thúc</label>
-          <input type="date" name="ngayKetThuc" class="form-control"
-            value="{{ old('ngayKetThuc') }}">
+          <input type="date"
+                 name="ngayKetThuc"
+                 class="form-control"
+                 value="{{ old('ngayKetThuc') }}">
         </div>
       </div>
 
       <div class="mb-3">
         <label class="form-label">Mô tả</label>
-        <textarea name="moTa" class="form-control" rows="4"
-          placeholder="Mô tả mục tiêu, phạm vi hỗ trợ hoặc tình hình thực tế của chiến dịch">{{ old('moTa') }}</textarea>
+        <textarea name="moTa"
+                  class="form-control"
+                  rows="4"
+                  placeholder="Mô tả mục tiêu, phạm vi hỗ trợ hoặc tình hình thực tế của chiến dịch">{{ old('moTa') }}</textarea>
       </div>
 
       <div class="mb-3">
-        <label class="form-label">Thông báo UBND</label>
+        <label class="form-label">Xác nhận cứu trợ</label>
 
         <div class="form-check">
-          <input type="checkbox" name="daThongBaoUBND" value="1" class="form-check-input" id="daThongBaoUBND"
-            {{ old('daThongBaoUBND') ? 'checked' : '' }}>
-          <label for="daThongBaoUBND" class="form-check-label">
-            Đã thông báo với UBND/xã phường liên quan
+          <input type="checkbox"
+                 name="daXacNhanCuuTro"
+                 value="1"
+                 class="form-check-input"
+                 id="daXacNhanCuuTro"
+                 {{ old('daXacNhanCuuTro') ? 'checked' : '' }}>
+
+          <label for="daXacNhanCuuTro" class="form-check-label">
+            Đã xác nhận hoạt động cứu trợ
           </label>
         </div>
+
+        <small class="text-muted">
+          Có thể là xác nhận từ địa phương, cơ sở tiếp nhận, hoặc trường hợp không cần xác nhận do hỗ trợ cá nhân trực tiếp.
+        </small>
       </div>
 
       <div class="mb-3">
-        <label class="form-label">Ghi chú UBND</label>
-        <input type="text" name="ghiChuUBND" class="form-control"
-          value="{{ old('ghiChuUBND') }}"
-          placeholder="Ví dụ: Đã báo UBND phường Hòa Khánh Bắc">
+        <label class="form-label">Ghi chú xác nhận</label>
+        <textarea name="ghiChuXacNhan"
+                  class="form-control"
+                  rows="3"
+                  placeholder="Ví dụ: Đã thông báo UBND phường..., đã được ban quản lý cơ sở xác nhận, hoặc không cần xác nhận do hỗ trợ cá nhân.">{{ old('ghiChuXacNhan') }}</textarea>
       </div>
     </div>
   </div>
@@ -134,8 +153,10 @@
     </div>
 
     <div class="card-body">
-      <input type="hidden" name="idDiaDiemCoSan" id="idDiaDiemCoSan"
-        value="{{ old('idDiaDiemCoSan') }}">
+      <input type="hidden"
+             name="idDiaDiemCoSan"
+             id="idDiaDiemCoSan"
+             value="{{ old('idDiaDiemCoSan') }}">
 
       <div class="row">
         <div class="col-md-6 mb-3">
@@ -162,10 +183,13 @@
       <div class="mb-3">
         <label class="form-label">Địa chỉ chi tiết <span class="text-danger">*</span></label>
 
-        <input type="text" name="chiTietDiaDiem" id="chiTietDiaDiem" class="form-control"
-          list="danhSachDiaDiem"
-          value="{{ old('chiTietDiaDiem') }}"
-          placeholder="Gõ địa chỉ chi tiết hoặc chọn địa điểm đã có">
+        <input type="text"
+               name="chiTietDiaDiem"
+               id="chiTietDiaDiem"
+               class="form-control"
+               list="danhSachDiaDiem"
+               value="{{ old('chiTietDiaDiem') }}"
+               placeholder="Gõ địa chỉ chi tiết hoặc chọn địa điểm đã có">
 
         <datalist id="danhSachDiaDiem"></datalist>
 
@@ -193,16 +217,22 @@
       <div class="row">
         <div class="col-md-6 mb-3">
           <label class="form-label">Vĩ độ</label>
-          <input type="text" name="viDo" id="viDo" class="form-control"
-            value="{{ old('viDo') }}"
-            readonly>
+          <input type="text"
+                 name="viDo"
+                 id="viDo"
+                 class="form-control"
+                 value="{{ old('viDo') }}"
+                 readonly>
         </div>
 
         <div class="col-md-6 mb-3">
           <label class="form-label">Kinh độ</label>
-          <input type="text" name="kinhDo" id="kinhDo" class="form-control"
-            value="{{ old('kinhDo') }}"
-            readonly>
+          <input type="text"
+                 name="kinhDo"
+                 id="kinhDo"
+                 class="form-control"
+                 value="{{ old('kinhDo') }}"
+                 readonly>
         </div>
       </div>
 
@@ -257,6 +287,31 @@
     const viDoInput = document.getElementById('viDo');
     const kinhDoInput = document.getElementById('kinhDo');
     const btnTimTrenBanDo = document.getElementById('btnTimTrenBanDo');
+
+    const defaultLat = parseFloat(viDoInput.value) || 16.047079;
+    const defaultLng = parseFloat(kinhDoInput.value) || 108.206230;
+
+    const map = L.map('chienDichDiaDiemMap').setView([defaultLat, defaultLng], 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    let marker = null;
+
+    function setLocation(lat, lng) {
+      viDoInput.value = lat.toFixed(7);
+      kinhDoInput.value = lng.toFixed(7);
+
+      if (marker) {
+        marker.setLatLng([lat, lng]);
+      } else {
+        marker = L.marker([lat, lng]).addTo(map);
+      }
+
+      map.setView([lat, lng], 16);
+    }
 
     function loadPhuongXa() {
       const tinhThanh = tinhThanhSelect.value;
@@ -359,31 +414,6 @@
         idDiaDiemCoSanInput.value = '';
       }
     });
-
-    const defaultLat = parseFloat(viDoInput.value) || 16.047079;
-    const defaultLng = parseFloat(kinhDoInput.value) || 108.206230;
-
-    const map = L.map('chienDichDiaDiemMap').setView([defaultLat, defaultLng], 12);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap'
-    }).addTo(map);
-
-    let marker = null;
-
-    function setLocation(lat, lng) {
-      viDoInput.value = lat.toFixed(7);
-      kinhDoInput.value = lng.toFixed(7);
-
-      if (marker) {
-        marker.setLatLng([lat, lng]);
-      } else {
-        marker = L.marker([lat, lng]).addTo(map);
-      }
-
-      map.setView([lat, lng], 16);
-    }
 
     if (viDoInput.value && kinhDoInput.value) {
       setLocation(defaultLat, defaultLng);

@@ -28,7 +28,7 @@
   <div class="col-md-8">
     <div class="card">
       <div class="card-header">
-        <h5 class="mb-0">{{ $yeuCau->loaiYeuCau }}</h5>
+        <h5 class="mb-0">{{ $yeuCau->tieuDeYeuCau }}</h5>
       </div>
 
       <div class="card-body">
@@ -43,8 +43,8 @@
         </p>
 
         <p>
-          <strong>Số hộ dân cần hỗ trợ:</strong>
-          {{ $yeuCau->soHoDan ?? '-' }}
+          <strong>Số người cần hỗ trợ:</strong>
+          {{ $yeuCau->soNguoi ?? '-' }}
         </p>
 
         <p>

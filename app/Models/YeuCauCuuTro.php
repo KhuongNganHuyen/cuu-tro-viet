@@ -14,9 +14,9 @@ class YeuCauCuuTro extends Model
     protected $fillable = [
         'idNguoiGui',
         'idDiaDiem',
-        'loaiYeuCau',
+        'tieuDeYeuCau',
         'moTa',
-        'soHoDan',
+        'soNguoi',
         'mucDoKhanCap',
         'hinhAnh',
         'trangThai',

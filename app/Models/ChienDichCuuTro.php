@@ -13,15 +13,15 @@ class ChienDichCuuTro extends Model
 
     protected $fillable = [
         'idNhom',
-        'idThienTai',
+        'idSuKien',
         'idDiaDiem',
         'tenChienDich',
         'moTa',
         'ngayTao',
         'ngayBatDau',
         'ngayKetThuc',
-        'daThongBaoUBND',
-        'ghiChuUBND',
+        'daXacNhanCuuTro',
+        'ghiChuXacNhan',
         'trangThai',
     ];
 
@@ -30,9 +30,9 @@ class ChienDichCuuTro extends Model
         return $this->belongsTo(NhomTinhNguyen::class, 'idNhom', 'idNhom');
     }
 
-    public function thienTai()
+    public function suKien()
     {
-        return $this->belongsTo(ThienTai::class, 'idThienTai', 'idThienTai');
+        return $this->belongsTo(SuKienCuuTro::class, 'idSuKien', 'idSuKien');
     }
 
     public function diaDiem()

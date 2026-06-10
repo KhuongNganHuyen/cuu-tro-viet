@@ -13,6 +13,7 @@ class HangHoa extends Model
 
     protected $fillable = [
         'idDanhMucHang',
+        'idNhom',
         'tenHangHoa',
         'donViTinh',
         'trangThai',
@@ -21,5 +22,10 @@ class HangHoa extends Model
     public function danhMucHang()
     {
         return $this->belongsTo(DanhMucHang::class, 'idDanhMucHang', 'idDanhMucHang');
+    }
+
+    public function nhom()
+    {
+        return $this->belongsTo(NhomTinhNguyen::class, 'idNhom', 'idNhom');
     }
 }

@@ -40,14 +40,22 @@
   </div>
 
   <div class="card-body">
-    <form action="{{ url('/user/yeu-cau-cuu-tro') }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ url('/user/yeu-cau-cuu-tro') }}"
+      method="POST"
+      enctype="multipart/form-data"
+      onsubmit="return confirm('Bạn hãy kiểm tra kỹ thông tin trước khi gửi. Sau khi gửi yêu cầu, bạn sẽ không thể tự chỉnh sửa nội dung này. Bạn chắc chắn muốn gửi yêu cầu cứu trợ không?')">
       @csrf
 
+      <div class="alert alert-warning">
+        <strong>Lưu ý:</strong> Sau khi gửi yêu cầu cứu trợ, bạn sẽ không thể tự chỉnh sửa nội dung đã gửi.
+        Vui lòng kiểm tra kỹ tiêu đề, mô tả, số người cần hỗ trợ, địa điểm và hình ảnh minh chứng trước khi bấm gửi.
+      </div>
+
       <div class="mb-3">
-        <label class="form-label">Loại yêu cầu <span class="text-danger">*</span></label>
-        <input type="text" name="loaiYeuCau" class="form-control"
-          value="{{ old('loaiYeuCau') }}"
-          placeholder="Ví dụ: Lương thực, nước uống, thuốc men, chỗ ở tạm">
+        <label class="form-label">Tiêu đề yêu cầu <span class="text-danger">*</span></label>
+        <input type="text" name="tieuDeYeuCau" class="form-control"
+          value="{{ old('tieuDeYeuCau') }}"
+          placeholder="Ví dụ: Cần hỗ trợ lương thực cho 5 người, Cần thuốc men và nước uống">
       </div>
 
       <div class="mb-3">
@@ -58,9 +66,9 @@
 
       <div class="row">
         <div class="col-md-6 mb-3">
-          <label class="form-label">Số hộ dân cần hỗ trợ</label>
-          <input type="number" name="soHoDan" class="form-control"
-            value="{{ old('soHoDan') }}"
+          <label class="form-label">Số người cần hỗ trợ</label>
+          <input type="number" name="soNguoi" class="form-control"
+            value="{{ old('soNguoi') }}"
             min="1"
             placeholder="Ví dụ: 5">
         </div>

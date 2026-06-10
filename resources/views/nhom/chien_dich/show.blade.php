@@ -40,179 +40,124 @@
   </div>
 @endif
 
-<div class="row">
-  <div class="col-lg-4">
-    <div class="card">
-      <div class="card-body text-center">
-        <h4 class="fw-bold mb-2">{{ $chienDich->tenChienDich }}</h4>
+<div class="card">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+      <div>
+        <h4 class="fw-bold mb-1">{{ $chienDich->tenChienDich }}</h4>
 
-        @if ($chienDich->trangThai == 'Đang hoạt động')
-          <span class="d-inline-flex align-items-center justify-content-center gap-2 mb-3">
-            <span class="rounded-circle bg-success d-inline-block" style="width: 8px; height: 8px;"></span>
-            {{ $chienDich->trangThai }}
+        <div class="d-flex flex-wrap align-items-center gap-3 text-muted">
+          <span>
+            Nhóm phụ trách: <strong class="text-body">{{ $nhom->tenNhom }}</strong>
           </span>
-        @elseif ($chienDich->trangThai == 'Hoàn thành')
-          <span class="d-inline-flex align-items-center justify-content-center gap-2 mb-3">
-            <span class="rounded-circle bg-primary d-inline-block" style="width: 8px; height: 8px;"></span>
-            {{ $chienDich->trangThai }}
+
+          <span>
+            Mã chiến dịch: <strong class="text-body">#{{ $chienDich->idChienDich }}</strong>
           </span>
-        @else
-          <span class="d-inline-flex align-items-center justify-content-center gap-2 mb-3">
-            <span class="rounded-circle bg-secondary d-inline-block" style="width: 8px; height: 8px;"></span>
-            {{ $chienDich->trangThai ?? '-' }}
+
+          <span>
+            @if ($chienDich->trangThai == 'Đang hoạt động')
+              <span class="d-inline-flex align-items-center gap-2">
+                <span class="rounded-circle bg-success d-inline-block" style="width: 8px; height: 8px;"></span>
+                {{ $chienDich->trangThai }}
+              </span>
+            @elseif ($chienDich->trangThai == 'Hoàn thành')
+              <span class="d-inline-flex align-items-center gap-2">
+                <span class="rounded-circle bg-primary d-inline-block" style="width: 8px; height: 8px;"></span>
+                {{ $chienDich->trangThai }}
+              </span>
+            @elseif ($chienDich->trangThai == 'Tạm ngưng')
+              <span class="d-inline-flex align-items-center gap-2">
+                <span class="rounded-circle bg-warning d-inline-block" style="width: 8px; height: 8px;"></span>
+                {{ $chienDich->trangThai }}
+              </span>
+            @else
+              <span class="d-inline-flex align-items-center gap-2">
+                <span class="rounded-circle bg-secondary d-inline-block" style="width: 8px; height: 8px;"></span>
+                {{ $chienDich->trangThai ?? '-' }}
+              </span>
+            @endif
           </span>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        @if ($laNhomTruong)
+          <a href="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich/' . $chienDich->idChienDich . '/edit') }}"
+             class="btn btn-warning">
+            Sửa thông tin
+          </a>
         @endif
 
-        <p class="text-muted">
-          {{ $chienDich->moTa ?? 'Chưa có mô tả cho chiến dịch này.' }}
-        </p>
-
-        <div class="d-grid gap-2">
-          @if ($laNhomTruong)
-            <a href="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich/' . $chienDich->idChienDich . '/edit') }}"
-              class="btn btn-warning">
-              Sửa thông tin
-            </a>
-          @endif
-
-          <a href="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich') }}" class="btn btn-secondary">
-            Quay lại danh sách
-          </a>
-        </div>
+        <a href="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich') }}" class="btn btn-secondary">
+          Quay lại
+        </a>
       </div>
     </div>
-  </div>
 
-  <div class="col-lg-8">
-    <div class="card">
-      <div class="card-header">
-        <h5 class="mb-0">Thông tin chiến dịch</h5>
-      </div>
-
-      <div class="card-body">
-        <div class="row mb-3">
-          <div class="col-md-4 text-muted">Mã chiến dịch</div>
-          <div class="col-md-8">{{ $chienDich->idChienDich }}</div>
-        </div>
-
-        <div class="row mb-3">
-          <div class="col-md-4 text-muted">Tên chiến dịch</div>
-          <div class="col-md-8">{{ $chienDich->tenChienDich }}</div>
-        </div>
-
-        <div class="row mb-3">
-          <div class="col-md-4 text-muted">Nhóm phụ trách</div>
-          <div class="col-md-8">{{ $nhom->tenNhom }}</div>
-        </div>
-
-        <div class="row mb-3">
-          <div class="col-md-4 text-muted">Thiên tai</div>
-          <div class="col-md-8">
-            @if ($chienDich->thienTai)
-              {{ $chienDich->thienTai->tenThienTai }}
-              @if ($chienDich->thienTai->namXayRa)
-                - {{ $chienDich->thienTai->namXayRa }}
-              @endif
-            @else
-              -
-            @endif
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <div class="col-md-4 text-muted">Địa điểm</div>
-          <div class="col-md-8">
-            @if ($chienDich->diaDiem)
-              @if ($chienDich->diaDiem->chiTietDiaDiem)
-                {{ $chienDich->diaDiem->chiTietDiaDiem }},
-              @endif
-
-              @if ($chienDich->diaDiem->phuongXa)
-                {{ $chienDich->diaDiem->phuongXa }},
-              @endif
-
-              {{ $chienDich->diaDiem->tinhThanh ?? '-' }}
-            @else
-              -
-            @endif
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <div class="col-md-4 text-muted">Ngày tạo</div>
-          <div class="col-md-8">{{ $chienDich->ngayTao ?? '-' }}</div>
-        </div>
-
-        <div class="row mb-3">
-          <div class="col-md-4 text-muted">Ngày bắt đầu</div>
-          <div class="col-md-8">{{ $chienDich->ngayBatDau ?? '-' }}</div>
-        </div>
-
-        <div class="row mb-3">
-          <div class="col-md-4 text-muted">Ngày kết thúc</div>
-          <div class="col-md-8">{{ $chienDich->ngayKetThuc ?? '-' }}</div>
-        </div>
-
-        <div class="row mb-3">
-          <div class="col-md-4 text-muted">Thông báo UBND</div>
-          <div class="col-md-8">
-            {{ $chienDich->daThongBaoUBND ? 'Đã thông báo' : 'Chưa thông báo' }}
-          </div>
-        </div>
-
-        <div class="row mb-3">
-          <div class="col-md-4 text-muted">Ghi chú UBND</div>
-          <div class="col-md-8">{{ $chienDich->ghiChuUBND ?? '-' }}</div>
-        </div>
-
-        <div class="row mb-3">
-          <div class="col-md-4 text-muted">Trạng thái</div>
-          <div class="col-md-8">{{ $chienDich->trangThai ?? '-' }}</div>
-        </div>
-
-        <div class="row">
-          <div class="col-md-4 text-muted">Mô tả</div>
-          <div class="col-md-8">{{ $chienDich->moTa ?? '-' }}</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="card mt-3">
-  <div class="card-header">
     <ul class="nav nav-tabs card-header-tabs" id="chienDichTabs" role="tablist">
       <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="cap-nhat-tab" data-bs-toggle="tab" data-bs-target="#cap-nhat"
-          type="button" role="tab">
+        <button class="nav-link active"
+                id="thong-tin-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#thong-tin"
+                type="button"
+                role="tab">
+          Thông tin chiến dịch
+        </button>
+      </li>
+
+      <li class="nav-item" role="presentation">
+        <button class="nav-link"
+                id="cap-nhat-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#cap-nhat"
+                type="button"
+                role="tab">
           Cập nhật tiến độ
         </button>
       </li>
 
       <li class="nav-item" role="presentation">
-        <button class="nav-link" id="yeu-cau-tab" data-bs-toggle="tab" data-bs-target="#yeu-cau"
-          type="button" role="tab">
+        <button class="nav-link"
+                id="yeu-cau-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#yeu-cau"
+                type="button"
+                role="tab">
           Yêu cầu cứu trợ
         </button>
       </li>
 
       <li class="nav-item" role="presentation">
-        <button class="nav-link" id="dong-gop-tab" data-bs-toggle="tab" data-bs-target="#dong-gop"
-          type="button" role="tab">
+        <button class="nav-link"
+                id="dong-gop-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#dong-gop"
+                type="button"
+                role="tab">
           Đóng góp
         </button>
       </li>
 
       <li class="nav-item" role="presentation">
-        <button class="nav-link" id="nguon-luc-tab" data-bs-toggle="tab" data-bs-target="#nguon-luc"
-          type="button" role="tab">
+        <button class="nav-link"
+                id="nguon-luc-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#nguon-luc"
+                type="button"
+                role="tab">
           Nguồn lực
         </button>
       </li>
 
       <li class="nav-item" role="presentation">
-        <button class="nav-link" id="phan-phoi-tab" data-bs-toggle="tab" data-bs-target="#phan-phoi"
-          type="button" role="tab">
+        <button class="nav-link"
+                id="phan-phoi-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#phan-phoi"
+                type="button"
+                role="tab">
           Phân phối
         </button>
       </li>
@@ -221,7 +166,125 @@
 
   <div class="card-body">
     <div class="tab-content" id="chienDichTabsContent">
-      <div class="tab-pane fade show active" id="cap-nhat" role="tabpanel">
+
+      {{-- TAB 1: THÔNG TIN CHIẾN DỊCH --}}
+      <div class="tab-pane fade show active" id="thong-tin" role="tabpanel">
+        <div class="row">
+          <div class="col-lg-7">
+            <div class="mb-4">
+              <h5 class="mb-1">Thông tin chung</h5>
+              <small class="text-muted">
+                Thông tin tổng quan về chiến dịch cứu trợ do nhóm phụ trách.
+              </small>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-4 text-muted">Mã chiến dịch</div>
+              <div class="col-md-8">#{{ $chienDich->idChienDich }}</div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-4 text-muted">Tên chiến dịch</div>
+              <div class="col-md-8 fw-semibold">{{ $chienDich->tenChienDich }}</div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-4 text-muted">Nhóm phụ trách</div>
+              <div class="col-md-8">{{ $nhom->tenNhom }}</div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-4 text-muted">Sự kiện cứu trợ</div>
+              <div class="col-md-8">
+                @if ($chienDich->suKien)
+                  <div class="fw-semibold">{{ $chienDich->suKien->tenSuKien }}</div>
+                  <small class="text-muted">{{ $chienDich->suKien->loaiSuKien }}</small>
+                @else
+                  -
+                @endif
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-4 text-muted">Địa điểm</div>
+              <div class="col-md-8">
+                @if ($chienDich->diaDiem)
+                  @if ($chienDich->diaDiem->chiTietDiaDiem)
+                    {{ $chienDich->diaDiem->chiTietDiaDiem }},
+                  @endif
+
+                  @if ($chienDich->diaDiem->phuongXa)
+                    {{ $chienDich->diaDiem->phuongXa }},
+                  @endif
+
+                  {{ $chienDich->diaDiem->tinhThanh ?? '-' }}
+                @else
+                  -
+                @endif
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-4 text-muted">Ngày tạo</div>
+              <div class="col-md-8">{{ $chienDich->ngayTao ?? '-' }}</div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-4 text-muted">Ngày bắt đầu</div>
+              <div class="col-md-8">{{ $chienDich->ngayBatDau ?? '-' }}</div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-4 text-muted">Ngày kết thúc</div>
+              <div class="col-md-8">{{ $chienDich->ngayKetThuc ?? '-' }}</div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-4 text-muted">Trạng thái</div>
+              <div class="col-md-8">{{ $chienDich->trangThai ?? '-' }}</div>
+            </div>
+          </div>
+
+          <div class="col-lg-5">
+            <div class="border rounded p-3 mb-3">
+              <h6 class="mb-3">Xác nhận cứu trợ</h6>
+
+              <div class="mb-2">
+                @if ($chienDich->daXacNhanCuuTro)
+                  <span class="d-inline-flex align-items-center gap-2 text-success fw-semibold">
+                    <span class="rounded-circle bg-success d-inline-block" style="width: 8px; height: 8px;"></span>
+                    Đã xác nhận hoạt động cứu trợ
+                  </span>
+                @else
+                  <span class="d-inline-flex align-items-center gap-2 text-warning fw-semibold">
+                    <span class="rounded-circle bg-warning d-inline-block" style="width: 8px; height: 8px;"></span>
+                    Chưa xác nhận hoạt động cứu trợ
+                  </span>
+                @endif
+              </div>
+
+              <div class="text-muted small mb-2">
+                Ghi chú xác nhận:
+              </div>
+
+              <div>
+                {{ $chienDich->ghiChuXacNhan ?? 'Chưa có ghi chú xác nhận.' }}
+              </div>
+            </div>
+
+            <div class="border rounded p-3">
+              <h6 class="mb-3">Mô tả chiến dịch</h6>
+
+              <div style="white-space: pre-line;">
+                {{ $chienDich->moTa ?? 'Chưa có mô tả cho chiến dịch này.' }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {{-- TAB 2: CẬP NHẬT TIẾN ĐỘ --}}
+      <div class="tab-pane fade" id="cap-nhat" role="tabpanel">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <div>
             <h5 class="mb-0">Cập nhật tiến độ</h5>
@@ -231,7 +294,7 @@
           </div>
 
           <a href="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich/' . $chienDich->idChienDich . '/cap-nhat/create') }}"
-            class="btn btn-primary">
+             class="btn btn-primary">
             Thêm cập nhật
           </a>
         </div>
@@ -257,9 +320,9 @@
             @if ($capNhat->hinhAnh)
               <div class="mt-2">
                 <img src="{{ asset('storage/' . $capNhat->hinhAnh) }}"
-                  alt="Hình ảnh cập nhật"
-                  class="img-fluid rounded border"
-                  style="max-height: 260px;">
+                     alt="Hình ảnh cập nhật"
+                     class="img-fluid rounded border"
+                     style="max-height: 260px;">
               </div>
             @endif
           </div>
@@ -270,6 +333,7 @@
         @endforelse
       </div>
 
+      {{-- TAB 3: YÊU CẦU CỨU TRỢ --}}
       <div class="tab-pane fade" id="yeu-cau" role="tabpanel">
         <div class="mb-3">
           <h5 class="mb-0">Yêu cầu cứu trợ thuộc chiến dịch</h5>
@@ -284,7 +348,7 @@
               <tr class="text-uppercase text-center">
                 <th style="width: 90px;">Mã</th>
                 <th class="text-start">Thông tin yêu cầu</th>
-                <th style="width: 120px;">Số hộ</th>
+                <th style="width: 120px;">Số người</th>
                 <th style="width: 140px;">Mức độ</th>
                 <th style="width: 150px;">Trạng thái</th>
                 <th style="width: 180px;">Dự kiến hỗ trợ</th>
@@ -302,7 +366,7 @@
 
                   <td>
                     <div class="fw-semibold">
-                      {{ $tiepNhan->yeuCau->loaiYeuCau ?? '-' }}
+                      {{ $tiepNhan->yeuCau->tieuDeYeuCau ?? '-' }}
                     </div>
 
                     <small class="text-muted">
@@ -328,7 +392,7 @@
                   </td>
 
                   <td class="text-center">
-                    {{ $tiepNhan->yeuCau->soHoDan ?? '-' }}
+                    {{ $tiepNhan->yeuCau->soNguoi ?? '-' }}
                   </td>
 
                   <td class="text-center">
@@ -361,6 +425,7 @@
         </div>
       </div>
 
+      {{-- TAB 4: ĐÓNG GÓP --}}
       <div class="tab-pane fade" id="dong-gop" role="tabpanel">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <div>
@@ -453,8 +518,8 @@
                         @if ($chiTiet->trangThai == 'Chờ xác nhận')
                           <div class="d-inline-flex gap-1">
                             <form action="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich/' . $chienDich->idChienDich . '/dong-gop/' . $chiTiet->idChiTietDongGop . '/xac-nhan') }}"
-                              method="POST"
-                              onsubmit="return confirm('Xác nhận đóng góp này và cộng vào nguồn lực chiến dịch?')">
+                                  method="POST"
+                                  onsubmit="return confirm('Xác nhận đóng góp này và cộng vào nguồn lực chiến dịch?')">
                               @csrf
                               @method('PATCH')
 
@@ -464,8 +529,8 @@
                             </form>
 
                             <form action="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich/' . $chienDich->idChienDich . '/dong-gop/' . $chiTiet->idChiTietDongGop . '/tu-choi') }}"
-                              method="POST"
-                              onsubmit="return confirm('Bạn có chắc muốn từ chối đóng góp này không?')">
+                                  method="POST"
+                                  onsubmit="return confirm('Bạn có chắc muốn từ chối đóng góp này không?')">
                               @csrf
                               @method('PATCH')
 
@@ -491,9 +556,10 @@
         @endforelse
       </div>
 
+      {{-- TAB 5: NGUỒN LỰC --}}
       <div class="tab-pane fade" id="nguon-luc" role="tabpanel">
         <div class="mb-3">
-          <h5 class="mb-0">Nguồn lực hiện có</h5>
+          <h5 class="mb-0">Nguồn lực chiến dịch</h5>
           <small class="text-muted">
             Nguồn lực được cộng từ các đóng góp đã xác nhận.
           </small>
@@ -505,7 +571,9 @@
               <tr class="text-uppercase text-center">
                 <th style="width: 90px;">Mã</th>
                 <th class="text-start">Hàng hóa</th>
-                <th style="width: 160px;">Số lượng hiện có</th>
+                <th style="width: 150px;">Cần kêu gọi</th>
+                <th style="width: 150px;">Đã nhận</th>
+                <th style="width: 150px;">Hiện còn</th>
                 <th style="width: 150px;">Hạn sử dụng</th>
                 <th style="width: 150px;">Trạng thái</th>
                 <th style="width: 170px;">Ngày cập nhật</th>
@@ -525,7 +593,15 @@
                   </td>
 
                   <td class="text-center">
-                    {{ $nguonLuc->soLuongHienCo }}
+                    {{ $nguonLuc->soLuongCanKeuGoi ?? 0 }}
+                  </td>
+
+                  <td class="text-center">
+                    {{ $nguonLuc->soLuongDaNhan ?? 0 }}
+                  </td>
+
+                  <td class="text-center">
+                    {{ $nguonLuc->soLuongHienCo ?? 0 }}
                   </td>
 
                   <td class="text-center">
@@ -542,7 +618,7 @@
                 </tr>
               @empty
                 <tr>
-                  <td colspan="6" class="text-center text-muted py-4">
+                  <td colspan="8" class="text-center text-muted py-4">
                     Chưa có nguồn lực nào. Nguồn lực sẽ được cộng khi nhóm xác nhận đóng góp.
                   </td>
                 </tr>
@@ -552,6 +628,7 @@
         </div>
       </div>
 
+      {{-- TAB 6: PHÂN PHỐI --}}
       <div class="tab-pane fade" id="phan-phoi" role="tabpanel">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <div>
@@ -562,7 +639,7 @@
           </div>
 
           <a href="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich/' . $chienDich->idChienDich . '/phan-phoi/create') }}"
-            class="btn btn-primary">
+             class="btn btn-primary">
             Tạo đợt phân phối
           </a>
         </div>
@@ -621,7 +698,7 @@
 
                       <td>
                         #{{ $chiTiet->tiepNhan->yeuCau->idYeuCau ?? '-' }}
-                        - {{ $chiTiet->tiepNhan->yeuCau->loaiYeuCau ?? '-' }}
+                        - {{ $chiTiet->tiepNhan->yeuCau->tieuDeYeuCau ?? '-' }}
 
                         <br>
 

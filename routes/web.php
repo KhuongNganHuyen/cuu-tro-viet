@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 
 use App\Http\Controllers\DiaDiemController;
-use App\Http\Controllers\ThienTaiController;
+use App\Http\Controllers\SuKienCuuTroController;
 use App\Http\Controllers\DanhMucHangController;
 use App\Http\Controllers\HangHoaController;
 use App\Http\Controllers\NguoiDungController;
@@ -66,7 +66,7 @@ Route::get('/admin/dashboard', function () {
 */
 
 Route::resource('/admin/dia-diem', DiaDiemController::class);
-Route::resource('/admin/thien-tai', ThienTaiController::class);
+Route::resource('/admin/su-kien-cuu-tro', SuKienCuuTroController::class);
 Route::resource('/admin/danh-muc-hang', DanhMucHangController::class);
 Route::get('/admin/danh-muc-hang/{idDanhMucHang}/hang-hoa', [HangHoaController::class, 'index']);
 Route::get('/admin/danh-muc-hang/{idDanhMucHang}/hang-hoa/create', [HangHoaController::class, 'create']);

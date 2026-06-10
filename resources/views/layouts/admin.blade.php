@@ -134,9 +134,9 @@
         </li>
 
         <li class="pc-item">
-          <a href="{{ url('/admin/thien-tai') }}" class="pc-link">
-            <span class="pc-micon"><i class="ti ti-cloud-storm"></i></span>
-            <span class="pc-mtext">Thiên tai</span>
+          <a href="{{ url('/admin/su-kien-cuu-tro') }}" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-alert-triangle"></i></span>
+            <span class="pc-mtext">Sự kiện cứu trợ</span>
           </a>
         </li>
 

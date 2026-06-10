@@ -42,7 +42,7 @@
     <div class="card">
       <div class="card-header d-flex justify-content-between align-items-center">
         <div>
-          <h5 class="mb-0">{{ $yeuCau->loaiYeuCau }}</h5>
+          <h5 class="mb-0">{{ $yeuCau->tieuDeYeuCau }}</h5>
           <small class="text-muted">Mã yêu cầu: {{ $yeuCau->idYeuCau }}</small>
         </div>
 
@@ -90,8 +90,8 @@
         </p>
 
         <p>
-          <strong>Số hộ dân cần hỗ trợ:</strong>
-          {{ $yeuCau->soHoDan ?? '-' }}
+          <strong>Số người cần hỗ trợ:</strong>
+          {{ $yeuCau->soNguoi ?? '-' }}
         </p>
 
         <p>

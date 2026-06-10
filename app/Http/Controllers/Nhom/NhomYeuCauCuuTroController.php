@@ -8,7 +8,7 @@ use App\Models\ThanhVienNhom;
 use App\Models\YeuCauCuuTro;
 use App\Models\TiepNhanYeuCau;
 use App\Models\ChienDichCuuTro;
-use App\Models\ThienTai;
+use App\Models\SuKienCuuTro;
 use Illuminate\Http\Request;
 
 class NhomYeuCauCuuTroController extends Controller
@@ -246,12 +246,14 @@ class NhomYeuCauCuuTroController extends Controller
                 ->with('error', 'Yêu cầu này đã được tiếp nhận hoặc không còn ở trạng thái chờ tiếp nhận.');
         }
 
-        $thienTais = ThienTai::orderBy('idThienTai', 'desc')->get();
+        $suKiens = SuKienCuuTro::where('trangThai', '!=', 'Đã ẩn')
+            ->orderBy('idSuKien', 'desc')
+            ->get();
 
         return view('nhom.yeu_cau_cuu_tro.tao_chien_dich', compact(
             'nhom',
             'yeuCau',
-            'thienTais'
+            'suKiens'
         ));
     }
 
@@ -276,21 +278,21 @@ class NhomYeuCauCuuTroController extends Controller
         }
 
         $request->validate([
-            'idThienTai' => 'required|exists:ThienTai,idThienTai',
+            'idSuKien' => 'required|exists:SuKienCuuTro,idSuKien',
             'tenChienDich' => 'required|string|max:255',
             'moTa' => 'nullable|string',
             'ngayBatDau' => 'required|date',
             'ngayKetThuc' => 'nullable|date|after_or_equal:ngayBatDau',
-            'daThongBaoUBND' => 'nullable|in:0,1',
-            'ghiChuUBND' => 'nullable|string',
+            'daXacNhanCuuTro' => 'nullable|in:0,1',
+            'ghiChuXacNhan' => 'nullable|string',
             'trangThaiChienDich' => 'required|string|max:255',
 
             'thoiGianDuKienHoTro' => 'nullable|date',
             'noiDungDamNhan' => 'nullable|string',
             'trangThaiTiepNhan' => 'required|string|max:255',
         ], [
-            'idThienTai.required' => 'Vui lòng chọn thiên tai.',
-            'idThienTai.exists' => 'Thiên tai không hợp lệ.',
+            'idSuKien.required' => 'Vui lòng chọn sự kiện cứu trợ.',
+            'idSuKien.exists' => 'Sự kiện cứu trợ không hợp lệ.',
             'tenChienDich.required' => 'Vui lòng nhập tên chiến dịch.',
             'ngayBatDau.required' => 'Vui lòng chọn ngày bắt đầu.',
             'ngayKetThuc.after_or_equal' => 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.',
@@ -307,15 +309,15 @@ class NhomYeuCauCuuTroController extends Controller
 
         $chienDich = ChienDichCuuTro::create([
             'idNhom' => $idNhom,
-            'idThienTai' => $request->idThienTai,
+            'idSuKien' => $request->idSuKien,
             'idDiaDiem' => $yeuCau->idDiaDiem,
             'tenChienDich' => trim($request->tenChienDich),
             'moTa' => $request->moTa,
             'ngayTao' => now(),
             'ngayBatDau' => $request->ngayBatDau,
             'ngayKetThuc' => $request->ngayKetThuc,
-            'daThongBaoUBND' => (int) ($request->daThongBaoUBND ?? 0),
-            'ghiChuUBND' => $request->ghiChuUBND,
+            'daXacNhanCuuTro' => (int) ($request->daXacNhanCuuTro ?? 0),
+            'ghiChuXacNhan' => $request->ghiChuXacNhan,
             'trangThai' => $request->trangThaiChienDich,
         ]);
 

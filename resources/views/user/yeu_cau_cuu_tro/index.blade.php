@@ -51,8 +51,8 @@
         <thead>
           <tr class="text-uppercase text-center">
             <th style="width: 90px;">Mã</th>
-            <th class="text-start">Loại yêu cầu</th>
-            <th style="width: 140px;">Số hộ</th>
+            <th class="text-start">Tiêu đề yêu cầu</th>
+            <th style="width: 140px;">Số người</th>
             <th style="width: 170px;">Mức độ</th>
             <th style="width: 180px;">Trạng thái</th>
             <th style="width: 180px;">Thời gian gửi</th>
@@ -67,7 +67,7 @@
               <td class="text-center">{{ $yeuCau->idYeuCau }}</td>
 
               <td>
-                <div class="fw-semibold">{{ $yeuCau->loaiYeuCau }}</div>
+                <div class="fw-semibold">{{ $yeuCau->tieuDeYeuCau }}</div>
                 <small class="text-muted">
                   {{ $yeuCau->diaDiem->chiTietDiaDiem ?? '' }},
                   {{ $yeuCau->diaDiem->phuongXa ?? '' }},
@@ -76,7 +76,7 @@
               </td>
 
               <td class="text-center">
-                {{ $yeuCau->soHoDan ?? '-' }}
+                {{ $yeuCau->soNguoi ?? '-' }}
               </td>
 
               <td class="text-center">

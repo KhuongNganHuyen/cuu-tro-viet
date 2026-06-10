@@ -50,9 +50,9 @@ class UserYeuCauCuuTroController extends Controller
         }
 
         $request->validate([
-            'loaiYeuCau' => 'required|string|max:255',
+            'tieuDeYeuCau' => 'required|string|max:255',
             'moTa' => 'required|string',
-            'soHoDan' => 'nullable|integer|min:1',
+            'soNguoi' => 'nullable|integer|min:1',
             'mucDoKhanCap' => 'required|string|max:255',
 
             'tinhThanh' => 'required|string|max:255',
@@ -63,10 +63,10 @@ class UserYeuCauCuuTroController extends Controller
 
             'hinhAnh' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
         ], [
-            'loaiYeuCau.required' => 'Vui lòng nhập loại yêu cầu.',
+            'tieuDeYeuCau.required' => 'Vui lòng nhập tiêu đề yêu cầu.',
             'moTa.required' => 'Vui lòng nhập mô tả tình hình cần hỗ trợ.',
-            'soHoDan.integer' => 'Số hộ dân phải là số.',
-            'soHoDan.min' => 'Số hộ dân phải lớn hơn 0.',
+            'soNguoi.integer' => 'Số người phải là số.',
+            'soNguoi.min' => 'Số người phải lớn hơn 0.',
             'mucDoKhanCap.required' => 'Vui lòng chọn mức độ khẩn cấp.',
             'tinhThanh.required' => 'Vui lòng nhập tỉnh/thành.',
             'chiTietDiaDiem.required' => 'Vui lòng nhập địa chỉ chi tiết.',
@@ -99,9 +99,9 @@ class UserYeuCauCuuTroController extends Controller
         YeuCauCuuTro::create([
             'idNguoiGui' => $idNguoiDung,
             'idDiaDiem' => $diaDiem->idDiaDiem,
-            'loaiYeuCau' => trim($request->loaiYeuCau),
+            'tieuDeYeuCau' => trim($request->tieuDeYeuCau),
             'moTa' => trim($request->moTa),
-            'soHoDan' => $request->soHoDan,
+            'soNguoi' => $request->soNguoi,
             'mucDoKhanCap' => $request->mucDoKhanCap,
             'hinhAnh' => $duongDanHinhAnh,
             'trangThai' => 'Chờ tiếp nhận',

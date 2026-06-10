@@ -6,16 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Models\NhomTinhNguyen;
 use App\Models\ThanhVienNhom;
 use App\Models\ChienDichCuuTro;
-use App\Models\ThienTai;
+use App\Models\SuKienCuuTro;
 use App\Models\DiaDiem;
 use App\Models\CapNhatChienDich;
 use App\Models\DongGop;
 use App\Models\ChiTietDongGop;
 use App\Models\NguonLucChienDich;
 use App\Models\TiepNhanYeuCau;
-use Illuminate\Http\Request;
 use App\Models\DotPhanPhoi;
 use App\Models\ChiTietPhanPhoi;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class NhomChienDichController extends Controller
@@ -76,7 +76,7 @@ class NhomChienDichController extends Controller
         $nhom = $kiemTra['nhom'];
         $laNhomTruong = $kiemTra['laNhomTruong'];
 
-        $chienDichs = ChienDichCuuTro::with(['thienTai', 'diaDiem'])
+        $chienDichs = ChienDichCuuTro::with(['suKien', 'diaDiem'])
             ->where('idNhom', $idNhom)
             ->orderBy('idChienDich', 'desc')
             ->get();
@@ -103,8 +103,8 @@ class NhomChienDichController extends Controller
 
         $nhom = $kiemTra['nhom'];
 
-        $thienTais = ThienTai::orderBy('namXayRa', 'desc')
-            ->orderBy('tenThienTai')
+        $suKiens = SuKienCuuTro::where('trangThai', '!=', 'Đã ẩn')
+            ->orderBy('idSuKien', 'desc')
             ->get();
 
         $diaDiems = DiaDiem::orderBy('tinhThanh')
@@ -129,7 +129,7 @@ class NhomChienDichController extends Controller
 
         return view('nhom.chien_dich.create', compact(
             'nhom',
-            'thienTais',
+            'suKiens',
             'diaDiems',
             'diaDiemJson'
         ));
@@ -150,12 +150,12 @@ class NhomChienDichController extends Controller
 
         $request->validate([
             'tenChienDich' => 'required|string|max:255',
-            'idThienTai' => 'required|exists:ThienTai,idThienTai',
+            'idSuKien' => 'required|integer|exists:SuKienCuuTro,idSuKien',
             'moTa' => 'nullable|string',
             'ngayBatDau' => 'nullable|date',
             'ngayKetThuc' => 'nullable|date|after_or_equal:ngayBatDau',
-            'daThongBaoUBND' => 'nullable',
-            'ghiChuUBND' => 'nullable|string|max:255',
+            'daXacNhanCuuTro' => 'nullable|boolean',
+            'ghiChuXacNhan' => 'nullable|string',
             'trangThai' => 'required|string|max:255',
 
             'idDiaDiemCoSan' => 'nullable|exists:DiaDiem,idDiaDiem',
@@ -166,8 +166,8 @@ class NhomChienDichController extends Controller
             'kinhDo' => 'required|numeric',
         ], [
             'tenChienDich.required' => 'Vui lòng nhập tên chiến dịch.',
-            'idThienTai.required' => 'Vui lòng chọn thiên tai.',
-            'idThienTai.exists' => 'Thiên tai không hợp lệ.',
+            'idSuKien.required' => 'Vui lòng chọn sự kiện cứu trợ.',
+            'idSuKien.exists' => 'Sự kiện cứu trợ không hợp lệ.',
             'ngayKetThuc.after_or_equal' => 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.',
             'trangThai.required' => 'Vui lòng chọn trạng thái.',
 
@@ -183,8 +183,6 @@ class NhomChienDichController extends Controller
         $tinhThanh = trim($request->tinhThanh);
         $phuongXa = trim($request->phuongXa);
         $chiTietDiaDiem = trim($request->chiTietDiaDiem);
-
-        $diaDiem = null;
 
         if ($request->idDiaDiemCoSan) {
             $diaDiem = DiaDiem::findOrFail($request->idDiaDiemCoSan);
@@ -207,15 +205,15 @@ class NhomChienDichController extends Controller
 
         ChienDichCuuTro::create([
             'idNhom' => $idNhom,
-            'idThienTai' => $request->idThienTai,
+            'idSuKien' => $request->idSuKien,
             'idDiaDiem' => $diaDiem->idDiaDiem,
             'tenChienDich' => $request->tenChienDich,
             'moTa' => $request->moTa,
             'ngayTao' => now(),
             'ngayBatDau' => $request->ngayBatDau,
             'ngayKetThuc' => $request->ngayKetThuc,
-            'daThongBaoUBND' => $request->has('daThongBaoUBND'),
-            'ghiChuUBND' => $request->ghiChuUBND,
+            'daXacNhanCuuTro' => $request->has('daXacNhanCuuTro') ? 1 : 0,
+            'ghiChuXacNhan' => $request->ghiChuXacNhan,
             'trangThai' => $request->trangThai,
         ]);
 
@@ -234,7 +232,7 @@ class NhomChienDichController extends Controller
         $nhom = $kiemTra['nhom'];
         $laNhomTruong = $kiemTra['laNhomTruong'];
 
-        $chienDich = ChienDichCuuTro::with(['thienTai', 'diaDiem', 'nhom'])
+        $chienDich = ChienDichCuuTro::with(['suKien', 'diaDiem', 'nhom'])
             ->where('idNhom', $idNhom)
             ->where('idChienDich', $idChienDich)
             ->firstOrFail();
@@ -257,7 +255,7 @@ class NhomChienDichController extends Controller
             ->where('idChienDich', $idChienDich)
             ->orderBy('idNguonLuc', 'desc')
             ->get();
-        
+
         $tiepNhanYeuCaus = TiepNhanYeuCau::with([
                 'yeuCau.nguoiGui',
                 'yeuCau.diaDiem',
@@ -277,7 +275,7 @@ class NhomChienDichController extends Controller
             ->where('idChienDich', $idChienDich)
             ->orderBy('idDotPhanPhoi', 'desc')
             ->get();
-            
+
         return view('nhom.chien_dich.show', compact(
             'nhom',
             'chienDich',
@@ -305,13 +303,13 @@ class NhomChienDichController extends Controller
 
         $nhom = $kiemTra['nhom'];
 
-        $chienDich = ChienDichCuuTro::with(['thienTai', 'diaDiem'])
+        $chienDich = ChienDichCuuTro::with(['suKien', 'diaDiem'])
             ->where('idNhom', $idNhom)
             ->where('idChienDich', $idChienDich)
             ->firstOrFail();
 
-        $thienTais = ThienTai::orderBy('namXayRa', 'desc')
-            ->orderBy('tenThienTai')
+        $suKiens = SuKienCuuTro::where('trangThai', '!=', 'Đã ẩn')
+            ->orderBy('idSuKien', 'desc')
             ->get();
 
         $diaDiems = DiaDiem::orderBy('tinhThanh')
@@ -337,7 +335,7 @@ class NhomChienDichController extends Controller
         return view('nhom.chien_dich.edit', compact(
             'nhom',
             'chienDich',
-            'thienTais',
+            'suKiens',
             'diaDiems',
             'diaDiemJson'
         ));
@@ -362,12 +360,12 @@ class NhomChienDichController extends Controller
 
         $request->validate([
             'tenChienDich' => 'required|string|max:255',
-            'idThienTai' => 'required|exists:ThienTai,idThienTai',
+            'idSuKien' => 'required|integer|exists:SuKienCuuTro,idSuKien',
             'moTa' => 'nullable|string',
             'ngayBatDau' => 'nullable|date',
             'ngayKetThuc' => 'nullable|date|after_or_equal:ngayBatDau',
-            'daThongBaoUBND' => 'nullable',
-            'ghiChuUBND' => 'nullable|string|max:255',
+            'daXacNhanCuuTro' => 'nullable|boolean',
+            'ghiChuXacNhan' => 'nullable|string',
             'trangThai' => 'required|string|max:255',
 
             'idDiaDiemCoSan' => 'nullable|exists:DiaDiem,idDiaDiem',
@@ -378,8 +376,8 @@ class NhomChienDichController extends Controller
             'kinhDo' => 'required|numeric',
         ], [
             'tenChienDich.required' => 'Vui lòng nhập tên chiến dịch.',
-            'idThienTai.required' => 'Vui lòng chọn thiên tai.',
-            'idThienTai.exists' => 'Thiên tai không hợp lệ.',
+            'idSuKien.required' => 'Vui lòng chọn sự kiện cứu trợ.',
+            'idSuKien.exists' => 'Sự kiện cứu trợ không hợp lệ.',
             'ngayKetThuc.after_or_equal' => 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu.',
             'trangThai.required' => 'Vui lòng chọn trạng thái.',
 
@@ -395,8 +393,6 @@ class NhomChienDichController extends Controller
         $tinhThanh = trim($request->tinhThanh);
         $phuongXa = trim($request->phuongXa);
         $chiTietDiaDiem = trim($request->chiTietDiaDiem);
-
-        $diaDiem = null;
 
         if ($request->idDiaDiemCoSan) {
             $diaDiem = DiaDiem::findOrFail($request->idDiaDiemCoSan);
@@ -418,14 +414,14 @@ class NhomChienDichController extends Controller
         }
 
         $chienDich->update([
-            'idThienTai' => $request->idThienTai,
+            'idSuKien' => $request->idSuKien,
             'idDiaDiem' => $diaDiem->idDiaDiem,
             'tenChienDich' => $request->tenChienDich,
             'moTa' => $request->moTa,
             'ngayBatDau' => $request->ngayBatDau,
             'ngayKetThuc' => $request->ngayKetThuc,
-            'daThongBaoUBND' => $request->has('daThongBaoUBND'),
-            'ghiChuUBND' => $request->ghiChuUBND,
+            'daXacNhanCuuTro' => $request->has('daXacNhanCuuTro') ? 1 : 0,
+            'ghiChuXacNhan' => $request->ghiChuXacNhan,
             'trangThai' => $request->trangThai,
         ]);
 
@@ -540,6 +536,7 @@ class NhomChienDichController extends Controller
 
         if ($nguonLuc) {
             $nguonLuc->update([
+                'soLuongDaNhan' => $nguonLuc->soLuongDaNhan + $chiTiet->soLuong,
                 'soLuongHienCo' => $nguonLuc->soLuongHienCo + $chiTiet->soLuong,
                 'trangThai' => 'Còn hàng',
                 'ngayCapNhat' => now(),
@@ -548,6 +545,8 @@ class NhomChienDichController extends Controller
             NguonLucChienDich::create([
                 'idChienDich' => $idChienDich,
                 'idHangHoa' => $chiTiet->idHangHoa,
+                'soLuongCanKeuGoi' => 0,
+                'soLuongDaNhan' => $chiTiet->soLuong,
                 'soLuongHienCo' => $chiTiet->soLuong,
                 'hanSuDung' => $chiTiet->hanSuDung,
                 'trangThai' => 'Còn hàng',

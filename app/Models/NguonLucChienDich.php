@@ -14,6 +14,8 @@ class NguonLucChienDich extends Model
     protected $fillable = [
         'idChienDich',
         'idHangHoa',
+        'soLuongCanKeuGoi',
+        'soLuongDaNhan',
         'soLuongHienCo',
         'hanSuDung',
         'trangThai',

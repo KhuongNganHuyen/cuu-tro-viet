@@ -50,8 +50,8 @@
 
       <div class="card-body">
         <p>
-          <strong>Loại yêu cầu:</strong><br>
-          {{ $yeuCau->loaiYeuCau }}
+          <strong>Tiêu đề yêu cầu:</strong><br>
+          {{ $yeuCau->tieuDeYeuCau }}
         </p>
 
         <p>
@@ -60,8 +60,8 @@
         </p>
 
         <p>
-          <strong>Số hộ dân:</strong>
-          {{ $yeuCau->soHoDan ?? '-' }}
+          <strong>Số người:</strong>
+          {{ $yeuCau->soNguoi ?? '-' }}
         </p>
 
         <p>
@@ -121,8 +121,8 @@
             </div>
 
             <div class="mb-3">
-              <label class="form-label">Thời gian dự kiến hỗ trợ</label>
-              <input type="datetime-local" name="thoiGianDuKienHoTro" class="form-control"
+              <label class="form-label">Ngày dự kiến hỗ trợ</label>
+              <input type="date" name="thoiGianDuKienHoTro" class="form-control"
                 value="{{ old('thoiGianDuKienHoTro') }}">
             </div>
 

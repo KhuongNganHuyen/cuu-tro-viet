@@ -62,7 +62,7 @@
               <tr class="text-uppercase text-center">
                 <th style="width: 90px;">Mã</th>
                 <th class="text-start">Thông tin yêu cầu</th>
-                <th style="width: 130px;">Số hộ</th>
+                <th style="width: 130px;">Số người</th>
                 <th style="width: 150px;">Mức độ</th>
                 <th style="width: 180px;">Thời gian gửi</th>
               </tr>
@@ -76,7 +76,7 @@
                   <td class="text-center">{{ $yeuCau->idYeuCau }}</td>
 
                   <td>
-                    <div class="fw-semibold">{{ $yeuCau->loaiYeuCau }}</div>
+                    <div class="fw-semibold">{{ $yeuCau->tieuDeYeuCau }}</div>
                     <small class="text-muted">
                       Người gửi: {{ $yeuCau->nguoiGui->hoTen ?? '-' }}
                     </small>
@@ -88,7 +88,7 @@
                     </small>
                   </td>
 
-                  <td class="text-center">{{ $yeuCau->soHoDan ?? '-' }}</td>
+                  <td class="text-center">{{ $yeuCau->soNguoi ?? '-' }}</td>
 
                   <td class="text-center">
                     @if ($yeuCau->mucDoKhanCap == 'Khẩn cấp')
@@ -139,7 +139,7 @@
                   <td class="text-center">{{ $yeuCau->idYeuCau }}</td>
 
                   <td>
-                    <div class="fw-semibold">{{ $yeuCau->loaiYeuCau }}</div>
+                    <div class="fw-semibold">{{ $yeuCau->tieuDeYeuCau }}</div>
                     <small class="text-muted">
                       Người gửi: {{ $yeuCau->nguoiGui->hoTen ?? '-' }}
                     </small>
