@@ -33,11 +33,26 @@
   </div>
 @endif
 
+@if (request('tuKhoa'))
+  <div class="alert alert-info d-flex justify-content-between align-items-center">
+    <div>
+      Đang tìm kiếm:
+      <strong>{{ request('tuKhoa') }}</strong>
+    </div>
+
+    <a href="{{ url('/user/yeu-cau-cuu-tro') }}" class="btn btn-sm btn-light">
+      Xóa tìm kiếm
+    </a>
+  </div>
+@endif
+
 <div class="card">
   <div class="card-header d-flex justify-content-between align-items-center">
     <div>
-      <h5 class="mb-0">Danh sách yêu cầu cứu trợ</h5>
-      <small class="text-muted">Theo dõi các yêu cầu hỗ trợ đã gửi.</small>
+      <h5 class="mb-1">Danh sách yêu cầu cứu trợ</h5>
+      <small class="text-muted">
+        Tổng hiển thị: {{ $yeuCaus->count() }}
+      </small>
     </div>
 
     <a href="{{ url('/user/yeu-cau-cuu-tro/create') }}" class="btn btn-primary">
@@ -116,7 +131,11 @@
           @empty
             <tr>
               <td colspan="6" class="text-center text-muted py-4">
-                Bạn chưa gửi yêu cầu cứu trợ nào.
+                @if (request('tuKhoa'))
+                  Không tìm thấy yêu cầu cứu trợ phù hợp.
+                @else
+                  Bạn chưa gửi yêu cầu cứu trợ nào.
+                @endif
               </td>
             </tr>
           @endforelse

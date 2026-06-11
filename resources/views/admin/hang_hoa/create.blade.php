@@ -64,14 +64,16 @@
         <label class="form-label">Tên hàng hóa <span class="text-danger">*</span></label>
         <input type="text" name="tenHangHoa" class="form-control"
           value="{{ old('tenHangHoa') }}"
-          placeholder="Ví dụ: Gạo, Mì tôm, Nước uống đóng chai">
+          placeholder="Ví dụ: Gạo, Mì tôm, Nước uống đóng chai"
+          autocomplete="off">
       </div>
 
       <div class="mb-3">
         <label class="form-label">Đơn vị tính <span class="text-danger">*</span></label>
         <input type="text" name="donViTinh" class="form-control"
           value="{{ old('donViTinh') }}"
-          placeholder="Ví dụ: kg, thùng, chai, bộ, hộp">
+          placeholder="Ví dụ: kg, thùng, chai, bộ, hộp"
+          autocomplete="off">
       </div>
 
       <div class="mb-3">

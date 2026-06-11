@@ -181,9 +181,18 @@
         </li>
 
         <li class="pc-h-item d-none d-md-inline-flex">
-          <form class="header-search">
+          <form class="header-search"
+                action="{{ url()->current() }}"
+                method="GET"
+                autocomplete="off">
             <i data-feather="search" class="icon-search"></i>
-            <input type="search" class="form-control" placeholder="Tìm kiếm...">
+
+            <input type="search"
+                  name="tuKhoa"
+                  class="form-control"
+                  placeholder="Tìm kiếm..."
+                  value="{{ request('tuKhoa') }}"
+                  autocomplete="off">
           </form>
         </li>
       </ul>

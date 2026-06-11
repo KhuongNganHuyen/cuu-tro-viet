@@ -4,14 +4,49 @@ namespace App\Http\Controllers;
 
 use App\Models\DanhMucHang;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DanhMucHangController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $danhMucHangs = DanhMucHang::orderBy('idDanhMucHang', 'desc')->get();
+        $tuKhoa = trim((string) $request->input('tuKhoa'));
 
-        return view('admin.danh_muc_hang.index', compact('danhMucHangs'));
+        $danhMucHangs = DanhMucHang::orderBy('idDanhMucHang', 'asc')->get();
+
+        if ($tuKhoa !== '') {
+            $tuKhoaKhongDau = $this->boDauTiengViet($tuKhoa);
+
+            $danhMucHangs = $danhMucHangs->filter(function ($danhMucHang) use ($tuKhoa, $tuKhoaKhongDau) {
+                $noiDungTimKiem = implode(' ', [
+                    $danhMucHang->idDanhMucHang,
+                    $danhMucHang->tenDanhMucHang,
+                ]);
+
+                $noiDungKhongDau = $this->boDauTiengViet($noiDungTimKiem);
+
+                return str_contains(mb_strtolower($noiDungTimKiem, 'UTF-8'), mb_strtolower($tuKhoa, 'UTF-8'))
+                    || str_contains(mb_strtolower($noiDungKhongDau, 'UTF-8'), mb_strtolower($tuKhoaKhongDau, 'UTF-8'));
+            })->values();
+        }
+
+        if ($tuKhoa === '' && session()->has('danhMucHangMoi')) {
+            $idMoi = session('danhMucHangMoi');
+
+            $danhMucHangs = $danhMucHangs->sortBy(function ($danhMucHang) use ($idMoi) {
+                return $danhMucHang->idDanhMucHang == $idMoi ? -1 : $danhMucHang->idDanhMucHang;
+            })->values();
+        }
+
+        $soHangHoaTheoDanhMuc = DB::table('HangHoa')
+            ->select('idDanhMucHang', DB::raw('COUNT(*) as tong'))
+            ->groupBy('idDanhMucHang')
+            ->pluck('tong', 'idDanhMucHang');
+
+        return view('admin.danh_muc_hang.index', compact(
+            'danhMucHangs',
+            'soHangHoaTheoDanhMuc'
+        ));
     }
 
     public function create()
@@ -27,11 +62,13 @@ class DanhMucHangController extends Controller
             'tenDanhMucHang.required' => 'Vui lòng nhập tên danh mục hàng.',
         ]);
 
-        DanhMucHang::create([
-            'tenDanhMucHang' => $request->tenDanhMucHang,
+        $danhMucHang = DanhMucHang::create([
+            'tenDanhMucHang' => trim($request->tenDanhMucHang),
         ]);
 
-        return redirect('/admin/danh-muc-hang')->with('success', 'Thêm danh mục hàng thành công.');
+        return redirect('/admin/danh-muc-hang')
+            ->with('success', 'Thêm danh mục hàng thành công.')
+            ->with('danhMucHangMoi', $danhMucHang->idDanhMucHang);
     }
 
     public function edit(int $id)
@@ -52,10 +89,11 @@ class DanhMucHangController extends Controller
         $danhMucHang = DanhMucHang::findOrFail($id);
 
         $danhMucHang->update([
-            'tenDanhMucHang' => $request->tenDanhMucHang,
+            'tenDanhMucHang' => trim($request->tenDanhMucHang),
         ]);
 
-        return redirect('/admin/danh-muc-hang')->with('success', 'Cập nhật danh mục hàng thành công.');
+        return redirect('/admin/danh-muc-hang')
+            ->with('success', 'Cập nhật danh mục hàng thành công.');
     }
 
     public function destroy(int $id)
@@ -73,5 +111,32 @@ class DanhMucHangController extends Controller
 
         return redirect('/admin/danh-muc-hang')
             ->with('success', 'Xóa danh mục hàng thành công.');
+    }
+
+    private function boDauTiengViet(string $chuoi): string
+    {
+        $chuoi = mb_strtolower($chuoi, 'UTF-8');
+
+        $coDau = [
+            'à', 'á', 'ạ', 'ả', 'ã', 'â', 'ầ', 'ấ', 'ậ', 'ẩ', 'ẫ', 'ă', 'ằ', 'ắ', 'ặ', 'ẳ', 'ẵ',
+            'è', 'é', 'ẹ', 'ẻ', 'ẽ', 'ê', 'ề', 'ế', 'ệ', 'ể', 'ễ',
+            'ì', 'í', 'ị', 'ỉ', 'ĩ',
+            'ò', 'ó', 'ọ', 'ỏ', 'õ', 'ô', 'ồ', 'ố', 'ộ', 'ổ', 'ỗ', 'ơ', 'ờ', 'ớ', 'ợ', 'ở', 'ỡ',
+            'ù', 'ú', 'ụ', 'ủ', 'ũ', 'ư', 'ừ', 'ứ', 'ự', 'ử', 'ữ',
+            'ỳ', 'ý', 'ỵ', 'ỷ', 'ỹ',
+            'đ',
+        ];
+
+        $khongDau = [
+            'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a',
+            'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',
+            'i', 'i', 'i', 'i', 'i',
+            'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o',
+            'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u',
+            'y', 'y', 'y', 'y', 'y',
+            'd',
+        ];
+
+        return str_replace($coDau, $khongDau, $chuoi);
     }
 }

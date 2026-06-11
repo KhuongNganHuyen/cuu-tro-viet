@@ -19,10 +19,38 @@
   </div>
 </div>
 
-<div class="card">
-  <div class="card-header d-flex justify-content-between align-items-center">
+@if (session('success'))
+  <div class="alert alert-success">
+    {{ session('success') }}
+  </div>
+@endif
+
+@if (session('error'))
+  <div class="alert alert-danger">
+    {{ session('error') }}
+  </div>
+@endif
+
+@if (request('tuKhoa'))
+  <div class="alert alert-info d-flex justify-content-between align-items-center">
     <div>
-      <h5 class="mb-0">Danh sách người dùng</h5>
+      Đang tìm kiếm:
+      <strong>{{ request('tuKhoa') }}</strong>
+    </div>
+
+    <a href="{{ url('/admin/nguoi-dung') }}" class="btn btn-sm btn-light">
+      Xóa tìm kiếm
+    </a>
+  </div>
+@endif
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-start flex-wrap gap-3">
+    <div>
+      <h5 class="mb-1">Danh sách người dùng</h5>
+      <small class="text-muted">
+        Tổng hiển thị: {{ $nguoiDungs->count() }}
+      </small>
     </div>
 
     <a href="{{ url('/admin/nguoi-dung/create') }}" class="btn btn-primary">
@@ -31,20 +59,8 @@
   </div>
 
   <div class="card-body">
-    @if (session('success'))
-      <div class="alert alert-success">
-        {{ session('success') }}
-      </div>
-    @endif
-
-    @if (session('error'))
-      <div class="alert alert-danger">
-        {{ session('error') }}
-      </div>
-    @endif
-
     <div class="table-responsive">
-      <table class="table table-hover mb-0">
+      <table class="table table-hover mb-0 nguoi-dung-table">
         <thead>
           <tr class="text-uppercase text-center">
             <th style="width: 80px;">Mã</th>
@@ -52,16 +68,18 @@
             <th class="text-start">Tên đăng nhập</th>
             <th class="text-start">Email</th>
             <th style="width: 130px;">SĐT</th>
-            <th style="width: 160px;">Vai trò</th>
-            <th style="width: 160px;">Trạng thái</th>
+            <th style="width: 150px;">Vai trò</th>
+            <th style="width: 150px;">Trạng thái</th>
           </tr>
         </thead>
 
         <tbody>
           @forelse ($nguoiDungs as $nguoiDung)
-            <tr onclick="window.location='{{ url('/admin/nguoi-dung/' . $nguoiDung->idNguoiDung) }}'"
-                style="cursor: pointer;">
-              <td class="text-center">{{ $nguoiDung->idNguoiDung }}</td>
+            <tr class="nguoi-dung-row {{ session('nguoiDungMoi') == $nguoiDung->idNguoiDung ? 'table-primary' : '' }}"
+                onclick="window.location='{{ url('/admin/nguoi-dung/' . $nguoiDung->idNguoiDung) }}'">
+              <td class="text-center fw-semibold">
+                {{ $nguoiDung->idNguoiDung }}
+              </td>
 
               <td>
                 <div class="fw-semibold">{{ $nguoiDung->hoTen }}</div>
@@ -79,14 +97,14 @@
 
               <td class="text-center">
                 @if ($nguoiDung->trangThai == 'Hoạt động')
-                  <span class="d-inline-flex align-items-center gap-2">
+                  <span class="d-inline-flex align-items-center justify-content-center gap-2">
                     <span class="rounded-circle bg-success d-inline-block" style="width: 8px; height: 8px;"></span>
-                    Hoạt động
+                    <span>Hoạt động</span>
                   </span>
                 @else
-                  <span class="d-inline-flex align-items-center gap-2">
+                  <span class="d-inline-flex align-items-center justify-content-center gap-2">
                     <span class="rounded-circle bg-danger d-inline-block" style="width: 8px; height: 8px;"></span>
-                    {{ $nguoiDung->trangThai }}
+                    <span>{{ $nguoiDung->trangThai }}</span>
                   </span>
                 @endif
               </td>
@@ -94,7 +112,11 @@
           @empty
             <tr>
               <td colspan="7" class="text-center text-muted py-4">
-                Chưa có người dùng nào.
+                @if (request('tuKhoa'))
+                  Không tìm thấy người dùng phù hợp.
+                @else
+                  Chưa có người dùng nào.
+                @endif
               </td>
             </tr>
           @endforelse
@@ -103,4 +125,20 @@
     </div>
   </div>
 </div>
+
+<style>
+  .nguoi-dung-table th,
+  .nguoi-dung-table td {
+    vertical-align: middle;
+  }
+
+  .nguoi-dung-row {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  .nguoi-dung-row:hover {
+    background-color: #f5f7fb;
+  }
+</style>
 @endsection

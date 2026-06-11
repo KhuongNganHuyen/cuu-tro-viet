@@ -66,13 +66,15 @@
       <div class="mb-3">
         <label class="form-label">Tên hàng hóa <span class="text-danger">*</span></label>
         <input type="text" name="tenHangHoa" class="form-control"
-          value="{{ old('tenHangHoa', $hangHoa->tenHangHoa) }}">
+          value="{{ old('tenHangHoa', $hangHoa->tenHangHoa) }}"
+          autocomplete="off">
       </div>
 
       <div class="mb-3">
         <label class="form-label">Đơn vị tính <span class="text-danger">*</span></label>
         <input type="text" name="donViTinh" class="form-control"
-          value="{{ old('donViTinh', $hangHoa->donViTinh) }}">
+          value="{{ old('donViTinh', $hangHoa->donViTinh) }}"
+          autocomplete="off">
       </div>
 
       <div class="mb-3">

@@ -15,11 +15,11 @@ class TaiKhoanAdminSeeder extends Seeder
                 'tenDangNhap' => 'admin',
             ],
             [
-                'hoTen' => 'Quản trị viên hệ thống',
+                'hoTen' => 'Quản trị viên',
                 'tenDangNhap' => 'admin',
                 'matKhau' => Hash::make('Admin@123456'),
                 'gioiTinh' => 'Khác',
-                'anhDaiDien' => null,
+                'anhDaiDien' => 'nguoi-dung/avatar.jpg',
                 'ngaySinh' => '2000-01-01',
                 'sdt' => '0900000000',
                 'email' => 'admin@cuutroviet.local',

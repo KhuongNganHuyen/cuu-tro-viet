@@ -9,81 +9,76 @@ class HangHoaSeeder extends Seeder
 {
     public function run(): void
     {
-        $hangHoasTheoDanhMuc = [
-            'Lương thực' => [
-                ['tenHangHoa' => 'Gạo', 'donViTinh' => 'kg'],
-                ['tenHangHoa' => 'Mì tôm', 'donViTinh' => 'thùng'],
-                ['tenHangHoa' => 'Cháo ăn liền', 'donViTinh' => 'thùng'],
-                ['tenHangHoa' => 'Bánh mì khô', 'donViTinh' => 'gói'],
-                ['tenHangHoa' => 'Sữa hộp', 'donViTinh' => 'thùng'],
+        $duLieu = [
+            'Thực phẩm ăn liền & Đóng hộp' => [
+                ['Mì ăn liền', 'Thùng'],
+                ['Lương khô', 'Hộp'],
+                ['Cá đóng hộp', 'Thùng'],
+                ['Cháo gói ăn liền', 'Thùng'],
+                ['Thịt heo xay đóng hộp', 'Thùng'],
             ],
-
-            'Nước uống' => [
-                ['tenHangHoa' => 'Nước uống đóng chai', 'donViTinh' => 'thùng'],
-                ['tenHangHoa' => 'Nước lọc bình', 'donViTinh' => 'bình'],
-                ['tenHangHoa' => 'Nước khoáng', 'donViTinh' => 'thùng'],
+            'Lương thực & Gia vị cơ bản' => [
+                ['Gạo tẻ', 'Kg'],
+                ['Gạo nếp', 'Kg'],
+                ['Dầu ăn', 'Chai'],
+                ['Nước mắm', 'Chai'],
+                ['Muối i-ốt', 'Gói'],
             ],
-
-            'Quần áo' => [
-                ['tenHangHoa' => 'Quần áo người lớn', 'donViTinh' => 'bộ'],
-                ['tenHangHoa' => 'Quần áo trẻ em', 'donViTinh' => 'bộ'],
-                ['tenHangHoa' => 'Áo ấm', 'donViTinh' => 'cái'],
-                ['tenHangHoa' => 'Áo mưa', 'donViTinh' => 'cái'],
+            'Nước uống & Sữa dinh dưỡng' => [
+                ['Nước tinh khiết 500ml', 'Thùng'],
+                ['Nước uống đóng bình 20 lít', 'Bình'],
+                ['Sữa hộp', 'Thùng'],
+                ['Sữa bột', 'Hộp'],
+                ['Nước bù khoáng điện giải', 'Thùng'],
             ],
-
-            'Đồ dùng cá nhân' => [
-                ['tenHangHoa' => 'Bàn chải đánh răng', 'donViTinh' => 'cái'],
-                ['tenHangHoa' => 'Kem đánh răng', 'donViTinh' => 'tuýp'],
-                ['tenHangHoa' => 'Xà phòng', 'donViTinh' => 'cục'],
-                ['tenHangHoa' => 'Khăn mặt', 'donViTinh' => 'cái'],
-                ['tenHangHoa' => 'Băng vệ sinh', 'donViTinh' => 'gói'],
+            'Vật tư y tế & Sơ cứu thiết yếu' => [
+                ['Thuốc hạ sốt Paracetamol 500mg', 'Hộp'],
+                ['Thuốc trị tiêu chảy Berberin', 'Hộp'],
+                ['Dung dịch sát khuẩn tay nhanh', 'Chai'],
+                ['Bông băng, gạc y tế và băng dán cá nhân', 'Bộ'],
+                ['Kem bôi chống côn trùng cắn', 'Tuýp'],
             ],
-
-            'Thiết bị y tế' => [
-                ['tenHangHoa' => 'Khẩu trang y tế', 'donViTinh' => 'hộp'],
-                ['tenHangHoa' => 'Nước sát khuẩn', 'donViTinh' => 'chai'],
-                ['tenHangHoa' => 'Băng gạc y tế', 'donViTinh' => 'hộp'],
-                ['tenHangHoa' => 'Thuốc hạ sốt', 'donViTinh' => 'hộp'],
-                ['tenHangHoa' => 'Nước muối sinh lý', 'donViTinh' => 'chai'],
+            'Đồ bảo hộ & Cứu sinh an toàn' => [
+                ['Áo phao cứu hộ tiêu chuẩn', 'Chiếc'],
+                ['Đèn pin', 'Chiếc'],
+                ['Ủng cao su lội nước', 'Đôi'],
+                ['Áo mưa', 'Chiếc'],
+                ['Còi thổi cứu hộ khẩn cấp', 'Chiếc'],
             ],
-
-            'Vật dụng cứu hộ' => [
-                ['tenHangHoa' => 'Áo phao', 'donViTinh' => 'cái'],
-                ['tenHangHoa' => 'Đèn pin', 'donViTinh' => 'cái'],
-                ['tenHangHoa' => 'Pin dự phòng', 'donViTinh' => 'cái'],
-                ['tenHangHoa' => 'Dây thừng cứu hộ', 'donViTinh' => 'cuộn'],
-                ['tenHangHoa' => 'Chăn giữ nhiệt', 'donViTinh' => 'cái'],
+            'Vật dụng vệ sinh & Trang phục cá nhân' => [
+                ['Quần áo ấm trẻ em', 'Bộ'],
+                ['Quần áo người lớn', 'Bộ'],
+                ['Kem đánh răng và bàn chải', 'Bộ'],
+                ['Xà phòng cục', 'Cục'],
             ],
-
-            'Nhu yếu phẩm khác' => [
-                ['tenHangHoa' => 'Chăn màn', 'donViTinh' => 'bộ'],
-                ['tenHangHoa' => 'Chiếu', 'donViTinh' => 'cái'],
-                ['tenHangHoa' => 'Nồi niêu', 'donViTinh' => 'bộ'],
-                ['tenHangHoa' => 'Bếp gas mini', 'donViTinh' => 'cái'],
-                ['tenHangHoa' => 'Bình gas mini', 'donViTinh' => 'bình'],
+            'Thiết bị hậu cần & Dựng trại tạm thời' => [
+                ['Bạt che mưa nắng loại lớn', 'Tấm'],
+                ['Nến', 'Hộp'],
+                ['Bật lửa', 'Cái'],
+                ['Chăn mền mỏng ấm', 'Chiếc'],
+                ['Màn chống muỗi', 'Chiếc'],
             ],
         ];
 
-        foreach ($hangHoasTheoDanhMuc as $tenDanhMuc => $hangHoas) {
-            $danhMuc = DB::table('DanhMucHang')
+        foreach ($duLieu as $tenDanhMuc => $hangHoas) {
+            $idDanhMuc = DB::table('DanhMucHang')
                 ->where('tenDanhMucHang', $tenDanhMuc)
-                ->first();
+                ->value('idDanhMucHang');
 
-            if (!$danhMuc) {
+            if (!$idDanhMuc) {
                 continue;
             }
 
-            foreach ($hangHoas as $hangHoa) {
+            foreach ($hangHoas as [$tenHangHoa, $donViTinh]) {
                 DB::table('HangHoa')->updateOrInsert(
                     [
-                        'idDanhMucHang' => $danhMuc->idDanhMucHang,
-                        'tenHangHoa' => $hangHoa['tenHangHoa'],
-                        'donViTinh' => $hangHoa['donViTinh'],
+                        'tenHangHoa' => $tenHangHoa,
                     ],
                     [
-                        'idDanhMucHang' => $danhMuc->idDanhMucHang,
-                        'tenHangHoa' => $hangHoa['tenHangHoa'],
-                        'donViTinh' => $hangHoa['donViTinh'],
+                        'idDanhMucHang' => $idDanhMuc,
+                        'idNhom' => null,
+                        'tenHangHoa' => $tenHangHoa,
+                        'donViTinh' => $donViTinh,
                         'trangThai' => 'Đang sử dụng',
                     ]
                 );

@@ -23,6 +23,11 @@
   .map-note {
     font-size: 13px;
   }
+
+  .table th,
+  .table td {
+    vertical-align: middle;
+  }
 </style>
 
 <div class="page-header">
@@ -49,12 +54,34 @@
   </div>
 @endif
 
+@if (session('error'))
+  <div class="alert alert-danger">
+    {{ session('error') }}
+  </div>
+@endif
+
+@if (request('tuKhoa'))
+  <div class="alert alert-info d-flex justify-content-between align-items-center">
+    <div>
+      Đang tìm kiếm:
+      <strong>{{ request('tuKhoa') }}</strong>
+    </div>
+
+    <a href="{{ url('/admin/dia-diem') }}" class="btn btn-sm btn-light">
+      Xóa tìm kiếm
+    </a>
+  </div>
+@endif
+
 <div class="row">
   <div class="col-lg-7">
     <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
+      <div class="card-header d-flex justify-content-between align-items-start flex-wrap gap-3">
         <div>
-          <h5 class="mb-0">Danh sách địa điểm</h5>
+          <h5 class="mb-1">Danh sách địa điểm</h5>
+          <small class="text-muted">
+            Tổng hiển thị: {{ $diaDiems->count() }}
+          </small>
         </div>
 
         <a href="{{ url('/admin/dia-diem/create') }}" class="btn btn-primary">
@@ -77,31 +104,39 @@
 
             <tbody>
               @forelse ($diaDiems as $diaDiem)
-                <tr class="dia-diem-row"
+                <tr class="dia-diem-row {{ session('diaDiemMoi') == $diaDiem->idDiaDiem ? 'table-primary' : '' }}"
                     data-id="{{ $diaDiem->idDiaDiem }}"
                     data-tinh-thanh="{{ $diaDiem->tinhThanh }}"
                     data-phuong-xa="{{ $diaDiem->phuongXa }}"
                     data-chi-tiet="{{ $diaDiem->chiTietDiaDiem }}"
                     data-vi-do="{{ $diaDiem->viDo }}"
                     data-kinh-do="{{ $diaDiem->kinhDo }}">
-                  <td class="text-center">{{ $diaDiem->idDiaDiem }}</td>
+                  <td class="text-center fw-semibold">
+                    {{ $diaDiem->idDiaDiem }}
+                  </td>
 
-                  <td>{{ $diaDiem->tinhThanh }}</td>
+                  <td>
+                    {{ $diaDiem->tinhThanh }}
+                  </td>
 
-                  <td>{{ $diaDiem->phuongXa ?? '-' }}</td>
+                  <td>
+                    {{ $diaDiem->phuongXa ?? '-' }}
+                  </td>
 
-                  <td>{{ $diaDiem->chiTietDiaDiem ?? '-' }}</td>
+                  <td>
+                    {{ $diaDiem->chiTietDiaDiem ?? '-' }}
+                  </td>
 
                   <td class="text-center">
                     @if ($diaDiem->viDo && $diaDiem->kinhDo)
-                      <span class="d-inline-flex align-items-center gap-2">
+                      <span class="d-inline-flex align-items-center justify-content-center gap-2">
                         <span class="rounded-circle bg-success d-inline-block" style="width: 8px; height: 8px;"></span>
-                        Có
+                        <span>Có</span>
                       </span>
                     @else
-                      <span class="d-inline-flex align-items-center gap-2 text-muted">
+                      <span class="d-inline-flex align-items-center justify-content-center gap-2 text-muted">
                         <span class="rounded-circle bg-secondary d-inline-block" style="width: 8px; height: 8px;"></span>
-                        Chưa có
+                        <span>Chưa có</span>
                       </span>
                     @endif
                   </td>
@@ -109,14 +144,17 @@
               @empty
                 <tr>
                   <td colspan="5" class="text-center text-muted py-4">
-                    Chưa có địa điểm nào.
+                    @if (request('tuKhoa'))
+                      Không tìm thấy địa điểm phù hợp.
+                    @else
+                      Chưa có địa điểm nào.
+                    @endif
                   </td>
                 </tr>
               @endforelse
             </tbody>
           </table>
         </div>
-
       </div>
     </div>
   </div>

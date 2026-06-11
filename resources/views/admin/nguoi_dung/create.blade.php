@@ -44,7 +44,7 @@
           <div class="mb-3">
             <label class="form-label">Họ tên <span class="text-danger">*</span></label>
             <input type="text" name="hoTen" class="form-control" value="{{ old('hoTen') }}"
-              placeholder="Nhập họ tên người dùng">
+              placeholder="Nhập họ tên người dùng" autocomplete="off">
           </div>
 
           <div class="row">
@@ -60,7 +60,7 @@
 
             <div class="col-md-6 mb-3">
               <label class="form-label">Ngày sinh</label>
-              <input type="date" name="ngaySinh" class="form-control" value="{{ old('ngaySinh') }}">
+              <input type="date" name="ngaySinh" class="form-control" value="{{ old('ngaySinh') }}" autocomplete="off">
             </div>
           </div>
 
@@ -68,14 +68,14 @@
             <div class="col-md-6 mb-3">
               <label class="form-label">Email</label>
               <input type="email" name="email" class="form-control" value="{{ old('email') }}"
-                placeholder="Ví dụ: user@gmail.com">
+                placeholder="Ví dụ: user@gmail.com" autocomplete="off">
               <small class="text-muted">Cần nhập Email hoặc SĐT, không được để trống cả hai.</small>
             </div>
 
             <div class="col-md-6 mb-3">
               <label class="form-label">Số điện thoại</label>
               <input type="text" name="sdt" class="form-control" value="{{ old('sdt') }}"
-                placeholder="Ví dụ: 0987654321">
+                placeholder="Ví dụ: 0987654321" autocomplete="off">
             </div>
           </div>
         </div>
@@ -90,7 +90,7 @@
           <div class="mb-3">
             <label class="form-label">Tên đăng nhập <span class="text-danger">*</span></label>
             <input type="text" name="tenDangNhap" class="form-control" value="{{ old('tenDangNhap') }}"
-              placeholder="Nhập tên đăng nhập">
+              placeholder="Nhập tên đăng nhập" autocomplete="off">
           </div>
 
           <div class="mb-3">
@@ -103,17 +103,18 @@
             <div class="col-md-6 mb-3">
               <label class="form-label">Vai trò</label>
               <select name="vaiTro" class="form-control">
-                <option value="Người dùng" {{ old('vaiTro', 'Người dùng') == 'Người dùng' ? 'selected' : '' }}>Người dùng</option>
-                <option value="Tình nguyện viên" {{ old('vaiTro') == 'Tình nguyện viên' ? 'selected' : '' }}>Tình nguyện viên</option>
+                <option value="Người dùng" {{ old('vaiTro', 'Người dùng') == 'Người dùng' ? 'selected' : '' }}>
+                  Người dùng
+                </option>
+                <option value="Quản trị viên" {{ old('vaiTro') == 'Quản trị viên' ? 'selected' : '' }}>
+                  Quản trị viên
+                </option>
               </select>
             </div>
 
             <div class="col-md-6 mb-3">
               <label class="form-label">Trạng thái</label>
-              <select name="trangThai" class="form-control">
-                <option value="Hoạt động" {{ old('trangThai', 'Hoạt động') == 'Hoạt động' ? 'selected' : '' }}>Hoạt động</option>
-                <option value="Bị khóa" {{ old('trangThai') == 'Bị khóa' ? 'selected' : '' }}>Bị khóa</option>
-              </select>
+              <input type="text" class="form-control" value="Hoạt động" readonly>
             </div>
           </div>
         </div>

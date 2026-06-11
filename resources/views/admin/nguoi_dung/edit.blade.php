@@ -46,7 +46,8 @@
             <label class="form-label">Họ tên <span class="text-danger">*</span></label>
             <input type="text" name="hoTen" class="form-control"
               value="{{ old('hoTen', $nguoiDung->hoTen) }}"
-              placeholder="Nhập họ tên người dùng">
+              placeholder="Nhập họ tên người dùng"
+              autocomplete="off">
           </div>
 
           <div class="row">
@@ -63,7 +64,7 @@
             <div class="col-md-6 mb-3">
               <label class="form-label">Ngày sinh</label>
               <input type="date" name="ngaySinh" class="form-control"
-                value="{{ old('ngaySinh', $nguoiDung->ngaySinh) }}">
+                value="{{ old('ngaySinh', $nguoiDung->ngaySinh) }}" autocomplete="off">
             </div>
           </div>
 
@@ -72,7 +73,7 @@
               <label class="form-label">Email</label>
               <input type="email" name="email" class="form-control"
                 value="{{ old('email', $nguoiDung->email) }}"
-                placeholder="Ví dụ: user@gmail.com">
+                placeholder="Ví dụ: user@gmail.com" autocomplete="off">
               <small class="text-muted">Cần nhập Email hoặc SĐT, không được để trống cả hai.</small>
             </div>
 
@@ -80,7 +81,7 @@
               <label class="form-label">Số điện thoại</label>
               <input type="text" name="sdt" class="form-control"
                 value="{{ old('sdt', $nguoiDung->sdt) }}"
-                placeholder="Ví dụ: 0987654321">
+                placeholder="Ví dụ: 0987654321" autocomplete="off">
             </div>
           </div>
         </div>
@@ -96,7 +97,7 @@
             <label class="form-label">Tên đăng nhập <span class="text-danger">*</span></label>
             <input type="text" name="tenDangNhap" class="form-control"
               value="{{ old('tenDangNhap', $nguoiDung->tenDangNhap) }}"
-              placeholder="Nhập tên đăng nhập">
+              placeholder="Nhập tên đăng nhập" autocomplete="off">
           </div>
 
           <div class="mb-3">
@@ -112,8 +113,12 @@
             <div class="col-md-6 mb-3">
               <label class="form-label">Vai trò</label>
               <select name="vaiTro" class="form-control">
-                <option value="Người dùng" {{ old('vaiTro', $nguoiDung->vaiTro) == 'Người dùng' ? 'selected' : '' }}>Người dùng</option>
-                <option value="Tình nguyện viên" {{ old('vaiTro', $nguoiDung->vaiTro) == 'Tình nguyện viên' ? 'selected' : '' }}>Tình nguyện viên</option>
+                <option value="Người dùng" {{ old('vaiTro', $nguoiDung->vaiTro) == 'Người dùng' ? 'selected' : '' }}>
+                  Người dùng
+                </option>
+                <option value="Quản trị viên" {{ old('vaiTro', $nguoiDung->vaiTro) == 'Quản trị viên' ? 'selected' : '' }}>
+                  Quản trị viên
+                </option>
               </select>
             </div>
 
@@ -147,17 +152,20 @@
 
         <div class="card-body">
           <div class="text-center mb-3">
-            @if ($nguoiDung->anhDaiDien)
-              <img src="{{ asset('storage/' . $nguoiDung->anhDaiDien) }}"
+            @php
+              if ($nguoiDung->anhDaiDien) {
+                  $duongDanAvatar = str_starts_with($nguoiDung->anhDaiDien, 'mantis/')
+                      ? asset($nguoiDung->anhDaiDien)
+                      : asset('storage/' . $nguoiDung->anhDaiDien);
+              } else {
+                  $duongDanAvatar = asset('storage/nguoi-dung/avatar.jpg');
+              }
+            @endphp
+
+            <img src="{{ $duongDanAvatar }}"
                 alt="Ảnh đại diện"
                 class="rounded-circle"
                 style="width: 120px; height: 120px; object-fit: cover;">
-            @else
-              <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center"
-                style="width: 120px; height: 120px;">
-                <i class="ti ti-user fs-1 text-muted"></i>
-              </div>
-            @endif
           </div>
 
           <div class="mb-3">

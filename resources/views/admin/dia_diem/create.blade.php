@@ -50,26 +50,26 @@
       </div>
     @endif
 
-    <form action="{{ url('/admin/dia-diem') }}" method="POST">
+    <form action="{{ url('/admin/dia-diem') }}" method="POST" autocomplete="off">
       @csrf
 
       <div class="row">
         <div class="col-md-4 mb-3">
           <label class="form-label">Tỉnh/Thành <span class="text-danger">*</span></label>
           <input type="text" id="tinhThanh" name="tinhThanh" class="form-control"
-            value="{{ old('tinhThanh') }}" placeholder="Ví dụ: Đà Nẵng">
+            value="{{ old('tinhThanh') }}" placeholder="Ví dụ: Đà Nẵng" autocomplete="off">
         </div>
 
         <div class="col-md-4 mb-3">
           <label class="form-label">Phường/Xã</label>
           <input type="text" id="phuongXa" name="phuongXa" class="form-control"
-            value="{{ old('phuongXa') }}" placeholder="Ví dụ: Hải Châu">
+            value="{{ old('phuongXa') }}" placeholder="Ví dụ: Hải Châu" autocomplete="off">
         </div>
 
         <div class="col-md-4 mb-3">
           <label class="form-label">Chi tiết địa điểm</label>
           <input type="text" id="chiTietDiaDiem" name="chiTietDiaDiem" class="form-control"
-            value="{{ old('chiTietDiaDiem') }}" placeholder="Ví dụ: 48 Cao Thắng">
+            value="{{ old('chiTietDiaDiem') }}" placeholder="Ví dụ: 48 Cao Thắng" autocomplete="off">
         </div>
       </div>
 
@@ -85,7 +85,7 @@
           Bạn có thể bấm “Tìm trên bản đồ” sau khi nhập địa chỉ hoặc click trực tiếp lên bản đồ để chọn vị trí chính xác.
         </small>
 
-        <div id="createDiaDiemMap"></div>
+        <div id="createDiaDiemMap" class="mt-2"></div>
       </div>
 
       <div class="row">
@@ -135,43 +135,187 @@
       marker = L.marker([lat, lng]).addTo(map);
     }
 
-    map.setView([lat, lng], 15);
+    marker.bindPopup('Vị trí đã chọn. Bạn có thể click lại nếu chưa chính xác.').openPopup();
+    map.setView([lat, lng], 16);
   }
 
   map.on('click', function(e) {
     setLocation(e.latlng.lat, e.latlng.lng);
   });
 
+  function boDauTiengViet(chuoi) {
+    return chuoi
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/Đ/g, 'D');
+  }
+
+  function chuanHoaTinhThanh(chuoi) {
+    return chuoi
+      .trim()
+      .replace(/^TP\.?\s+/i, '')
+      .replace(/^Thành phố\s+/i, '')
+      .replace(/^Thanh pho\s+/i, '')
+      .replace(/^Tỉnh\s+/i, '')
+      .replace(/^Tinh\s+/i, '')
+      .trim();
+  }
+
+  function chuanHoaChiTiet(chuoi) {
+    return chuoi
+      .trim()
+      .replace(/^Số\s+/i, '')
+      .replace(/^So\s+/i, '')
+      .replace(/^No\.?\s+/i, '')
+      .replace(/\b0+(\d+)/g, '$1')
+      .trim();
+  }
+
+  function taoDanhSachDiaChi() {
+    const chiTietGoc = document.getElementById('chiTietDiaDiem').value.trim();
+    const phuongXaGoc = document.getElementById('phuongXa').value.trim();
+    const tinhThanhGoc = document.getElementById('tinhThanh').value.trim();
+
+    const chiTiet = chuanHoaChiTiet(chiTietGoc);
+    const phuongXa = chuanHoaTinhThanh(phuongXaGoc);
+    const tinhThanh = chuanHoaTinhThanh(tinhThanhGoc);
+
+    const chiTietKhongDau = boDauTiengViet(chiTiet);
+    const phuongXaKhongDau = boDauTiengViet(phuongXa);
+    const tinhThanhKhongDau = boDauTiengViet(tinhThanh);
+
+    const danhSach = [];
+
+    if (chiTietGoc && phuongXa && tinhThanh) {
+      danhSach.push(`${chiTietGoc}, ${phuongXa}, ${tinhThanh}, Việt Nam`);
+    }
+
+    if (chiTiet && phuongXa && tinhThanh) {
+      danhSach.push(`${chiTiet}, ${phuongXa}, ${tinhThanh}, Việt Nam`);
+    }
+
+    if (chiTiet && tinhThanh) {
+      danhSach.push(`${chiTiet}, ${tinhThanh}, Việt Nam`);
+    }
+
+    if (chiTietKhongDau && phuongXaKhongDau && tinhThanhKhongDau) {
+      danhSach.push(`${chiTietKhongDau}, ${phuongXaKhongDau}, ${tinhThanhKhongDau}, Vietnam`);
+    }
+
+    if (chiTietKhongDau && tinhThanhKhongDau) {
+      danhSach.push(`${chiTietKhongDau}, ${tinhThanhKhongDau}, Vietnam`);
+    }
+
+    if (phuongXa && tinhThanh) {
+      danhSach.push(`${phuongXa}, ${tinhThanh}, Việt Nam`);
+    }
+
+    if (tinhThanh) {
+      danhSach.push(`${tinhThanh}, Việt Nam`);
+    }
+
+    return [...new Set(danhSach.filter(Boolean))];
+  }
+
+  function timBangNominatim(diaChi) {
+    const url = 'https://nominatim.openstreetmap.org/search'
+      + '?format=json'
+      + '&limit=1'
+      + '&countrycodes=vn'
+      + '&accept-language=vi'
+      + '&q=' + encodeURIComponent(diaChi);
+
+    return fetch(url)
+      .then(function(response) {
+        if (!response.ok) {
+          return null;
+        }
+
+        return response.json();
+      })
+      .then(function(data) {
+        if (!data || data.length === 0) {
+          return null;
+        }
+
+        return {
+          lat: parseFloat(data[0].lat),
+          lng: parseFloat(data[0].lon)
+        };
+      })
+      .catch(function() {
+        return null;
+      });
+  }
+
+  function timBangPhoton(diaChi) {
+    const url = 'https://photon.komoot.io/api/'
+      + '?limit=1'
+      + '&q=' + encodeURIComponent(diaChi);
+
+    return fetch(url)
+      .then(function(response) {
+        if (!response.ok) {
+          return null;
+        }
+
+        return response.json();
+      })
+      .then(function(data) {
+        if (!data || !data.features || data.features.length === 0) {
+          return null;
+        }
+
+        const toaDo = data.features[0].geometry.coordinates;
+
+        return {
+          lat: parseFloat(toaDo[1]),
+          lng: parseFloat(toaDo[0])
+        };
+      })
+      .catch(function() {
+        return null;
+      });
+  }
+
+  function timMotDiaChi(diaChi) {
+    return timBangNominatim(diaChi).then(function(ketQuaNominatim) {
+      if (ketQuaNominatim) {
+        return ketQuaNominatim;
+      }
+
+      return timBangPhoton(diaChi);
+    });
+  }
+
+  function timDiaChiTheoDanhSach(danhSachDiaChi, index = 0) {
+    if (index >= danhSachDiaChi.length) {
+      alert('Không tìm thấy địa điểm phù hợp. Bạn có thể click trực tiếp trên bản đồ để chọn vị trí.');
+      return;
+    }
+
+    const diaChi = danhSachDiaChi[index];
+
+    timMotDiaChi(diaChi).then(function(ketQua) {
+      if (!ketQua) {
+        timDiaChiTheoDanhSach(danhSachDiaChi, index + 1);
+        return;
+      }
+
+      setLocation(ketQua.lat, ketQua.lng);
+    });
+  }
+
   document.getElementById('btnTimTrenBanDo').addEventListener('click', function() {
-    const chiTiet = document.getElementById('chiTietDiaDiem').value.trim();
-    const phuongXa = document.getElementById('phuongXa').value.trim();
-    const tinhThanh = document.getElementById('tinhThanh').value.trim();
+    const danhSachDiaChi = taoDanhSachDiaChi();
 
-    const diaChi = [chiTiet, phuongXa, tinhThanh, 'Việt Nam']
-      .filter(Boolean)
-      .join(', ');
-
-    if (!tinhThanh && !phuongXa && !chiTiet) {
+    if (danhSachDiaChi.length === 0) {
       alert('Vui lòng nhập ít nhất một thông tin địa chỉ trước khi tìm.');
       return;
     }
 
-    fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(diaChi))
-      .then(response => response.json())
-      .then(data => {
-        if (!data || data.length === 0) {
-          alert('Không tìm thấy địa điểm phù hợp. Bạn có thể click trực tiếp trên bản đồ để chọn vị trí.');
-          return;
-        }
-
-        const lat = parseFloat(data[0].lat);
-        const lng = parseFloat(data[0].lon);
-
-        setLocation(lat, lng);
-      })
-      .catch(() => {
-        alert('Không thể tìm địa điểm lúc này. Bạn có thể click trực tiếp trên bản đồ để chọn vị trí.');
-      });
+    timDiaChiTheoDanhSach(danhSachDiaChi);
   });
 </script>
 @endsection

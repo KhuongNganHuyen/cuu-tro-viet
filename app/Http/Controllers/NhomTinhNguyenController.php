@@ -9,69 +9,107 @@ use App\Models\ThanhVienNhom;
 use App\Models\ChienDichCuuTro;
 use App\Models\TiepNhanYeuCau;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class NhomTinhNguyenController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $tuKhoa = trim((string) $request->input('tuKhoa'));
+
         $nhomTinhNguyens = NhomTinhNguyen::with(['nhomTruong', 'diaDiem'])
-            ->orderBy('idNhom', 'desc')
+            ->orderBy('idNhom', 'asc')
             ->get();
+
+        if ($tuKhoa !== '') {
+            $tuKhoaKhongDau = $this->boDauTiengViet($tuKhoa);
+
+            $nhomTinhNguyens = $nhomTinhNguyens->filter(function ($nhom) use ($tuKhoa, $tuKhoaKhongDau) {
+                $diaDiem = $nhom->diaDiem;
+
+                $noiDungTimKiem = implode(' ', [
+                    $nhom->idNhom,
+                    $nhom->tenNhom,
+                    $nhom->moTa,
+                    $nhom->trangThai,
+                    $nhom->ngayTao,
+                    $nhom->nhomTruong->hoTen ?? '',
+                    $nhom->nhomTruong->tenDangNhap ?? '',
+                    $diaDiem->chiTietDiaDiem ?? '',
+                    $diaDiem->phuongXa ?? '',
+                    $diaDiem->tinhThanh ?? '',
+                ]);
+
+                $noiDungKhongDau = $this->boDauTiengViet($noiDungTimKiem);
+
+                return str_contains(mb_strtolower($noiDungTimKiem, 'UTF-8'), mb_strtolower($tuKhoa, 'UTF-8'))
+                    || str_contains(mb_strtolower($noiDungKhongDau, 'UTF-8'), mb_strtolower($tuKhoaKhongDau, 'UTF-8'));
+            })->values();
+        }
+
+        if ($tuKhoa === '' && session()->has('nhomMoi')) {
+            $idMoi = session('nhomMoi');
+
+            $nhomTinhNguyens = $nhomTinhNguyens->sortBy(function ($nhom) use ($idMoi) {
+                return $nhom->idNhom == $idMoi ? -1 : $nhom->idNhom;
+            })->values();
+        }
 
         return view('admin.nhom_tinh_nguyen.index', compact('nhomTinhNguyens'));
     }
 
-public function create()
-{
-    $nguoiDungs = NguoiDung::where('trangThai', 'Hoạt động')
-        ->where('vaiTro', '!=', 'Quản trị viên')
-        ->orderBy('hoTen')
-        ->get();
+    public function create()
+    {
+        $nguoiDungs = NguoiDung::where('trangThai', 'Hoạt động')
+            ->where('vaiTro', '!=', 'Quản trị viên')
+            ->orderBy('hoTen')
+            ->get();
 
-    $diaDiems = DiaDiem::orderBy('tinhThanh')
-        ->orderBy('phuongXa')
-        ->get();
+        $diaDiems = DiaDiem::orderBy('tinhThanh')
+            ->orderBy('phuongXa')
+            ->get();
 
-    $nguoiDungJson = $nguoiDungs->map(function ($nguoiDung) {
-        return [
-            'idNguoiDung' => $nguoiDung->idNguoiDung,
-            'hoTen' => $nguoiDung->hoTen,
-            'tenDangNhap' => $nguoiDung->tenDangNhap,
-            'email' => $nguoiDung->email,
-            'sdt' => $nguoiDung->sdt,
-            'label' => $nguoiDung->hoTen . ' - ' . $nguoiDung->tenDangNhap,
-        ];
-    })->values()->toJson();
+        $nguoiDungJson = $nguoiDungs->map(function ($nguoiDung) {
+            return [
+                'idNguoiDung' => $nguoiDung->idNguoiDung,
+                'hoTen' => $nguoiDung->hoTen,
+                'tenDangNhap' => $nguoiDung->tenDangNhap,
+                'email' => $nguoiDung->email,
+                'sdt' => $nguoiDung->sdt,
+                'label' => $nguoiDung->hoTen . ' - ' . $nguoiDung->tenDangNhap,
+            ];
+        })->values()->toJson();
 
-    $diaDiemJson = $diaDiems->map(function ($diaDiem) {
-        return [
-            'idDiaDiem' => $diaDiem->idDiaDiem,
-            'tinhThanh' => $diaDiem->tinhThanh,
-            'phuongXa' => $diaDiem->phuongXa,
-            'chiTietDiaDiem' => $diaDiem->chiTietDiaDiem,
-            'viDo' => $diaDiem->viDo,
-            'kinhDo' => $diaDiem->kinhDo,
-            'label' => trim(
-                ($diaDiem->chiTietDiaDiem ? $diaDiem->chiTietDiaDiem . ', ' : '') .
-                ($diaDiem->phuongXa ? $diaDiem->phuongXa . ', ' : '') .
-                $diaDiem->tinhThanh
-            ),
-        ];
-    })->values()->toJson();
+        $diaDiemJson = $diaDiems->map(function ($diaDiem) {
+            return [
+                'idDiaDiem' => $diaDiem->idDiaDiem,
+                'tinhThanh' => $diaDiem->tinhThanh,
+                'phuongXa' => $diaDiem->phuongXa,
+                'chiTietDiaDiem' => $diaDiem->chiTietDiaDiem,
+                'viDo' => $diaDiem->viDo,
+                'kinhDo' => $diaDiem->kinhDo,
+                'label' => trim(
+                    ($diaDiem->chiTietDiaDiem ? $diaDiem->chiTietDiaDiem . ', ' : '') .
+                    ($diaDiem->phuongXa ? $diaDiem->phuongXa . ', ' : '') .
+                    $diaDiem->tinhThanh
+                ),
+            ];
+        })->values()->toJson();
 
-    return view('admin.nhom_tinh_nguyen.create', compact(
-        'nguoiDungs',
-        'diaDiems',
-        'nguoiDungJson',
-        'diaDiemJson'
-    ));
-}
+        return view('admin.nhom_tinh_nguyen.create', compact(
+            'nguoiDungs',
+            'diaDiems',
+            'nguoiDungJson',
+            'diaDiemJson'
+        ));
+    }
 
     public function store(Request $request)
     {
         $request->validate([
             'tenNhom' => 'required|string|max:255',
             'moTa' => 'nullable|string|max:255',
+            'anhDaiDien' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'idNhomTruong' => 'required|exists:NguoiDung,idNguoiDung',
 
             'idDiaDiemCoSan' => 'nullable|exists:DiaDiem,idDiaDiem',
@@ -81,9 +119,14 @@ public function create()
             'viDo' => 'required|numeric',
             'kinhDo' => 'required|numeric',
 
-            'trangThai' => 'required|string|max:255',
+            'trangThai' => 'nullable|string|in:Đang hoạt động',
         ], [
             'tenNhom.required' => 'Vui lòng nhập tên nhóm.',
+
+            'anhDaiDien.image' => 'Ảnh đại diện nhóm phải là file hình ảnh.',
+            'anhDaiDien.mimes' => 'Ảnh đại diện nhóm phải có định dạng jpg, jpeg, png hoặc webp.',
+            'anhDaiDien.max' => 'Ảnh đại diện nhóm không được vượt quá 2MB.',
+
             'idNhomTruong.required' => 'Vui lòng chọn nhóm trưởng hợp lệ từ danh sách gợi ý.',
             'idNhomTruong.exists' => 'Nhóm trưởng không hợp lệ.',
 
@@ -92,39 +135,31 @@ public function create()
             'chiTietDiaDiem.required' => 'Vui lòng nhập địa chỉ chi tiết.',
             'viDo.required' => 'Vui lòng chọn vị trí trên bản đồ để lấy vĩ độ.',
             'kinhDo.required' => 'Vui lòng chọn vị trí trên bản đồ để lấy kinh độ.',
+            'viDo.numeric' => 'Vĩ độ phải là số.',
+            'kinhDo.numeric' => 'Kinh độ phải là số.',
+
+            'trangThai.required' => 'Vui lòng chọn trạng thái.',
         ]);
 
-        $diaDiem = null;
+        $diaDiem = $this->layHoacTaoDiaDiem($request);
 
-        if ($request->idDiaDiemCoSan) {
-            $diaDiem = DiaDiem::findOrFail($request->idDiaDiemCoSan);
-        } else {
-            $diaDiem = DiaDiem::where('tinhThanh', $request->tinhThanh)
-                ->where('phuongXa', $request->phuongXa)
-                ->where('chiTietDiaDiem', $request->chiTietDiaDiem)
-                ->first();
+        $duongDanAnh = 'nhom-tinh-nguyen/group.jpg';
 
-            if (!$diaDiem) {
-                $diaDiem = DiaDiem::create([
-                    'tinhThanh' => $request->tinhThanh,
-                    'phuongXa' => $request->phuongXa,
-                    'chiTietDiaDiem' => $request->chiTietDiaDiem,
-                    'viDo' => $request->viDo,
-                    'kinhDo' => $request->kinhDo,
-                ]);
-            }
+        if ($request->hasFile('anhDaiDien')) {
+            $duongDanAnh = $request->file('anhDaiDien')->store('nhom-tinh-nguyen', 'public');
         }
 
         $nhomTinhNguyen = NhomTinhNguyen::create([
-            'tenNhom' => $request->tenNhom,
+            'tenNhom' => trim($request->tenNhom),
             'moTa' => $request->moTa,
+            'anhDaiDien' => $duongDanAnh,
             'idNhomTruong' => $request->idNhomTruong,
             'idDiaDiem' => $diaDiem->idDiaDiem,
-            'trangThai' => $request->trangThai,
+            'trangThai' => 'Đang hoạt động',
             'ngayTao' => now(),
         ]);
 
-        if ($request->trangThai == 'Đang hoạt động' || $request->trangThai == 'Hoạt động') {
+        if ($nhomTinhNguyen->trangThai == 'Đang hoạt động') {
             ThanhVienNhom::firstOrCreate(
                 [
                     'idNhom' => $nhomTinhNguyen->idNhom,
@@ -136,8 +171,10 @@ public function create()
                 ]
             );
         }
+
         return redirect('/admin/nhom-tinh-nguyen/' . $nhomTinhNguyen->idNhom)
-            ->with('success', 'Thêm nhóm tình nguyện thành công.');
+            ->with('success', 'Thêm nhóm tình nguyện thành công.')
+            ->with('nhomMoi', $nhomTinhNguyen->idNhom);
     }
 
     public function show(int $id)
@@ -151,15 +188,21 @@ public function create()
             ->orderBy('idThanhVien', 'desc')
             ->get();
 
-        $chienDichs = ChienDichCuuTro::with(['thienTai', 'diaDiem'])
+        $chienDichs = ChienDichCuuTro::with(['suKien', 'diaDiem'])
             ->where('idNhom', $id)
             ->orderBy('idChienDich', 'desc')
+            ->get();
+
+        $yeuCauDaNhans = TiepNhanYeuCau::with(['yeuCau.diaDiem'])
+            ->where('idNhom', $id)
+            ->orderBy('idTiepNhan', 'desc')
             ->get();
 
         return view('admin.nhom_tinh_nguyen.show', compact(
             'nhomTinhNguyen',
             'thanhViens',
-            'chienDichs'
+            'chienDichs',
+            'yeuCauDaNhans'
         ));
     }
 
@@ -168,9 +211,13 @@ public function create()
         $nhomTinhNguyen = NhomTinhNguyen::with(['diaDiem', 'nhomTruong'])
             ->findOrFail($id);
 
-        $nguoiDungs = NguoiDung::where('trangThai', 'Hoạt động')
-            ->where('vaiTro', '!=', 'Quản trị viên')
-            ->orWhere('idNguoiDung', $nhomTinhNguyen->idNhomTruong)
+        $nguoiDungs = NguoiDung::where(function ($query) use ($nhomTinhNguyen) {
+                $query->where(function ($q) {
+                    $q->where('trangThai', 'Hoạt động')
+                        ->where('vaiTro', '!=', 'Quản trị viên');
+                })
+                ->orWhere('idNguoiDung', $nhomTinhNguyen->idNhomTruong);
+            })
             ->orderBy('hoTen')
             ->get();
 
@@ -227,6 +274,7 @@ public function create()
         $request->validate([
             'tenNhom' => 'required|string|max:255',
             'moTa' => 'nullable|string|max:255',
+            'anhDaiDien' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'idNhomTruong' => 'required|exists:NguoiDung,idNguoiDung',
 
             'idDiaDiemCoSan' => 'nullable|exists:DiaDiem,idDiaDiem',
@@ -236,9 +284,14 @@ public function create()
             'viDo' => 'required|numeric',
             'kinhDo' => 'required|numeric',
 
-            'trangThai' => 'required|string|max:255',
+            'trangThai' => 'required|string|in:Chờ duyệt,Đang hoạt động,Tạm ngừng hoạt động,Ngừng hoạt động,Bị khóa,Từ chối',
         ], [
             'tenNhom.required' => 'Vui lòng nhập tên nhóm.',
+
+            'anhDaiDien.image' => 'Ảnh đại diện nhóm phải là file hình ảnh.',
+            'anhDaiDien.mimes' => 'Ảnh đại diện nhóm phải có định dạng jpg, jpeg, png hoặc webp.',
+            'anhDaiDien.max' => 'Ảnh đại diện nhóm không được vượt quá 2MB.',
+
             'idNhomTruong.required' => 'Vui lòng chọn nhóm trưởng hợp lệ từ danh sách gợi ý.',
             'idNhomTruong.exists' => 'Nhóm trưởng không hợp lệ.',
 
@@ -252,41 +305,53 @@ public function create()
 
             'trangThai.required' => 'Vui lòng chọn trạng thái.',
         ]);
-        
-        $tinhThanh = trim($request->tinhThanh);
-        $phuongXa = trim($request->phuongXa);
-        $chiTietDiaDiem = trim($request->chiTietDiaDiem);
 
-        $diaDiem = null;
+        $trangThaiHienTai = $nhomTinhNguyen->trangThai;
+        $trangThaiMoi = $request->trangThai;
 
-        if ($request->idDiaDiemCoSan) {
-            $diaDiem = DiaDiem::findOrFail($request->idDiaDiemCoSan);
-        } else {
-            $diaDiem = DiaDiem::where('tinhThanh', $tinhThanh)
-                ->where('phuongXa', $phuongXa)
-                ->where('chiTietDiaDiem', $chiTietDiaDiem)
-                ->first();
-
-            if (!$diaDiem) {
-                $diaDiem = DiaDiem::create([
-                    'tinhThanh' => $tinhThanh,
-                    'phuongXa' => $phuongXa,
-                    'chiTietDiaDiem' => $chiTietDiaDiem,
-                    'viDo' => $request->viDo,
-                    'kinhDo' => $request->kinhDo,
-                ]);
-            }
+        if ($trangThaiHienTai == 'Từ chối' && $trangThaiMoi != 'Từ chối') {
+            return back()
+                ->withInput()
+                ->withErrors(['trangThai' => 'Nhóm đã bị từ chối thì không thể chuyển sang trạng thái khác.']);
         }
 
-        $nhomTinhNguyen->update([
-            'tenNhom' => $request->tenNhom,
+        if ($trangThaiHienTai == 'Chờ duyệt') {
+            $trangThaiHopLe = ['Chờ duyệt', 'Đang hoạt động', 'Từ chối'];
+        } else {
+            $trangThaiHopLe = ['Đang hoạt động', 'Tạm ngừng hoạt động', 'Ngừng hoạt động', 'Bị khóa'];
+        }
+
+        if (!in_array($trangThaiMoi, $trangThaiHopLe)) {
+            return back()
+                ->withInput()
+                ->withErrors(['trangThai' => 'Trạng thái nhóm không hợp lệ theo luồng hiện tại.']);
+        }
+
+        $diaDiem = $this->layHoacTaoDiaDiem($request);
+
+        $duLieuCapNhat = [
+            'tenNhom' => trim($request->tenNhom),
             'moTa' => $request->moTa,
             'idNhomTruong' => $request->idNhomTruong,
             'idDiaDiem' => $diaDiem->idDiaDiem,
             'trangThai' => $request->trangThai,
-        ]);
+        ];
 
-        if ($request->trangThai == 'Đang hoạt động' || $request->trangThai == 'Hoạt động') {
+        if ($request->hasFile('anhDaiDien')) {
+            if (
+                $nhomTinhNguyen->anhDaiDien
+                && $nhomTinhNguyen->anhDaiDien !== 'nhom-tinh-nguyen/group.jpg'
+                && Storage::disk('public')->exists($nhomTinhNguyen->anhDaiDien)
+            ) {
+                Storage::disk('public')->delete($nhomTinhNguyen->anhDaiDien);
+            }
+
+            $duLieuCapNhat['anhDaiDien'] = $request->file('anhDaiDien')->store('nhom-tinh-nguyen', 'public');
+        }
+
+        $nhomTinhNguyen->update($duLieuCapNhat);
+
+        if ($request->trangThai == 'Đang hoạt động') {
             $thanhVienMoi = ThanhVienNhom::firstOrCreate(
                 [
                     'idNhom' => $nhomTinhNguyen->idNhom,
@@ -334,6 +399,14 @@ public function create()
                 ->with('error', 'Không thể xóa nhóm này vì đang có dữ liệu liên quan. Bạn có thể khóa nhóm thay vì xóa.');
         }
 
+        if (
+            $nhomTinhNguyen->anhDaiDien
+            && $nhomTinhNguyen->anhDaiDien !== 'nhom-tinh-nguyen/group.jpg'
+            && Storage::disk('public')->exists($nhomTinhNguyen->anhDaiDien)
+        ) {
+            Storage::disk('public')->delete($nhomTinhNguyen->anhDaiDien);
+        }
+
         $nhomTinhNguyen->delete();
 
         return redirect('/admin/nhom-tinh-nguyen')
@@ -351,29 +424,24 @@ public function create()
 
         if ($nhomTinhNguyen->trangThai == 'Từ chối') {
             return redirect('/admin/nhom-tinh-nguyen/' . $id)
-                ->with('error', 'Nhóm đã bị từ chối, không thể khóa/mở trạng thái như nhóm đang hoạt động.');
+                ->with('error', 'Nhóm đã bị từ chối, không thể mở lại hoạt động.');
         }
 
-        if ($nhomTinhNguyen->trangThai == 'Đang hoạt động' || $nhomTinhNguyen->trangThai == 'Hoạt động') {
-            $nhomTinhNguyen->update([
-                'trangThai' => 'Bị khóa',
-            ]);
-
-            return redirect('/admin/nhom-tinh-nguyen/' . $id)
-                ->with('success', 'Khóa nhóm tình nguyện thành công.');
-        }
-
-        if ($nhomTinhNguyen->trangThai == 'Bị khóa' || $nhomTinhNguyen->trangThai == 'Tạm ngưng') {
+        if ($nhomTinhNguyen->trangThai == 'Bị khóa') {
             $nhomTinhNguyen->update([
                 'trangThai' => 'Đang hoạt động',
             ]);
 
             return redirect('/admin/nhom-tinh-nguyen/' . $id)
-                ->with('success', 'Mở nhóm tình nguyện thành công.');
+                ->with('success', 'Mở khóa nhóm tình nguyện thành công.');
         }
 
+        $nhomTinhNguyen->update([
+            'trangThai' => 'Bị khóa',
+        ]);
+
         return redirect('/admin/nhom-tinh-nguyen/' . $id)
-            ->with('error', 'Trạng thái nhóm không hợp lệ.');
+            ->with('success', 'Khóa nhóm tình nguyện thành công.');
     }
 
     public function duyetNhom(int $id)
@@ -389,7 +457,6 @@ public function create()
             'trangThai' => 'Đang hoạt động',
         ]);
 
-        // Sau khi duyệt, tự thêm người đăng ký làm nhóm trưởng trong bảng thành viên nhóm
         $daLaThanhVien = ThanhVienNhom::where('idNhom', $nhomTinhNguyen->idNhom)
             ->where('idNguoiDung', $nhomTinhNguyen->idNhomTruong)
             ->exists();
@@ -422,5 +489,56 @@ public function create()
 
         return redirect('/admin/nhom-tinh-nguyen/' . $id)
             ->with('success', 'Đã từ chối đăng ký tạo nhóm.');
+    }
+
+    private function layHoacTaoDiaDiem(Request $request): DiaDiem
+    {
+        $tinhThanh = trim($request->tinhThanh);
+        $phuongXa = trim($request->phuongXa);
+        $chiTietDiaDiem = trim($request->chiTietDiaDiem);
+
+        $diaDiem = DiaDiem::where('tinhThanh', $tinhThanh)
+            ->where('phuongXa', $phuongXa)
+            ->where('chiTietDiaDiem', $chiTietDiaDiem)
+            ->first();
+
+        if ($diaDiem) {
+            return $diaDiem;
+        }
+
+        return DiaDiem::create([
+            'tinhThanh' => $tinhThanh,
+            'phuongXa' => $phuongXa,
+            'chiTietDiaDiem' => $chiTietDiaDiem,
+            'viDo' => $request->viDo,
+            'kinhDo' => $request->kinhDo,
+        ]);
+    }
+
+    private function boDauTiengViet(string $chuoi): string
+    {
+        $chuoi = mb_strtolower($chuoi, 'UTF-8');
+
+        $coDau = [
+            'à', 'á', 'ạ', 'ả', 'ã', 'â', 'ầ', 'ấ', 'ậ', 'ẩ', 'ẫ', 'ă', 'ằ', 'ắ', 'ặ', 'ẳ', 'ẵ',
+            'è', 'é', 'ẹ', 'ẻ', 'ẽ', 'ê', 'ề', 'ế', 'ệ', 'ể', 'ễ',
+            'ì', 'í', 'ị', 'ỉ', 'ĩ',
+            'ò', 'ó', 'ọ', 'ỏ', 'õ', 'ô', 'ồ', 'ố', 'ộ', 'ổ', 'ỗ', 'ơ', 'ờ', 'ớ', 'ợ', 'ở', 'ỡ',
+            'ù', 'ú', 'ụ', 'ủ', 'ũ', 'ư', 'ừ', 'ứ', 'ự', 'ử', 'ữ',
+            'ỳ', 'ý', 'ỵ', 'ỷ', 'ỹ',
+            'đ',
+        ];
+
+        $khongDau = [
+            'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a',
+            'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',
+            'i', 'i', 'i', 'i', 'i',
+            'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o',
+            'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u',
+            'y', 'y', 'y', 'y', 'y',
+            'd',
+        ];
+
+        return str_replace($coDau, $khongDau, $chuoi);
     }
 }

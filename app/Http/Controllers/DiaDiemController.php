@@ -7,9 +7,38 @@ use Illuminate\Http\Request;
 
 class DiaDiemController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $diaDiems = DiaDiem::orderBy('idDiaDiem', 'desc')->get();
+        $tuKhoa = trim((string) $request->input('tuKhoa'));
+
+        $diaDiems = DiaDiem::orderBy('idDiaDiem', 'asc')->get();
+
+        if ($tuKhoa !== '') {
+            $tuKhoaKhongDau = $this->boDauTiengViet($tuKhoa);
+
+            $diaDiems = $diaDiems->filter(function ($diaDiem) use ($tuKhoa, $tuKhoaKhongDau) {
+                $noiDungTimKiem = implode(' ', [
+                    $diaDiem->tinhThanh,
+                    $diaDiem->phuongXa,
+                    $diaDiem->chiTietDiaDiem,
+                    $diaDiem->viDo,
+                    $diaDiem->kinhDo,
+                ]);
+
+                $noiDungKhongDau = $this->boDauTiengViet($noiDungTimKiem);
+
+                return str_contains(mb_strtolower($noiDungTimKiem), mb_strtolower($tuKhoa))
+                    || str_contains(mb_strtolower($noiDungKhongDau), mb_strtolower($tuKhoaKhongDau));
+            })->values();
+        }
+
+        if ($tuKhoa === '' && session()->has('diaDiemMoi')) {
+            $idMoi = session('diaDiemMoi');
+
+            $diaDiems = $diaDiems->sortBy(function ($diaDiem) use ($idMoi) {
+                return $diaDiem->idDiaDiem == $idMoi ? -1 : $diaDiem->idDiaDiem;
+            })->values();
+        }
 
         return view('admin.dia_diem.index', compact('diaDiems'));
     }
@@ -33,15 +62,17 @@ class DiaDiemController extends Controller
             'kinhDo.numeric' => 'Kinh độ phải là số.',
         ]);
 
-        DiaDiem::create($request->only([
-            'tinhThanh',
-            'phuongXa',
-            'chiTietDiaDiem',
-            'viDo',
-            'kinhDo',
-        ]));
+        $diaDiem = DiaDiem::create([
+            'tinhThanh' => $request->tinhThanh,
+            'phuongXa' => $request->phuongXa,
+            'chiTietDiaDiem' => $request->chiTietDiaDiem,
+            'viDo' => $request->viDo,
+            'kinhDo' => $request->kinhDo,
+        ]);
 
-        return redirect('/admin/dia-diem')->with('success', 'Thêm địa điểm thành công.');
+        return redirect('/admin/dia-diem')
+            ->with('success', 'Thêm địa điểm thành công.')
+            ->with('diaDiemMoi', $diaDiem->idDiaDiem);
     }
 
     public function show(int $id)
@@ -82,7 +113,8 @@ class DiaDiemController extends Controller
             'kinhDo',
         ]));
 
-        return redirect('/admin/dia-diem')->with('success', 'Cập nhật địa điểm thành công.');
+        return redirect('/admin/dia-diem')
+            ->with('success', 'Cập nhật địa điểm thành công.');
     }
 
     public function destroy(int $id)
@@ -104,5 +136,32 @@ class DiaDiemController extends Controller
 
         return redirect('/admin/dia-diem')
             ->with('success', 'Xóa địa điểm thành công.');
+    }
+
+    private function boDauTiengViet(string $chuoi): string
+    {
+        $chuoi = mb_strtolower($chuoi, 'UTF-8');
+
+        $coDau = [
+            'à', 'á', 'ạ', 'ả', 'ã', 'â', 'ầ', 'ấ', 'ậ', 'ẩ', 'ẫ', 'ă', 'ằ', 'ắ', 'ặ', 'ẳ', 'ẵ',
+            'è', 'é', 'ẹ', 'ẻ', 'ẽ', 'ê', 'ề', 'ế', 'ệ', 'ể', 'ễ',
+            'ì', 'í', 'ị', 'ỉ', 'ĩ',
+            'ò', 'ó', 'ọ', 'ỏ', 'õ', 'ô', 'ồ', 'ố', 'ộ', 'ổ', 'ỗ', 'ơ', 'ờ', 'ớ', 'ợ', 'ở', 'ỡ',
+            'ù', 'ú', 'ụ', 'ủ', 'ũ', 'ư', 'ừ', 'ứ', 'ự', 'ử', 'ữ',
+            'ỳ', 'ý', 'ỵ', 'ỷ', 'ỹ',
+            'đ',
+        ];
+
+        $khongDau = [
+            'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a',
+            'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',
+            'i', 'i', 'i', 'i', 'i',
+            'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o',
+            'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u',
+            'y', 'y', 'y', 'y', 'y',
+            'd',
+        ];
+
+        return str_replace($coDau, $khongDau, $chuoi);
     }
 }

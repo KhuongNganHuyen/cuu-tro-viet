@@ -40,38 +40,54 @@
   </div>
 
   <div class="card-body">
-    <form action="{{ url('/admin/su-kien-cuu-tro') }}" method="POST">
+    <form action="{{ url('/admin/su-kien-cuu-tro') }}"
+          method="POST"
+          autocomplete="off"
+          onsubmit="this.querySelector('button[type=submit]').disabled = true; this.querySelector('button[type=submit]').innerText = 'Đang lưu...';">
       @csrf
 
       <div class="mb-3">
         <label class="form-label">Tên sự kiện <span class="text-danger">*</span></label>
-        <input type="text" name="tenSuKien" class="form-control"
-          value="{{ old('tenSuKien') }}"
-          placeholder="Ví dụ: Hỗ trợ hộ nghèo, Bão lũ miền Trung">
+        <input type="text"
+               name="tenSuKien"
+               class="form-control"
+               value="{{ old('tenSuKien') }}"
+               placeholder="Ví dụ: Hỗ trợ hộ nghèo, Bão lũ miền Trung"
+               autocomplete="off">
       </div>
 
       <div class="mb-3">
         <label class="form-label">Loại sự kiện <span class="text-danger">*</span></label>
-        <select name="loaiSuKien" class="form-control">
+        <select name="loaiSuKien"
+                id="loaiSuKien"
+                class="form-control"
+                autocomplete="off">
           <option value="">-- Chọn loại sự kiện --</option>
-          <option value="Khẩn cấp" {{ old('loaiSuKien') == 'Khẩn cấp' ? 'selected' : '' }}>Khẩn cấp</option>
-          <option value="Thường nhật" {{ old('loaiSuKien') == 'Thường nhật' ? 'selected' : '' }}>Thường nhật</option>
+          <option value="Khẩn cấp" {{ old('loaiSuKien') == 'Khẩn cấp' ? 'selected' : '' }}>
+            Khẩn cấp
+          </option>
+          <option value="Thường nhật" {{ old('loaiSuKien') == 'Thường nhật' ? 'selected' : '' }}>
+            Thường nhật
+          </option>
         </select>
       </div>
 
       <div class="mb-3">
         <label class="form-label">Mô tả</label>
-        <textarea name="moTa" class="form-control" rows="4"
-          placeholder="Mô tả mục đích, phạm vi hoặc nhóm đối tượng của sự kiện cứu trợ.">{{ old('moTa') }}</textarea>
+        <textarea name="moTa"
+                  class="form-control"
+                  rows="4"
+                  placeholder="Mô tả mục đích, phạm vi hoặc nhóm đối tượng của sự kiện cứu trợ."
+                  autocomplete="off">{{ old('moTa') }}</textarea>
       </div>
 
       <div class="mb-3">
         <label class="form-label">Trạng thái <span class="text-danger">*</span></label>
-        <select name="trangThai" class="form-control">
-          <option value="Sắp diễn ra" {{ old('trangThai') == 'Sắp diễn ra' ? 'selected' : '' }}>Sắp diễn ra</option>
-          <option value="Đang diễn ra" {{ old('trangThai', 'Đang diễn ra') == 'Đang diễn ra' ? 'selected' : '' }}>Đang diễn ra</option>
-          <option value="Đã kết thúc" {{ old('trangThai') == 'Đã kết thúc' ? 'selected' : '' }}>Đã kết thúc</option>
-          <option value="Đã ẩn" {{ old('trangThai') == 'Đã ẩn' ? 'selected' : '' }}>Đã ẩn</option>
+        <select name="trangThai"
+                id="trangThai"
+                class="form-control"
+                autocomplete="off"
+                data-old="{{ old('trangThai') }}">
         </select>
       </div>
 
@@ -87,4 +103,59 @@
     </form>
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const loaiSelect = document.getElementById('loaiSuKien');
+    const trangThaiSelect = document.getElementById('trangThai');
+    const oldTrangThai = trangThaiSelect.dataset.old || '';
+
+    const trangThaiTheoLoai = {
+      'Khẩn cấp': [
+        'Sắp diễn ra',
+        'Đang diễn ra',
+        'Đã kết thúc',
+        'Ẩn'
+      ],
+      'Thường nhật': [
+        'Đang diễn ra',
+        'Ẩn'
+      ]
+    };
+
+    function capNhatTrangThai() {
+      const loai = loaiSelect.value;
+      const danhSachTrangThai = trangThaiTheoLoai[loai] || [];
+
+      trangThaiSelect.innerHTML = '';
+
+      if (!loai) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = '-- Chọn trạng thái --';
+        trangThaiSelect.appendChild(option);
+        return;
+      }
+
+      danhSachTrangThai.forEach(function (trangThai) {
+        const option = document.createElement('option');
+        option.value = trangThai;
+        option.textContent = trangThai;
+
+        if (oldTrangThai === trangThai) {
+          option.selected = true;
+        }
+
+        trangThaiSelect.appendChild(option);
+      });
+
+      if (!oldTrangThai) {
+        trangThaiSelect.value = 'Đang diễn ra';
+      }
+    }
+
+    loaiSelect.addEventListener('change', capNhatTrangThai);
+    capNhatTrangThai();
+  });
+</script>
 @endsection

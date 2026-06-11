@@ -14,6 +14,7 @@ class NhomTinhNguyen extends Model
     protected $fillable = [
         'tenNhom',
         'moTa',
+        'anhDaiDien',
         'idNhomTruong',
         'idDiaDiem',
         'trangThai',

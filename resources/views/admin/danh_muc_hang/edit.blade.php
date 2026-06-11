@@ -47,7 +47,8 @@
       <div class="mb-3">
         <label class="form-label">Tên danh mục hàng <span class="text-danger">*</span></label>
         <input type="text" name="tenDanhMucHang" class="form-control"
-          value="{{ old('tenDanhMucHang', $danhMucHang->tenDanhMucHang) }}">
+          value="{{ old('tenDanhMucHang', $danhMucHang->tenDanhMucHang) }}"
+          autocomplete="off">
       </div>
 
       <div class="d-flex gap-2">

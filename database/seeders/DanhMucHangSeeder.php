@@ -9,36 +9,20 @@ class DanhMucHangSeeder extends Seeder
 {
     public function run(): void
     {
-        $danhMucHangs = [
-            [
-                'tenDanhMucHang' => 'Lương thực',
-            ],
-            [
-                'tenDanhMucHang' => 'Nước uống',
-            ],
-            [
-                'tenDanhMucHang' => 'Quần áo',
-            ],
-            [
-                'tenDanhMucHang' => 'Đồ dùng cá nhân',
-            ],
-            [
-                'tenDanhMucHang' => 'Thiết bị y tế',
-            ],
-            [
-                'tenDanhMucHang' => 'Vật dụng cứu hộ',
-            ],
-            [
-                'tenDanhMucHang' => 'Nhu yếu phẩm khác',
-            ],
+        $danhMucs = [
+            'Thực phẩm ăn liền & Đóng hộp',
+            'Lương thực & Gia vị cơ bản',
+            'Nước uống & Sữa dinh dưỡng',
+            'Vật tư y tế & Sơ cứu thiết yếu',
+            'Đồ bảo hộ & Cứu sinh an toàn',
+            'Vật dụng vệ sinh & Trang phục cá nhân',
+            'Thiết bị hậu cần & Dựng trại tạm thời',
         ];
 
-        foreach ($danhMucHangs as $danhMucHang) {
+        foreach ($danhMucs as $tenDanhMuc) {
             DB::table('DanhMucHang')->updateOrInsert(
-                [
-                    'tenDanhMucHang' => $danhMucHang['tenDanhMucHang'],
-                ],
-                $danhMucHang
+                ['tenDanhMucHang' => $tenDanhMuc],
+                ['tenDanhMucHang' => $tenDanhMuc]
             );
         }
     }

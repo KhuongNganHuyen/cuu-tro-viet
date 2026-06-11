@@ -33,38 +33,74 @@
   </div>
 @endif
 
-<div class="card">
-  <div class="card-header d-flex justify-content-between align-items-center">
+@if (request('tuKhoa'))
+  <div class="alert alert-info d-flex justify-content-between align-items-center">
     <div>
-      <h5 class="mb-0">Danh sách sự kiện cứu trợ</h5>
-      <small class="text-muted">
-        Quản lý các sự kiện/chủ đề cứu trợ như thiên tai, hộ nghèo, trẻ em khó khăn, bệnh nhân khó khăn...
-      </small>
+      Đang tìm kiếm:
+      <strong>{{ request('tuKhoa') }}</strong>
+      trong nhóm sự kiện
+      <strong>{{ $loaiDangChon }}</strong>.
     </div>
 
-    <a href="{{ url('/admin/su-kien-cuu-tro/create') }}" class="btn btn-primary">
-      Thêm
+    <a href="{{ url('/admin/su-kien-cuu-tro?loai=' . urlencode($loaiDangChon)) }}" class="btn btn-sm btn-light">
+      Xóa tìm kiếm
     </a>
+  </div>
+@endif
+
+<div class="card">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+      <div>
+        <h5 class="mb-1">Danh sách sự kiện cứu trợ</h5>
+      </div>
+
+      <a href="{{ url('/admin/su-kien-cuu-tro/create') }}" class="btn btn-primary">
+        Thêm
+      </a>
+    </div>
+
+    <ul class="nav nav-tabs mt-3">
+      <li class="nav-item">
+        <a class="nav-link {{ $loaiDangChon === 'Khẩn cấp' ? 'active' : '' }}"
+          href="{{ url('/admin/su-kien-cuu-tro?loai=Khẩn cấp' . (request('tuKhoa') ? '&tuKhoa=' . urlencode(request('tuKhoa')) : '')) }}">
+          Khẩn cấp
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link {{ $loaiDangChon === 'Thường nhật' ? 'active' : '' }}"
+          href="{{ url('/admin/su-kien-cuu-tro?loai=Thường nhật' . (request('tuKhoa') ? '&tuKhoa=' . urlencode(request('tuKhoa')) : '')) }}">
+          Thường nhật
+        </a>
+      </li>
+    </ul>
   </div>
 
   <div class="card-body">
+    <div class="mb-3 d-flex justify-content-left align-items-center flex-wrap gap-2">
+      <small class="text-muted">
+        Tổng hiển thị: {{ $suKiens->count() }}
+      </small>
+    </div>
+
     <div class="table-responsive">
       <table class="table table-hover mb-0 su-kien-table">
         <thead>
           <tr class="text-uppercase text-center">
             <th style="width: 70px;">Mã</th>
-            <th class="text-start" style="width: 42%;">Tên sự kiện</th>
-            <th style="width: 120px;">Loại</th>
-            <th style="width: 130px;">Trạng thái</th>
-            <th style="width: 150px;">Ngày tạo</th>
+            <th class="text-start" style="width: 52%;">Tên sự kiện</th>
+            <th style="width: 150px;">Trạng thái</th>
+            <th style="width: 160px;">Ngày tạo</th>
             <th style="width: 110px;">Thao tác</th>
           </tr>
         </thead>
 
         <tbody>
           @forelse ($suKiens as $suKien)
-            <tr class="su-kien-row" data-id="{{ $suKien->idSuKien }}">
-              <td class="text-center">
+            <tr class="su-kien-row {{ session('suKienMoi') == $suKien->idSuKien ? 'table-primary' : '' }}"
+                data-id="{{ $suKien->idSuKien }}">
+              <td class="text-center fw-semibold">
                 {{ $suKien->idSuKien }}
               </td>
 
@@ -84,29 +120,30 @@
                 @endif
               </td>
 
-              <td class="text-center cot-loai">
-                {{ $suKien->loaiSuKien }}
-              </td>
-
               <td class="text-center cot-trang-thai">
                 @if ($suKien->trangThai == 'Đang diễn ra')
                   <span class="d-inline-flex align-items-center justify-content-center gap-2">
-                    <span class="rounded-circle bg-success d-inline-block" style="width: 8px; height: 8px;"></span>
+                    <span class="rounded-circle bg-danger d-inline-block" style="width: 8px; height: 8px;"></span>
                     <span>Đang diễn ra</span>
                   </span>
-                @elseif ($suKien->trangThai == 'Đã ẩn')
+                @elseif ($suKien->trangThai == 'Sắp diễn ra')
                   <span class="d-inline-flex align-items-center justify-content-center gap-2">
-                    <span class="rounded-circle bg-secondary d-inline-block" style="width: 8px; height: 8px;"></span>
-                    <span>Đã ẩn</span>
+                    <span class="rounded-circle bg-warning d-inline-block" style="width: 8px; height: 8px;"></span>
+                    <span>Sắp diễn ra</span>
                   </span>
                 @elseif ($suKien->trangThai == 'Đã kết thúc')
                   <span class="d-inline-flex align-items-center justify-content-center gap-2">
-                    <span class="rounded-circle bg-dark d-inline-block" style="width: 8px; height: 8px;"></span>
+                    <span class="rounded-circle bg-success d-inline-block" style="width: 8px; height: 8px;"></span>
                     <span>Đã kết thúc</span>
+                  </span>
+                @elseif ($suKien->trangThai == 'Ẩn' || $suKien->trangThai == 'Đã ẩn')
+                  <span class="d-inline-flex align-items-center justify-content-center gap-2">
+                    <span class="rounded-circle bg-dark d-inline-block" style="width: 8px; height: 8px;"></span>
+                    <span>Ẩn</span>
                   </span>
                 @else
                   <span class="d-inline-flex align-items-center justify-content-center gap-2">
-                    <span class="rounded-circle bg-warning d-inline-block" style="width: 8px; height: 8px;"></span>
+                    <span class="rounded-circle bg-secondary d-inline-block" style="width: 8px; height: 8px;"></span>
                     <span>{{ $suKien->trangThai }}</span>
                   </span>
                 @endif
@@ -128,7 +165,7 @@
                   <form action="{{ url('/admin/su-kien-cuu-tro/' . $suKien->idSuKien) }}"
                         method="POST"
                         onclick="event.stopPropagation();"
-                        onsubmit="return confirm('Bạn có chắc muốn xóa sự kiện này không?')">
+                        onsubmit="return confirm('Bạn có chắc muốn xóa sự kiện này không? Nếu sự kiện đã được dùng trong chiến dịch, hệ thống sẽ không cho phép xóa.')">
                     @csrf
                     @method('DELETE')
 
@@ -141,8 +178,12 @@
             </tr>
           @empty
             <tr>
-              <td colspan="6" class="text-center text-muted py-4">
-                Chưa có sự kiện cứu trợ nào.
+              <td colspan="5" class="text-center text-muted py-4">
+                @if (request('tuKhoa'))
+                  Không tìm thấy sự kiện phù hợp.
+                @else
+                  Chưa có sự kiện cứu trợ nào trong nhóm {{ $loaiDangChon }}.
+                @endif
               </td>
             </tr>
           @endforelse
@@ -192,10 +233,8 @@
     max-width: 100%;
     min-width: 0;
     display: block;
-
     font-size: 13px;
     line-height: 1.5;
-
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -208,7 +247,6 @@
     text-overflow: unset;
   }
 
-  .cot-loai,
   .cot-trang-thai,
   .cot-ngay-tao,
   .cot-thao-tac {
@@ -223,6 +261,10 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+  }
+
+  .nav-tabs .nav-link {
+    font-weight: 500;
   }
 </style>
 
