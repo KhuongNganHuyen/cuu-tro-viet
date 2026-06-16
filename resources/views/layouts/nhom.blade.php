@@ -50,7 +50,7 @@
           <li class="pc-item">
             <a href="{{ url('/user/nhom-cua-toi') }}" class="pc-link">
               <span class="pc-micon"><i class="ti ti-arrow-left"></i></span>
-              <span class="pc-mtext">Về nhóm của tôi</span>
+              <span class="pc-mtext">Về tôi</span>
             </a>
           </li>
 
@@ -70,6 +70,13 @@
             <a href="{{ url('/nhom/' . $idNhomLayout . '/thanh-vien') }}" class="pc-link">
               <span class="pc-micon"><i class="ti ti-users"></i></span>
               <span class="pc-mtext">Thành viên</span>
+            </a>
+          </li>
+
+          <li class="pc-item">
+            <a href="{{ url('/nhom/' . $idNhomLayout . '/hang-hoa') }}" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-package"></i></span>
+              <span class="pc-mtext">Hàng hóa</span>
             </a>
           </li>
 
@@ -122,9 +129,14 @@
           </li>
 
           <li class="pc-h-item d-none d-md-inline-flex">
-            <form class="header-search">
+            <form class="header-search" action="{{ url()->current() }}" method="GET" autocomplete="off">
               <i data-feather="search" class="icon-search"></i>
-              <input type="search" class="form-control" placeholder="Tìm kiếm...">
+              <input type="search"
+                    name="tuKhoa"
+                    class="form-control"
+                    value="{{ request('tuKhoa') }}"
+                    placeholder="Tìm kiếm..."
+                    autocomplete="off">
             </form>
           </li>
         </ul>

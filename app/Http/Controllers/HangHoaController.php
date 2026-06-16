@@ -15,6 +15,7 @@ class HangHoaController extends Controller
         $tuKhoa = trim((string) $request->input('tuKhoa'));
 
         $hangHoas = HangHoa::where('idDanhMucHang', $idDanhMucHang)
+            ->whereNull('idNhom')
             ->orderBy('idHangHoa', 'asc')
             ->get();
 
@@ -69,6 +70,7 @@ class HangHoaController extends Controller
         ]);
 
         $daTonTai = HangHoa::where('idDanhMucHang', $idDanhMucHang)
+            ->whereNull('idNhom')
             ->where('tenHangHoa', trim($request->tenHangHoa))
             ->where('donViTinh', trim($request->donViTinh))
             ->exists();
@@ -94,14 +96,17 @@ class HangHoaController extends Controller
 
     public function edit(int $idHangHoa)
     {
-        $hangHoa = HangHoa::with('danhMucHang')->findOrFail($idHangHoa);
+        $hangHoa = HangHoa::with('danhMucHang')
+            ->whereNull('idNhom')
+            ->findOrFail($idHangHoa);
 
         return view('admin.hang_hoa.edit', compact('hangHoa'));
     }
 
     public function update(Request $request, int $idHangHoa)
     {
-        $hangHoa = HangHoa::findOrFail($idHangHoa);
+        $hangHoa = HangHoa::whereNull('idNhom')
+            ->findOrFail($idHangHoa);
 
         $request->validate([
             'tenHangHoa' => 'required|string|max:255',
@@ -114,6 +119,7 @@ class HangHoaController extends Controller
         ]);
 
         $daTonTai = HangHoa::where('idDanhMucHang', $hangHoa->idDanhMucHang)
+            ->whereNull('idNhom')
             ->where('tenHangHoa', trim($request->tenHangHoa))
             ->where('donViTinh', trim($request->donViTinh))
             ->where('idHangHoa', '!=', $hangHoa->idHangHoa)
@@ -137,7 +143,8 @@ class HangHoaController extends Controller
 
     public function doiTrangThai(int $idHangHoa)
     {
-        $hangHoa = HangHoa::findOrFail($idHangHoa);
+        $hangHoa = HangHoa::whereNull('idNhom')
+            ->findOrFail($idHangHoa);
 
         $dangHoatDong = in_array($hangHoa->trangThai, [
             'Đang sử dụng'

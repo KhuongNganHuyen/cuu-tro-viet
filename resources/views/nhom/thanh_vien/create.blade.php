@@ -43,7 +43,7 @@
   </div>
 @endif
 
-<form action="{{ url('/nhom/' . $nhom->idNhom . '/thanh-vien') }}" method="POST">
+<form action="{{ url('/nhom/' . $nhom->idNhom . '/thanh-vien') }}" method="POST" autocomplete="off">
   @csrf
 
   <div class="card">
@@ -58,7 +58,8 @@
         <input type="text" id="nguoiDungInput" class="form-control"
           list="danhSachNguoiDung"
           value="{{ old('tenNguoiDungHienThi') }}"
-          placeholder="Nhập họ tên hoặc tên đăng nhập để thêm thành viên">
+          placeholder="Nhập họ tên hoặc tên đăng nhập để thêm thành viên"
+          autocomplete="off">
 
         <input type="hidden" name="idNguoiDung" id="idNguoiDung"
           value="{{ old('idNguoiDung') }}">
@@ -71,7 +72,8 @@
 
         <input type="text" name="vaiTro" id="vaiTro" class="form-control"
           value="{{ old('vaiTro') }}"
-          placeholder="Thành viên">
+          placeholder="Thành viên"
+          autocomplete="off">
 
         <small class="text-muted">
           Hệ thống sẽ mặc định là “Thành viên”. Không nhập “Nhóm trưởng” tại đây.

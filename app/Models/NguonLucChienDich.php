@@ -24,11 +24,19 @@ class NguonLucChienDich extends Model
 
     public function chienDich()
     {
-        return $this->belongsTo(ChienDichCuuTro::class, 'idChienDich', 'idChienDich');
+        return $this->belongsTo(
+            ChienDichCuuTro::class,
+            'idChienDich',
+            'idChienDich'
+        );
     }
 
     public function hangHoa()
     {
-        return $this->belongsTo(HangHoa::class, 'idHangHoa', 'idHangHoa');
+        return $this->belongsTo(
+            HangHoa::class,
+            'idHangHoa',
+            'idHangHoa'
+        );
     }
 }
