@@ -538,7 +538,6 @@ class NhomChienDichController extends Controller
                     'soLuongCanKeuGoi' => (float) $duLieu['soLuongCanKeuGoi'],
                     'soLuongDaNhan' => 0,
                     'soLuongHienCo' => 0,
-                    'hanSuDung' => null,
                     'trangThai' => 'Đang kêu gọi',
                     'ngayCapNhat' => now(),
                 ]);
@@ -552,7 +551,7 @@ class NhomChienDichController extends Controller
             );
     }
 
-    public function show(int $idNhom, int $idChienDich)
+    public function show(Request $request, int $idNhom, int $idChienDich)
     {
         $kiemTra = $this->kiemTraThanhVien($idNhom);
 
@@ -579,17 +578,43 @@ class NhomChienDichController extends Controller
 
         $dongGops = DongGop::with([
                 'nguoiUngHo',
+                'chiTietDongGops.hangHoa.danhMucHang',
                 'thanhVienTiepNhan.nguoiDung',
-                'chiTietDongGops.hangHoa',
             ])
             ->where('idChienDich', $idChienDich)
             ->orderBy('idDongGop', 'desc')
             ->get();
 
-        $nguonLucs = NguonLucChienDich::with('hangHoa.danhMucHang')
+        $nguonLucsRaw = NguonLucChienDich::with([
+                'hangHoa.danhMucHang',
+            ])
             ->where('idChienDich', $idChienDich)
             ->orderBy('idNguonLuc', 'asc')
             ->get();
+
+        $nguonLucs = $nguonLucsRaw
+            ->groupBy('idHangHoa')
+            ->map(function ($items) {
+                $first = $items->first();
+
+                $first->tongSoLuongCanKeuGoi = $items->sum('soLuongCanKeuGoi');
+                $first->tongSoLuongDaNhan = $items->sum('soLuongDaNhan');
+                $first->tongSoLuongHienCo = $items->sum('soLuongHienCo');
+                $first->ngayCapNhatMoiNhat = $items->max('ngayCapNhat');
+
+                if ($items->contains('trangThai', 'Đang kêu gọi')) {
+                    $first->trangThaiTong = 'Đang kêu gọi';
+                } elseif ($items->contains('trangThai', 'Đủ số lượng')) {
+                    $first->trangThaiTong = 'Đủ số lượng';
+                } elseif ($items->contains('trangThai', 'Đã đóng')) {
+                    $first->trangThaiTong = 'Đã đóng';
+                } else {
+                    $first->trangThaiTong = $first->trangThai ?? '-';
+                }
+
+                return $first;
+            })
+            ->values();
 
         $tiepNhanYeuCaus = TiepNhanYeuCau::with([
                 'yeuCau.nguoiGui',
@@ -598,7 +623,13 @@ class NhomChienDichController extends Controller
             ])
             ->where('idChienDich', $idChienDich)
             ->where('idNhom', $idNhom)
-            ->orderBy('idTiepNhan', 'desc')
+            ->orderByRaw("
+                CASE
+                    WHEN trangThai = 'Hoàn thành' THEN 1
+                    ELSE 0
+                END
+            ")
+            ->orderBy('idYeuCau', 'desc')
             ->get();
 
         $dotPhanPhois = DotPhanPhoi::with([
@@ -907,6 +938,8 @@ class NhomChienDichController extends Controller
         }
 
         $thanhVien = $kiemTra['thanhVien'];
+        $laNhomTruong = $kiemTra['laNhomTruong'];
+        $nhom = $kiemTra['nhom'];
 
         $chienDich = ChienDichCuuTro::where('idNhom', $idNhom)
             ->where('idChienDich', $idChienDich)
@@ -925,33 +958,83 @@ class NhomChienDichController extends Controller
             ->firstOrFail();
 
         if ($chiTiet->dongGop->idChienDich != $chienDich->idChienDich) {
-            return back()->with('error', 'Chi tiết đóng góp không thuộc chiến dịch này.');
+            return back()
+                ->with('error', 'Chi tiết đóng góp không thuộc chiến dịch này.');
+        }
+
+        $dongGop = $chiTiet->dongGop;
+
+        $nguoiTiepNhanHienTai = null;
+        $nguoiTiepNhanHienTaiLaNhomTruong = false;
+
+        if ($dongGop->idNguoiTiepNhan) {
+            $nguoiTiepNhanHienTai = ThanhVienNhom::where('idNhom', $idNhom)
+                ->where('idThanhVien', $dongGop->idNguoiTiepNhan)
+                ->first();
+
+            $nguoiTiepNhanHienTaiLaNhomTruong =
+                $nguoiTiepNhanHienTai
+                && (
+                    $nguoiTiepNhanHienTai->vaiTro === 'Nhóm trưởng'
+                    || (int) $nguoiTiepNhanHienTai->idNguoiDung === (int) $nhom->idNhomTruong
+                );
+        }
+
+        if (
+            $dongGop->idNguoiTiepNhan
+            && (int) $dongGop->idNguoiTiepNhan !== (int) $thanhVien->idThanhVien
+        ) {
+            if ($nguoiTiepNhanHienTaiLaNhomTruong || !$laNhomTruong) {
+                return back()
+                    ->with(
+                        'error',
+                        'Lượt đóng góp này đang được thành viên khác tiếp nhận, bạn không thể xử lý.'
+                    );
+            }
+        }
+
+        if (
+            $chiTiet->dongGop->idNguoiTiepNhan
+            && $chiTiet->dongGop->idNguoiTiepNhan != $thanhVien->idThanhVien
+            && !$laNhomTruong
+        ) {
+            return back()
+                ->with(
+                    'error',
+                    'Lượt đóng góp này đang được thành viên khác tiếp nhận, bạn không thể xử lý.'
+                );
         }
 
         if ($chiTiet->trangThai == 'Đã xác nhận') {
-            return back()->with('error', 'Chi tiết đóng góp này đã được xác nhận trước đó.');
+            return back()
+                ->with('error', 'Chi tiết đóng góp này đã được xác nhận trước đó.');
         }
 
         if ($chiTiet->trangThai == 'Từ chối') {
-            return back()->with('error', 'Chi tiết đóng góp này đã bị từ chối, không thể xác nhận.');
+            return back()
+                ->with('error', 'Chi tiết đóng góp này đã bị từ chối, không thể xác nhận.');
         }
 
         $nguonLuc = NguonLucChienDich::where('idChienDich', $idChienDich)
             ->where('idHangHoa', $chiTiet->idHangHoa)
-            ->where(function ($query) use ($chiTiet) {
-                if ($chiTiet->hanSuDung) {
-                    $query->where('hanSuDung', $chiTiet->hanSuDung);
-                } else {
-                    $query->whereNull('hanSuDung');
-                }
-            })
             ->first();
 
         if ($nguonLuc) {
+            $soLuongDaNhanMoi = $nguonLuc->soLuongDaNhan + $chiTiet->soLuong;
+            $soLuongHienCoMoi = $nguonLuc->soLuongHienCo + $chiTiet->soLuong;
+
+            $trangThaiMoi = $nguonLuc->trangThai;
+
+            if ($nguonLuc->trangThai !== 'Đã đóng') {
+                $trangThaiMoi = $soLuongDaNhanMoi >= $nguonLuc->soLuongCanKeuGoi
+                    ? 'Đủ số lượng'
+                    : 'Đang kêu gọi';
+            }
+
             $nguonLuc->update([
-                'soLuongDaNhan' => $nguonLuc->soLuongDaNhan + $chiTiet->soLuong,
-                'soLuongHienCo' => $nguonLuc->soLuongHienCo + $chiTiet->soLuong,
-                'trangThai' => 'Còn hàng',
+                'soLuongDaNhan' => $soLuongDaNhanMoi,
+                'soLuongHienCo' => $soLuongHienCoMoi,
+                'trangThai' => $trangThaiMoi,
                 'ngayCapNhat' => now(),
             ]);
         } else {
@@ -961,8 +1044,7 @@ class NhomChienDichController extends Controller
                 'soLuongCanKeuGoi' => 0,
                 'soLuongDaNhan' => $chiTiet->soLuong,
                 'soLuongHienCo' => $chiTiet->soLuong,
-                'hanSuDung' => $chiTiet->hanSuDung,
-                'trangThai' => 'Còn hàng',
+                'trangThai' => 'Đủ số lượng',
                 'ngayCapNhat' => now(),
             ]);
         }
@@ -971,11 +1053,18 @@ class NhomChienDichController extends Controller
             'trangThai' => 'Đã xác nhận',
         ]);
 
-        $chiTiet->dongGop->update([
-            'idNguoiTiepNhan' => $thanhVien->idThanhVien,
-        ]);
+        /*
+        * Chỉ gán người tiếp nhận nếu lượt đóng góp chưa có người tiếp nhận.
+        * Nếu đã có người tiếp nhận rồi, nhóm trưởng xử lý món còn lại cũng không làm đổi người tiếp nhận gốc.
+        */
+        if (!$chiTiet->dongGop->idNguoiTiepNhan) {
+            $chiTiet->dongGop->update([
+                'idNguoiTiepNhan' => $thanhVien->idThanhVien,
+            ]);
+        }
 
-        return back()->with('success', 'Xác nhận đóng góp và cộng vào nguồn lực thành công.');
+        return back()
+            ->with('success', 'Xác nhận đóng góp và cộng vào nguồn lực thành công.');
     }
 
     public function tuChoiChiTietDongGop(
@@ -988,6 +1077,10 @@ class NhomChienDichController extends Controller
         if (!$kiemTra['hopLe']) {
             return $kiemTra['redirect'];
         }
+
+        $thanhVien = $kiemTra['thanhVien'];
+        $laNhomTruong = $kiemTra['laNhomTruong'];
+        $nhom = $kiemTra['nhom'];
 
         $chienDich = ChienDichCuuTro::where('idNhom', $idNhom)
             ->where('idChienDich', $idChienDich)
@@ -1006,172 +1099,79 @@ class NhomChienDichController extends Controller
             ->firstOrFail();
 
         if ($chiTiet->dongGop->idChienDich != $chienDich->idChienDich) {
-            return back()->with('error', 'Chi tiết đóng góp không thuộc chiến dịch này.');
+            return back()
+                ->with('error', 'Chi tiết đóng góp không thuộc chiến dịch này.');
+        }
+
+        $dongGop = $chiTiet->dongGop;
+
+        $nguoiTiepNhanHienTai = null;
+        $nguoiTiepNhanHienTaiLaNhomTruong = false;
+
+        if ($dongGop->idNguoiTiepNhan) {
+            $nguoiTiepNhanHienTai = ThanhVienNhom::where('idNhom', $idNhom)
+                ->where('idThanhVien', $dongGop->idNguoiTiepNhan)
+                ->first();
+
+            $nguoiTiepNhanHienTaiLaNhomTruong =
+                $nguoiTiepNhanHienTai
+                && (
+                    $nguoiTiepNhanHienTai->vaiTro === 'Nhóm trưởng'
+                    || (int) $nguoiTiepNhanHienTai->idNguoiDung === (int) $nhom->idNhomTruong
+                );
+        }
+
+        if (
+            $dongGop->idNguoiTiepNhan
+            && (int) $dongGop->idNguoiTiepNhan !== (int) $thanhVien->idThanhVien
+        ) {
+            if ($nguoiTiepNhanHienTaiLaNhomTruong || !$laNhomTruong) {
+                return back()
+                    ->with(
+                        'error',
+                        'Lượt đóng góp này đang được thành viên khác tiếp nhận, bạn không thể xử lý.'
+                    );
+            }
+        }
+
+        if (
+            $chiTiet->dongGop->idNguoiTiepNhan
+            && $chiTiet->dongGop->idNguoiTiepNhan != $thanhVien->idThanhVien
+            && !$laNhomTruong
+        ) {
+            return back()
+                ->with(
+                    'error',
+                    'Lượt đóng góp này đang được thành viên khác tiếp nhận, bạn không thể xử lý.'
+                );
         }
 
         if ($chiTiet->trangThai == 'Đã xác nhận') {
-            return back()->with('error', 'Chi tiết đóng góp đã xác nhận nên không thể từ chối.');
+            return back()
+                ->with('error', 'Chi tiết đóng góp đã xác nhận nên không thể từ chối.');
+        }
+
+        if ($chiTiet->trangThai == 'Từ chối') {
+            return back()
+                ->with('error', 'Chi tiết đóng góp này đã bị từ chối trước đó.');
         }
 
         $chiTiet->update([
             'trangThai' => 'Từ chối',
         ]);
 
-        return back()->with('success', 'Đã từ chối chi tiết đóng góp.');
-    }
-
-    public function createDotPhanPhoi(int $idNhom, int $idChienDich)
-    {
-        $kiemTra = $this->kiemTraThanhVien($idNhom);
-
-        if (!$kiemTra['hopLe']) {
-            return $kiemTra['redirect'];
+        /*
+        * Nếu chưa có người tiếp nhận thì người từ chối đầu tiên sẽ là người tiếp nhận lượt này.
+        * Nếu đã có người tiếp nhận rồi, kể cả nhóm trưởng xử lý món còn lại cũng không đổi người tiếp nhận gốc.
+        */
+        if (!$chiTiet->dongGop->idNguoiTiepNhan) {
+            $chiTiet->dongGop->update([
+                'idNguoiTiepNhan' => $thanhVien->idThanhVien,
+            ]);
         }
 
-        $nhom = $kiemTra['nhom'];
-        $laNhomTruong = $kiemTra['laNhomTruong'];
-
-        $chienDich = ChienDichCuuTro::where('idNhom', $idNhom)
-            ->where('idChienDich', $idChienDich)
-            ->firstOrFail();
-
-        if ($this->chienDichDaHoanThanh($chienDich)) {
-            return redirect('/nhom/' . $idNhom . '/chien-dich/' . $idChienDich)
-                ->with(
-                    'error',
-                    'Chiến dịch đã hoàn thành nên không thể tạo đợt phân phối.'
-                );
-        }
-
-        $tiepNhanYeuCaus = TiepNhanYeuCau::with([
-                'yeuCau.nguoiGui',
-                'yeuCau.diaDiem',
-            ])
-            ->where('idChienDich', $idChienDich)
-            ->where('idNhom', $idNhom)
-            ->orderBy('idTiepNhan', 'desc')
-            ->get();
-
-        $nguonLucs = NguonLucChienDich::with('hangHoa')
-            ->where('idChienDich', $idChienDich)
-            ->where('soLuongHienCo', '>', 0)
-            ->orderBy('idNguonLuc', 'desc')
-            ->get();
-
-        return view('nhom.chien_dich.phan_phoi_create', compact(
-            'nhom',
-            'chienDich',
-            'laNhomTruong',
-            'tiepNhanYeuCaus',
-            'nguonLucs'
-        ));
-    }
-
-    public function storeDotPhanPhoi(Request $request, int $idNhom, int $idChienDich)
-    {
-        $kiemTra = $this->kiemTraThanhVien($idNhom);
-
-        if (!$kiemTra['hopLe']) {
-            return $kiemTra['redirect'];
-        }
-
-        $chienDich = ChienDichCuuTro::where('idNhom', $idNhom)
-            ->where('idChienDich', $idChienDich)
-            ->firstOrFail();
-
-        if ($this->chienDichDaHoanThanh($chienDich)) {
-            return redirect('/nhom/' . $idNhom . '/chien-dich/' . $idChienDich)
-                ->with(
-                    'error',
-                    'Chiến dịch đã hoàn thành nên không thể tạo đợt phân phối.'
-                );
-        }
-
-        $request->validate([
-            'idTiepNhan' => 'required|exists:TiepNhanYeuCau,idTiepNhan',
-            'ngayPhanPhoi' => 'required|date',
-            'nguoiNhan' => 'nullable|string|max:255',
-            'ghiChu' => 'nullable|string',
-
-            'idNguonLuc' => 'required|array|min:1',
-            'idNguonLuc.*' => 'required|exists:NguonLucChienDich,idNguonLuc',
-
-            'soLuongGiao' => 'required|array|min:1',
-            'soLuongGiao.*' => 'required|numeric|min:1',
-        ], [
-            'idTiepNhan.required' => 'Vui lòng chọn yêu cầu cứu trợ cần phân phối.',
-            'ngayPhanPhoi.required' => 'Vui lòng chọn ngày phân phối.',
-            'idNguonLuc.required' => 'Vui lòng chọn ít nhất một nguồn lực.',
-            'soLuongGiao.*.required' => 'Vui lòng nhập số lượng giao.',
-            'soLuongGiao.*.min' => 'Số lượng giao phải lớn hơn 0.',
-        ]);
-
-        $tiepNhan = TiepNhanYeuCau::with('yeuCau.diaDiem')
-            ->where('idTiepNhan', $request->idTiepNhan)
-            ->where('idChienDich', $idChienDich)
-            ->where('idNhom', $idNhom)
-            ->firstOrFail();
-
-        try {
-            DB::transaction(function () use ($request, $chienDich, $tiepNhan) {
-                $dotPhanPhoi = DotPhanPhoi::create([
-                    'idChienDich' => $chienDich->idChienDich,
-                    'ngayPhanPhoi' => $request->ngayPhanPhoi,
-                    'trangThai' => 'Đã phân phối',
-                    'ghiChu' => $request->ghiChu,
-                ]);
-
-                foreach ($request->idNguonLuc as $index => $idNguonLuc) {
-                    $soLuongGiao = (float) $request->soLuongGiao[$index];
-
-                    $nguonLuc = NguonLucChienDich::where('idChienDich', $chienDich->idChienDich)
-                        ->where('idNguonLuc', $idNguonLuc)
-                        ->lockForUpdate()
-                        ->firstOrFail();
-
-                    if ($soLuongGiao > $nguonLuc->soLuongHienCo) {
-                        throw new \Exception(
-                            'Số lượng giao không được lớn hơn số lượng hiện có của nguồn lực.'
-                        );
-                    }
-
-                    ChiTietPhanPhoi::create([
-                        'idDotPhanPhoi' => $dotPhanPhoi->idDotPhanPhoi,
-                        'idNguonLuc' => $nguonLuc->idNguonLuc,
-                        'idDiaDiem' => $tiepNhan->yeuCau->idDiaDiem,
-                        'idTiepNhan' => $tiepNhan->idTiepNhan,
-                        'nguoiNhan' => $request->nguoiNhan,
-                        'soLuongGiao' => $soLuongGiao,
-                        'hinhAnh' => null,
-                        'thoiGianGiao' => $request->ngayPhanPhoi,
-                        'trangThai' => 'Đã giao',
-                    ]);
-
-                    $soLuongConLai = $nguonLuc->soLuongHienCo - $soLuongGiao;
-
-                    $nguonLuc->update([
-                        'soLuongHienCo' => $soLuongConLai,
-                        'trangThai' => $soLuongConLai > 0 ? 'Còn hàng' : 'Hết hàng',
-                        'ngayCapNhat' => now(),
-                    ]);
-                }
-
-                $tiepNhan->update([
-                    'trangThai' => 'Đang hỗ trợ',
-                ]);
-
-                $tiepNhan->yeuCau->update([
-                    'trangThai' => 'Đang hỗ trợ',
-                ]);
-            });
-        } catch (\Exception $e) {
-            return back()
-                ->withInput()
-                ->with('error', $e->getMessage());
-        }
-
-        return redirect('/nhom/' . $idNhom . '/chien-dich/' . $idChienDich)
-            ->with('success', 'Tạo đợt phân phối và trừ nguồn lực thành công.');
+        return back()
+            ->with('success', 'Đã từ chối chi tiết đóng góp.');
     }
 
     private function boDauTiengViet(string $chuoi): string

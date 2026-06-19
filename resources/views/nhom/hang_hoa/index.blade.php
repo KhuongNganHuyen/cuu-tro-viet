@@ -221,7 +221,7 @@
           <th class="filter-heading-cell" style="width: 150px;">
             <div class="dropdown w-100 h-100">
               <button type="button"
-                      class="filter-heading-button text-center"
+                      class="filter-heading-button text-center justify-content-center"
                       data-bs-toggle="dropdown"
                       data-bs-boundary="viewport"
                       aria-expanded="false">
@@ -261,7 +261,7 @@
           <th class="filter-heading-cell" style="width: 140px;">
             <div class="dropdown w-100 h-100">
               <button type="button"
-                      class="filter-heading-button text-center"
+                      class="filter-heading-button text-center justify-content-center"
                       data-bs-toggle="dropdown"
                       data-bs-boundary="viewport"
                       aria-expanded="false">
@@ -307,7 +307,7 @@
           <th class="filter-heading-cell" style="width: 170px;">
             <div class="dropdown w-100 h-100">
               <button type="button"
-                      class="filter-heading-button text-center"
+                      class="filter-heading-button text-center justify-content-center"
                       data-bs-toggle="dropdown"
                       data-bs-boundary="viewport"
                       aria-expanded="false">

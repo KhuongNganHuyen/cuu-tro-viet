@@ -93,20 +93,6 @@
               <span class="pc-mtext">Yêu cầu cứu trợ</span>
             </a>
           </li>
-
-          <li class="pc-item">
-            <a href="{{ url('/nhom/' . $idNhomLayout . '/dong-gop') }}" class="pc-link">
-              <span class="pc-micon"><i class="ti ti-gift"></i></span>
-              <span class="pc-mtext">Đóng góp</span>
-            </a>
-          </li>
-
-          <li class="pc-item">
-            <a href="{{ url('/nhom/' . $idNhomLayout . '/phan-phoi') }}" class="pc-link">
-              <span class="pc-micon"><i class="ti ti-truck-delivery"></i></span>
-              <span class="pc-mtext">Phân phối</span>
-            </a>
-          </li>
         </ul>
       </div>
     </div>

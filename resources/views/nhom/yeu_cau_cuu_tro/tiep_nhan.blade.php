@@ -13,12 +13,26 @@
 
         <ul class="breadcrumb">
           <li class="breadcrumb-item">
-            <a href="{{ url('/nhom/' . $nhom->idNhom . '/dashboard') }}">Tổng quan nhóm</a>
+            <a href="{{ url('/nhom/' . $nhom->idNhom . '/dashboard') }}">
+              Tổng quan nhóm
+            </a>
           </li>
+
           <li class="breadcrumb-item">
-            <a href="{{ url('/nhom/' . $nhom->idNhom . '/yeu-cau-cuu-tro') }}">Yêu cầu cứu trợ</a>
+            <a href="{{ url('/nhom/' . $nhom->idNhom . '/yeu-cau-cuu-tro') }}">
+              Yêu cầu cứu trợ
+            </a>
           </li>
-          <li class="breadcrumb-item" aria-current="page">Tiếp nhận</li>
+
+          <li class="breadcrumb-item">
+            <a href="{{ url('/nhom/' . $nhom->idNhom . '/yeu-cau-cuu-tro/' . $yeuCau->idYeuCau) }}">
+              Chi tiết
+            </a>
+          </li>
+
+          <li class="breadcrumb-item" aria-current="page">
+            Tiếp nhận
+          </li>
         </ul>
       </div>
     </div>
@@ -41,123 +55,106 @@
   </div>
 @endif
 
-<div class="row">
-  <div class="col-md-5">
-    <div class="card">
-      <div class="card-header">
-        <h5 class="mb-0">Thông tin yêu cầu</h5>
-      </div>
-
-      <div class="card-body">
-        <p>
-          <strong>Tiêu đề yêu cầu:</strong><br>
-          {{ $yeuCau->tieuDeYeuCau }}
-        </p>
-
-        <p>
-          <strong>Người gửi:</strong><br>
-          {{ $yeuCau->nguoiGui->hoTen ?? '-' }}
-        </p>
-
-        <p>
-          <strong>Số người:</strong>
-          {{ $yeuCau->soNguoi ?? '-' }}
-        </p>
-
-        <p>
-          <strong>Mức độ:</strong>
-          {{ $yeuCau->mucDoKhanCap ?? '-' }}
-        </p>
-
-        <p>
-          <strong>Địa điểm:</strong><br>
-          {{ $yeuCau->diaDiem->chiTietDiaDiem ?? '' }},
-          {{ $yeuCau->diaDiem->phuongXa ?? '' }},
-          {{ $yeuCau->diaDiem->tinhThanh ?? '' }}
-        </p>
-
-        <p>
-          <strong>Mô tả:</strong><br>
-          {{ $yeuCau->moTa }}
-        </p>
+<div class="card">
+  <div class="card-header">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+      <div>
+        <h5 class="mb-1">Thông tin tiếp nhận</h5>
       </div>
     </div>
   </div>
 
-  <div class="col-md-7">
-    <div class="card">
-      <div class="card-header">
-        <h5 class="mb-0">Thông tin tiếp nhận</h5>
+  <div class="card-body">
+    @if ($chienDichs->count() == 0)
+      <div class="alert alert-warning">
+        Nhóm chưa có chiến dịch nào có thể tiếp nhận yêu cầu. Bạn cần tạo chiến dịch trước khi tiếp nhận.
       </div>
 
-      <div class="card-body">
-        @if ($chienDichs->count() == 0)
-          <div class="alert alert-warning">
-            Nhóm chưa có chiến dịch nào đang hoạt động hoặc sắp diễn ra. Bạn cần tạo chiến dịch trước khi tiếp nhận yêu cầu.
+      <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich/create') }}"
+           class="btn btn-primary">
+          Tạo chiến dịch
+        </a>
+
+        <a href="{{ url('/nhom/' . $nhom->idNhom . '/yeu-cau-cuu-tro/' . $yeuCau->idYeuCau) }}"
+           class="btn btn-secondary">
+          Quay lại
+        </a>
+      </div>
+    @else
+      <form action="{{ url('/nhom/' . $nhom->idNhom . '/yeu-cau-cuu-tro/' . $yeuCau->idYeuCau . '/tiep-nhan') }}"
+            method="POST"
+            onsubmit="return confirm('Xác nhận tiếp nhận yêu cầu cứu trợ này?')">
+        @csrf
+
+        <div class="row">
+          <div class="col-lg-6 mb-3">
+            <label class="form-label">
+              Chiến dịch tiếp nhận <span class="text-danger">*</span>
+            </label>
+
+            <select name="idChienDich"
+                    class="form-select"
+                    required>
+              <option value="">-- Chọn chiến dịch --</option>
+
+              @foreach ($chienDichs as $chienDich)
+                <option value="{{ $chienDich->idChienDich }}"
+                  {{ old('idChienDich') == $chienDich->idChienDich ? 'selected' : '' }}>
+                  {{ $chienDich->tenChienDich }}
+                </option>
+              @endforeach
+            </select>
           </div>
 
-          <a href="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich/create') }}" class="btn btn-primary">
-            Tạo chiến dịch
-          </a>
+          <div class="col-lg-6 mb-3">
+            <label class="form-label">
+              Ngày dự kiến hỗ trợ
+            </label>
 
-          <a href="{{ url('/nhom/' . $nhom->idNhom . '/yeu-cau-cuu-tro/' . $yeuCau->idYeuCau) }}" class="btn btn-secondary">
+            <input type="date"
+                   name="thoiGianDuKienHoTro"
+                   class="form-control"
+                   min="{{ now()->format('Y-m-d') }}"
+                   value="{{ old('thoiGianDuKienHoTro') }}">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">
+            Nội dung đảm nhận <span class="text-danger">*</span>
+          </label>
+
+          <textarea name="noiDungDamNhan"
+                    class="form-control"
+                    rows="6"
+                    required
+                    placeholder="Ghi rõ phần việc hoặc nguồn lực nhóm sẽ đảm nhận.">{{ old('noiDungDamNhan') }}</textarea>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label">
+            Trạng thái sau khi tiếp nhận
+          </label>
+
+          <div class="form-control bg-light">
+            Đã tiếp nhận
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+          <button type="submit"
+                  class="btn btn-primary">
+            Lưu tiếp nhận
+          </button>
+
+          <a href="{{ url('/nhom/' . $nhom->idNhom . '/yeu-cau-cuu-tro/' . $yeuCau->idYeuCau) }}"
+             class="btn btn-secondary">
             Quay lại
           </a>
-        @else
-          <form action="{{ url('/nhom/' . $nhom->idNhom . '/yeu-cau-cuu-tro/' . $yeuCau->idYeuCau . '/tiep-nhan') }}" method="POST">
-            @csrf
-
-            <div class="mb-3">
-              <label class="form-label">Chiến dịch tiếp nhận <span class="text-danger">*</span></label>
-              <select name="idChienDich" class="form-control">
-                <option value="">-- Chọn chiến dịch --</option>
-                @foreach ($chienDichs as $chienDich)
-                  <option value="{{ $chienDich->idChienDich }}"
-                    {{ old('idChienDich') == $chienDich->idChienDich ? 'selected' : '' }}>
-                    {{ $chienDich->tenChienDich }} - {{ $chienDich->trangThai }}
-                  </option>
-                @endforeach
-              </select>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Ngày dự kiến hỗ trợ</label>
-              <input type="date" name="thoiGianDuKienHoTro" class="form-control"
-                value="{{ old('thoiGianDuKienHoTro') }}">
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Nội dung đảm nhận</label>
-              <textarea name="noiDungDamNhan" class="form-control" rows="4"
-                placeholder="Ví dụ: Nhóm sẽ hỗ trợ lương thực, nước uống và nhu yếu phẩm cần thiết.">{{ old('noiDungDamNhan') }}</textarea>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label">Trạng thái sau khi tiếp nhận <span class="text-danger">*</span></label>
-              <select name="trangThai" class="form-control">
-                <option value="Đã tiếp nhận" {{ old('trangThai', 'Đã tiếp nhận') == 'Đã tiếp nhận' ? 'selected' : '' }}>
-                  Đã tiếp nhận
-                </option>
-                <option value="Đang hỗ trợ" {{ old('trangThai') == 'Đang hỗ trợ' ? 'selected' : '' }}>
-                  Đang hỗ trợ
-                </option>
-              </select>
-            </div>
-
-            <div class="d-flex gap-2">
-              <button type="submit" class="btn btn-primary"
-                onclick="return confirm('Xác nhận tiếp nhận yêu cầu cứu trợ này?')">
-                Lưu tiếp nhận
-              </button>
-
-              <a href="{{ url('/nhom/' . $nhom->idNhom . '/yeu-cau-cuu-tro/' . $yeuCau->idYeuCau) }}" class="btn btn-secondary">
-                Quay lại
-              </a>
-            </div>
-          </form>
-        @endif
-      </div>
-    </div>
+        </div>
+      </form>
+    @endif
   </div>
 </div>
 @endsection

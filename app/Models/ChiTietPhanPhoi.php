@@ -16,9 +16,9 @@ class ChiTietPhanPhoi extends Model
         'idNguonLuc',
         'idDiaDiem',
         'idTiepNhan',
+        'loaiPhanPhoi',
         'nguoiNhan',
         'soLuongGiao',
-        'hinhAnh',
         'thoiGianGiao',
         'trangThai',
     ];

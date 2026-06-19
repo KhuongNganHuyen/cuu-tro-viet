@@ -30,6 +30,19 @@
       $diaDiemYeuCau->phuongXa ?? null,
       $diaDiemYeuCau->tinhThanh ?? null,
   ])->filter()->implode(', ');
+
+  $tiepNhansDangXuLy = $yeuCau->tiepNhans
+      ->where('trangThai', '!=', 'Hoàn thành');
+
+  $coNhomDaTiepNhan = $tiepNhansDangXuLy
+      ->contains('trangThai', 'Đã tiếp nhận');
+
+  $coNhomCanThemHoTro = $tiepNhansDangXuLy
+      ->contains('trangThai', 'Cần thêm hỗ trợ');
+
+  $coTheDoiCanThemHoTro =
+      in_array($trangThaiYeuCau, ['Đã tiếp nhận', 'Cần thêm hỗ trợ'], true)
+      && $tiepNhansDangXuLy->isNotEmpty();
 @endphp
 
 <div class="page-header">
@@ -119,6 +132,34 @@
             <button type="submit"
                     class="btn btn-outline-danger">
               Hủy yêu cầu
+            </button>
+          </form>
+        @endif
+
+        @if ($coTheDoiCanThemHoTro && $coNhomDaTiepNhan)
+          <form action="{{ url('/user/yeu-cau-cuu-tro/' . $yeuCau->idYeuCau . '/can-them-ho-tro') }}"
+                method="POST"
+                onsubmit="return confirm('Bạn muốn báo yêu cầu này cần thêm hỗ trợ?')">
+            @csrf
+            @method('PATCH')
+
+            <button type="submit"
+                    class="btn btn-outline-warning">
+              Cần thêm hỗ trợ
+            </button>
+          </form>
+        @endif
+
+        @if ($coTheDoiCanThemHoTro && $coNhomCanThemHoTro)
+          <form action="{{ url('/user/yeu-cau-cuu-tro/' . $yeuCau->idYeuCau . '/thu-hoi-can-them-ho-tro') }}"
+                method="POST"
+                onsubmit="return confirm('Bạn muốn thu hồi trạng thái cần thêm hỗ trợ?')">
+            @csrf
+            @method('PATCH')
+
+            <button type="submit"
+                    class="btn btn-outline-primary">
+              Hủy thêm hỗ trợ
             </button>
           </form>
         @endif

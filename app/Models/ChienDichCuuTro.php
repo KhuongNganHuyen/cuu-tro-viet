@@ -39,4 +39,9 @@ class ChienDichCuuTro extends Model
     {
         return $this->belongsTo(DiaDiem::class, 'idDiaDiem', 'idDiaDiem');
     }
+
+    public function nguonLucs()
+    {
+        return $this->hasMany(NguonLucChienDich::class, 'idChienDich', 'idChienDich');
+    }
 }

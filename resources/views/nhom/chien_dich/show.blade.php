@@ -142,6 +142,292 @@
     border-radius: 10px;
     border: 1px solid #dee2e6;
   }
+
+  .chien-dich-yeu-cau-table th,
+  .chien-dich-yeu-cau-table td {
+    vertical-align: middle;
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+
+  .chien-dich-yeu-cau-table th {
+    line-height: 1.35;
+    font-weight: 700;
+  }
+
+  .chien-dich-yeu-cau-table td {
+    line-height: 1.5;
+  }
+
+  .chien-dich-yeu-cau-table .cell-nowrap {
+    white-space: nowrap;
+  }
+
+  .yeu-cau-main-cell {
+    min-width: 260px;
+  }
+
+  .yeu-cau-title {
+    color: #212529;
+    line-height: 1.45;
+  }
+
+  .yeu-cau-address {
+    line-height: 1.45;
+  }
+
+  .muc-do-label {
+    font-weight: 600;
+    color: #495057;
+  }
+
+  .muc-do-danger {
+    color: #dc3545;
+  }
+
+  .muc-do-warning {
+    color: #b58100;
+  }
+
+  .muc-do-info {
+    color: #0d6efd;
+  }
+
+  .muc-do-muted {
+    color: #6c757d;
+  }
+
+  .dong-gop-card {
+    background-color: #fff;
+  }
+
+  .dong-gop-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .dong-gop-avatar-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e9f2ff;
+    color: #0d6efd;
+    font-weight: 700;
+    border: 1px solid #cfe2ff;
+  }
+
+  .dong-gop-ghi-chu {
+    white-space: pre-line;
+    line-height: 1.6;
+  }
+
+  .dong-gop-detail-table th,
+  .dong-gop-detail-table td {
+    vertical-align: middle;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    display: inline-block;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .status-warning {
+    background-color: #ffc107;
+  }
+
+  .status-success {
+    background-color: #198754;
+  }
+
+  .status-danger {
+    background-color: #dc3545;
+  }
+
+  .status-secondary {
+    background-color: #6c757d;
+  }
+
+  .nguon-luc-table th,
+  .nguon-luc-table td {
+    vertical-align: middle;
+  }
+
+  .filter-heading-cell {
+    position: relative;
+    padding: 0 !important;
+  }
+
+  .filter-heading-button {
+    width: 100%;
+    min-height: 52px;
+    padding: 12px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .filter-heading-button:hover,
+  .filter-heading-button:focus {
+    background-color: #f8f9fa;
+  }
+
+  .filter-heading-button::after {
+    display: none !important;
+  }
+
+  .filter-active-dot {
+    width: 6px;
+    height: 6px;
+    display: none;
+    border-radius: 50%;
+    background-color: #0d6efd;
+  }
+
+  .filter-heading-button.is-filtering .filter-active-dot {
+    display: inline-block;
+  }
+
+  .filter-dropdown-menu {
+    min-width: 190px;
+    max-height: 220px;
+    overflow-y: auto;
+    padding: 6px 0;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+  }
+
+  .filter-dropdown-menu .dropdown-item {
+    padding: 8px 14px;
+    font-size: 14px;
+  }
+
+  .nguon-luc-header {
+    padding-bottom: 4px;
+  }
+
+  .nguon-luc-divider {
+    border-top: 1px solid #dee2e6;
+    margin: 12px 0 10px;
+  }
+
+  .search-input-wrapper {
+    position: relative;
+  }
+
+  .nguon-luc-search-wrapper {
+    width: 300px;
+    max-width: 300px;
+    flex: 0 0 300px;
+  }
+
+  .search-input-wrapper .icon-search {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    width: 16px;
+    height: 16px;
+    transform: translateY(-50%);
+    color: #6c757d;
+    pointer-events: none;
+  }
+
+  .nguon-luc-search-box {
+    height: 38px;
+    padding-left: 38px;
+  }
+
+  .search-reset-button {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nguon-luc-table {
+    width: 100%;
+  }
+
+  .nguon-luc-table th,
+  .nguon-luc-table td {
+    vertical-align: middle;
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+
+  .nguon-luc-table th {
+    line-height: 1.35;
+    font-weight: 700;
+  }
+
+  .nguon-luc-table td {
+    line-height: 1.5;
+  }
+
+  .nguon-luc-table td:nth-child(1),
+  .nguon-luc-table td:nth-child(4),
+  .nguon-luc-table td:nth-child(5),
+  .nguon-luc-table td:nth-child(6),
+  .nguon-luc-table td:nth-child(7),
+  .nguon-luc-table td:nth-child(8),
+  .nguon-luc-table td:nth-child(9) {
+    white-space: nowrap;
+  }
+
+  .nguon-luc-table td:nth-child(2),
+  .nguon-luc-table td:nth-child(3) {
+    word-break: break-word;
+  }
+
+  .search-input-wrapper .icon-search {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    width: 16px;
+    height: 16px;
+    transform: translateY(-50%);
+    color: #6c757d;
+    pointer-events: none;
+  }
+
+  .nguon-luc-search-box {
+    padding-left: 38px;
+  }
+
+  .search-reset-button {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .chien-dich-phan-phoi-table th,
+  .chien-dich-phan-phoi-table td {
+    vertical-align: middle;
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+
+  .chien-dich-phan-phoi-table .cell-nowrap {
+    white-space: nowrap;
+  }
 </style>
 
 @php
@@ -247,7 +533,7 @@
 
           <span>
             Mã chiến dịch:
-            <strong class="text-body">#{{ $chienDich->idChienDich }}</strong>
+            <strong class="text-body">{{ $chienDich->idChienDich }}</strong>
           </span>
 
           <span class="d-inline-flex align-items-center gap-2">
@@ -351,16 +637,12 @@
             <div class="info-card">
               <div class="mb-3">
                 <h5 class="mb-1">Thông tin chung</h5>
-
-                <small class="text-muted">
-                  Thông tin tổng quan về chiến dịch cứu trợ do nhóm phụ trách.
-                </small>
               </div>
 
               <div class="row g-3">
                 <div class="col-md-6">
                   <div class="info-label">Mã chiến dịch</div>
-                  <div class="info-value">#{{ $chienDich->idChienDich }}</div>
+                  <div class="info-value">{{ $chienDich->idChienDich }}</div>
                 </div>
 
                 <div class="col-md-6">
@@ -456,10 +738,6 @@
             <div class="map-card">
               <div class="mb-3">
                 <h5 class="mb-1">Bản đồ vị trí chiến dịch</h5>
-
-                <small class="text-muted">
-                  Tọa độ địa điểm triển khai chiến dịch.
-                </small>
               </div>
 
               @if ($coToaDoChienDich)
@@ -485,10 +763,6 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
           <div>
             <h5 class="mb-0">Cập nhật tiến độ</h5>
-
-            <small class="text-muted">
-              Ghi nhận các hoạt động, tình hình và minh chứng trong quá trình triển khai chiến dịch.
-            </small>
           </div>
 
           @if (!$chienDichDaHoanThanh)
@@ -564,80 +838,94 @@
       <div class="tab-pane fade" id="yeu-cau" role="tabpanel">
         <div class="mb-3">
           <h5 class="mb-0">Yêu cầu cứu trợ thuộc chiến dịch</h5>
-
-          <small class="text-muted">
-            Danh sách các yêu cầu đã được nhóm tiếp nhận và gắn vào chiến dịch này.
-          </small>
         </div>
 
         <div class="table-responsive">
-          <table class="table table-hover mb-0">
+          <table class="table table-hover mb-0 chien-dich-yeu-cau-table">
             <thead>
               <tr class="text-uppercase text-center">
-                <th style="width: 90px;">Mã</th>
-                <th class="text-start">Thông tin yêu cầu</th>
-                <th style="width: 120px;">Số người</th>
-                <th style="width: 140px;">Mức độ</th>
-                <th style="width: 150px;">Trạng thái</th>
-                <th style="width: 180px;">Dự kiến hỗ trợ</th>
+                <th style="width: 70px;">Mã</th>
+                <th class="text-start">Yêu cầu cứu trợ</th>
+                <th style="width: 95px;">Số người</th>
+                <th style="width: 120px;">Mức độ</th>
+                <th style="width: 145px;">Trạng thái</th>
+                <th style="width: 135px;">Dự kiến hỗ trợ</th>
               </tr>
             </thead>
 
             <tbody>
               @forelse ($tiepNhanYeuCaus as $tiepNhan)
+                @php
+                  $yeuCau = $tiepNhan->yeuCau;
+
+                  $diaChiYeuCau = collect([
+                      $yeuCau->diaDiem->chiTietDiaDiem ?? null,
+                      $yeuCau->diaDiem->phuongXa ?? null,
+                      $yeuCau->diaDiem->tinhThanh ?? null,
+                  ])->filter()->implode(', ');
+
+                  $mucDoKhanCap = $yeuCau->mucDoKhanCap ?? '-';
+
+                  $classMucDo = match ($mucDoKhanCap) {
+                      'Khẩn cấp' => 'muc-do-danger',
+                      'Cao' => 'muc-do-warning',
+                      'Trung bình' => 'muc-do-info',
+                      'Thấp' => 'muc-do-muted',
+                      default => 'muc-do-muted',
+                  };
+
+                  $trangThaiTiepNhan = $tiepNhan->trangThai ?? '-';
+
+                  $classTrangThaiTiepNhan = match ($trangThaiTiepNhan) {
+                      'Đã tiếp nhận' => 'status-active',
+                      'Đang hỗ trợ' => 'status-active',
+                      'Cần thêm hỗ trợ' => 'status-paused',
+                      'Hoàn thành' => 'status-completed',
+                      default => 'status-default',
+                  };
+                @endphp
+
                 <tr class="clickable-row"
                     data-href="{{ url('/nhom/' . $nhom->idNhom . '/yeu-cau-cuu-tro/' . $tiepNhan->idYeuCau) }}">
                   <td class="text-center">
-                    {{ $tiepNhan->yeuCau->idYeuCau ?? '-' }}
+                    {{ $yeuCau->idYeuCau ?? '-' }}
                   </td>
 
-                  <td>
-                    <div class="fw-semibold">
-                      {{ $tiepNhan->yeuCau->tieuDeYeuCau ?? '-' }}
+                  <td class="yeu-cau-main-cell">
+                    <div class="fw-semibold yeu-cau-title">
+                      {{ $yeuCau->tieuDeYeuCau ?? '-' }}
                     </div>
 
-                    <small class="text-muted">
-                      Người gửi: {{ $tiepNhan->yeuCau->nguoiGui->hoTen ?? '-' }}
-                    </small>
+                    <div class="small text-muted mt-1">
+                      Người gửi: {{ $yeuCau->nguoiGui->hoTen ?? '-' }}
+                    </div>
 
-                    <br>
-
-                    <small class="text-muted">
-                      {{ $tiepNhan->yeuCau->diaDiem->chiTietDiaDiem ?? '' }},
-                      {{ $tiepNhan->yeuCau->diaDiem->phuongXa ?? '' }},
-                      {{ $tiepNhan->yeuCau->diaDiem->tinhThanh ?? '' }}
-                    </small>
-
-                    @if ($tiepNhan->noiDungDamNhan)
-                      <div class="mt-1">
-                        <small>
-                          <strong>Nội dung đảm nhận:</strong>
-                          {{ $tiepNhan->noiDungDamNhan }}
-                        </small>
-                      </div>
-                    @endif
+                    <div class="small text-muted mt-1 yeu-cau-address">
+                      {{ $diaChiYeuCau !== '' ? $diaChiYeuCau : '-' }}
+                    </div>
                   </td>
 
-                  <td class="text-center">
-                    {{ $tiepNhan->yeuCau->soNguoi ?? '-' }}
+                  <td class="text-center cell-nowrap">
+                    {{ $yeuCau->soNguoi ?? '-' }}
                   </td>
 
-                  <td class="text-center">
-                    @if (($tiepNhan->yeuCau->mucDoKhanCap ?? '') == 'Khẩn cấp')
-                      <span class="text-danger fw-semibold">Khẩn cấp</span>
-                    @elseif (($tiepNhan->yeuCau->mucDoKhanCap ?? '') == 'Cao')
-                      <span class="text-warning fw-semibold">Cao</span>
-                    @else
-                      {{ $tiepNhan->yeuCau->mucDoKhanCap ?? '-' }}
-                    @endif
+                  <td class="text-center cell-nowrap">
+                    <span class="muc-do-label {{ $classMucDo }}">
+                      {{ $mucDoKhanCap }}
+                    </span>
                   </td>
 
-                  <td class="text-center">
-                    {{ $tiepNhan->trangThai ?? '-' }}
+                  <td class="text-center cell-nowrap">
+                    <span class="d-inline-flex align-items-center justify-content-center gap-2">
+                      <span class="status-dot {{ $classTrangThaiTiepNhan }}"></span>
+                      <span>{{ $trangThaiTiepNhan }}</span>
+                    </span>
                   </td>
 
-                  <td class="text-center">
-                    {{ $tiepNhan->thoiGianDuKienHoTro ?? '-' }}
+                  <td class="text-center cell-nowrap">
+                    {{ $tiepNhan->thoiGianDuKienHoTro
+                        ? \Carbon\Carbon::parse($tiepNhan->thoiGianDuKienHoTro)->format('d/m/Y')
+                        : '-' }}
                   </td>
                 </tr>
               @empty
@@ -652,102 +940,143 @@
           </table>
         </div>
       </div>
-
+      
       {{-- TAB 4: ĐÓNG GÓP --}}
       <div class="tab-pane fade" id="dong-gop" role="tabpanel">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <div>
-            <h5 class="mb-0">Đóng góp cho chiến dịch</h5>
-
-            <small class="text-muted">
-              Danh sách các lượt đóng góp từ người dùng. Chỉ đóng góp đã xác nhận mới được cộng vào nguồn lực.
-            </small>
-          </div>
+        <div class="mb-3">
+          <h5 class="mb-0">Đóng góp cho chiến dịch</h5>
         </div>
 
         @forelse ($dongGops as $dongGop)
-          <div class="border rounded p-3 mb-3">
-            <div class="d-flex justify-content-between align-items-start mb-2">
-              <div>
-                <div class="fw-semibold">
-                  Người ủng hộ: {{ $dongGop->nguoiUngHo->hoTen ?? '-' }}
-                </div>
+          @php
+            $nguoiUngHo = $dongGop->nguoiUngHo ?? null;
+            $nguoiTiepNhan = $dongGop->thanhVienTiepNhan->nguoiDung ?? null;
 
-                <small class="text-muted">
-                  Thời gian gửi: {{ $dongGop->thoiGianDongGop ?? '-' }}
-                </small>
+            $tenNguoiUngHo = $nguoiUngHo->hoTen ?? 'Người ủng hộ';
+            $chuCaiDaiDien = mb_substr($tenNguoiUngHo, 0, 1, 'UTF-8');
+
+            $thoiGianDongGop = $dongGop->thoiGianDongGop
+                ? \Carbon\Carbon::parse($dongGop->thoiGianDongGop)->format('d/m/Y H:i')
+                : '-';
+          @endphp
+
+          <div class="border rounded-3 p-3 mb-3 dong-gop-card">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+              <div class="d-flex align-items-center gap-3">
+                @if (!empty($nguoiUngHo?->anhDaiDien))
+                  <img src="{{ asset('storage/' . $nguoiUngHo->anhDaiDien) }}"
+                      alt="{{ $tenNguoiUngHo }}"
+                      class="dong-gop-avatar">
+                @else
+                  <div class="dong-gop-avatar dong-gop-avatar-placeholder">
+                    {{ $chuCaiDaiDien }}
+                  </div>
+                @endif
+
+                <div>
+                  <div class="fw-semibold">
+                    {{ $tenNguoiUngHo }}
+                  </div>
+
+                  <small class="text-muted d-block">
+                    {{ $thoiGianDongGop }}
+                  </small>
+
+                  <small class="text-muted d-block mt-1">
+                    Người tiếp nhận:
+                    @if ($nguoiTiepNhan)
+                      {{ $nguoiTiepNhan->hoTen ?? '-' }} - {{ $nguoiTiepNhan->tenDangNhap ?? '-' }}
+                    @else
+                      -
+                    @endif
+                  </small>
+                </div>
               </div>
 
-              <div class="text-end">
-                <small class="text-muted">
-                  Tiếp nhận:
-                  {{ $dongGop->thanhVienTiepNhan->nguoiDung->hoTen ?? 'Chưa có' }}
-                </small>
+              <div class="text-muted small">
+                Mã đóng góp: {{ $dongGop->idDongGop }}
               </div>
             </div>
 
-            @if ($dongGop->ghiChu)
-              <p class="mb-2">
-                <strong>Ghi chú:</strong> {{ $dongGop->ghiChu }}
-              </p>
+            @if (!empty($dongGop->ghiChu))
+              <div class="mb-3">
+                <div class="small text-muted mb-1">Ghi chú</div>
+
+                <div class="dong-gop-ghi-chu">
+                  {{ $dongGop->ghiChu }}
+                </div>
+              </div>
             @endif
 
             <div class="table-responsive">
-              <table class="table table-sm table-bordered mb-0">
+              <table class="table table-hover align-middle mb-0 dong-gop-detail-table">
                 <thead>
-                  <tr class="text-center">
+                  <tr class="text-uppercase text-center">
+                    <th style="width: 70px;">Mã</th>
                     <th class="text-start">Hàng hóa</th>
-                    <th style="width: 120px;">Số lượng</th>
+                    <th class="text-start" style="width: 210px;">Danh mục</th>
+                    <th style="width: 110px;">Số lượng</th>
                     <th style="width: 140px;">Hạn sử dụng</th>
                     <th style="width: 150px;">Trạng thái</th>
-                    <th style="width: 150px;">Thao tác</th>
+                    <th style="width: 140px;">Thao tác</th>
                   </tr>
                 </thead>
 
                 <tbody>
                   @foreach ($dongGop->chiTietDongGops as $chiTiet)
-                    <tr>
-                      <td>
-                        {{ $chiTiet->hangHoa->tenHangHoa ?? '-' }}
+                    @php
+                      $trangThaiChiTiet = $chiTiet->trangThai ?? '-';
 
-                        @if ($chiTiet->hangHoa?->donViTinh)
+                      $classTrangThaiDongGop = match ($trangThaiChiTiet) {
+                          'Chờ xác nhận' => 'status-warning',
+                          'Đã xác nhận' => 'status-success',
+                          'Từ chối' => 'status-danger',
+                          default => 'status-secondary',
+                      };
+                    @endphp
+
+                    <tr>
+                      <td class="text-center">
+                        {{ $chiTiet->idChiTietDongGop ?? '-' }}
+                      </td>
+
+                      <td>
+                        <div class="fw-semibold">
+                          {{ $chiTiet->hangHoa->tenHangHoa ?? '-' }}
+                        </div>
+
+                        @if (!empty($chiTiet->hangHoa?->donViTinh))
                           <small class="text-muted">
-                            ({{ $chiTiet->hangHoa->donViTinh }})
+                            Đơn vị: {{ $chiTiet->hangHoa->donViTinh }}
                           </small>
                         @endif
                       </td>
 
-                      <td class="text-center">
-                        {{ $chiTiet->soLuong }}
+                      <td>
+                        {{ $chiTiet->hangHoa->danhMucHang->tenDanhMucHang ?? '-' }}
                       </td>
 
                       <td class="text-center">
-                        {{ $chiTiet->hanSuDung ?? '-' }}
+                        {{ $chiTiet->soLuong ?? 0 }}
                       </td>
 
                       <td class="text-center">
-                        @if ($chiTiet->trangThai == 'Chờ xác nhận')
-                          <span class="d-inline-flex align-items-center gap-2">
-                            <span class="status-dot status-paused"></span>
-                            Chờ xác nhận
-                          </span>
-                        @elseif ($chiTiet->trangThai == 'Đã xác nhận')
-                          <span class="d-inline-flex align-items-center gap-2">
-                            <span class="status-dot status-active"></span>
-                            Đã xác nhận
-                          </span>
-                        @elseif ($chiTiet->trangThai == 'Từ chối')
-                          <span class="d-inline-flex align-items-center gap-2">
-                            <span class="status-dot bg-danger"></span>
-                            Từ chối
-                          </span>
+                        @if ($chiTiet->hanSuDung)
+                          {{ \Carbon\Carbon::parse($chiTiet->hanSuDung)->format('d/m/Y') }}
                         @else
-                          {{ $chiTiet->trangThai ?? '-' }}
+                          -
                         @endif
                       </td>
 
                       <td class="text-center">
-                        @if ($chiTiet->trangThai == 'Chờ xác nhận' && !$chienDichDaHoanThanh)
+                        <span class="d-inline-flex align-items-center gap-2">
+                          <span class="status-dot {{ $classTrangThaiDongGop }}"></span>
+                          {{ $trangThaiChiTiet }}
+                        </span>
+                      </td>
+
+                      <td class="text-center">
+                        @if ($chiTiet->trangThai === 'Chờ xác nhận' && !$chienDichDaHoanThanh)
                           <div class="d-inline-flex gap-1">
                             <form action="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich/' . $chienDich->idChienDich . '/dong-gop/' . $chiTiet->idChiTietDongGop . '/xac-nhan') }}"
                                   method="POST"
@@ -794,111 +1123,231 @@
 
       {{-- TAB 5: NGUỒN LỰC --}}
       <div class="tab-pane fade" id="nguon-luc" role="tabpanel">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <div>
-            <h5 class="mb-0">Nguồn lực chiến dịch</h5>
+        <div class="nguon-luc-header mb-3">
+          <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div>
+              <h5 class="mb-0">Nguồn lực chiến dịch</h5>
+            </div>
 
-            <small class="text-muted">
-              Danh sách mặt hàng cần kêu gọi, số lượng đã nhận và số lượng hiện còn của chiến dịch.
-            </small>
+            @if ($laNhomTruong && !$chienDichDaHoanThanh)
+              <a href="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich/' . $chienDich->idChienDich . '/nguon-luc/cap-nhat') }}"
+                class="btn btn-primary">
+                Cập nhật nguồn lực
+              </a>
+            @endif
           </div>
 
-          @if ($laNhomTruong && !$chienDichDaHoanThanh)
-            <a href="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich/' . $chienDich->idChienDich . '/nguon-luc/cap-nhat') }}"
-              class="btn btn-primary">
-              Cập nhật nguồn lực
-            </a>
-          @endif
+          <div class="nguon-luc-divider"></div>
+
+          <div class="d-flex justify-content-end">
+            <div class="d-flex align-items-center gap-2">
+              <div class="search-input-wrapper nguon-luc-search-wrapper">
+                <i data-feather="search" class="icon-search"></i>
+
+                <input type="text"
+                      id="timKiemNguonLuc"
+                      class="form-control nguon-luc-search-box"
+                      placeholder="Tìm kiếm...">
+              </div>
+
+              <button type="button"
+                      id="xoaLocNguonLuc"
+                      class="btn btn-light border search-reset-button d-none"
+                      title="Xóa tìm kiếm và bộ lọc">
+                <i data-feather="x"></i>
+              </button>
+            </div>
+          </div>
         </div>
 
         <div class="table-responsive">
-          <table class="table table-hover mb-0">
+          <table class="table table-hover mb-0 nguon-luc-table">
             <thead>
               <tr class="text-uppercase text-center">
-                <th style="width: 90px;">Mã</th>
-                <th class="text-start">Hàng hóa</th>
-                <th style="width: 150px;">Cần kêu gọi</th>
-                <th style="width: 150px;">Đã nhận</th>
-                <th style="width: 150px;">Hiện còn</th>
-                <th style="width: 150px;">Hạn sử dụng</th>
-                <th style="width: 170px;">Trạng thái</th>
-                <th style="width: 170px;">Ngày cập nhật</th>
+                <th style="width: 60px;">Mã</th>
+
+                <th class="text-start" style="width: 170px;">Hàng hóa</th>
+
+                <th class="filter-heading-cell" style="width: 175px;">
+                  <div class="dropdown">
+                    <button type="button"
+                            class="filter-heading-button"
+                            id="btnLocDanhMucNguonLuc"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                      Danh mục
+                      <span class="filter-active-dot"></span>
+                    </button>
+
+                    <ul class="dropdown-menu filter-dropdown-menu"
+                        aria-labelledby="btnLocDanhMucNguonLuc"
+                        id="menuLocDanhMucNguonLuc">
+                      <li>
+                        <button type="button"
+                                class="dropdown-item nguon-luc-filter-option active"
+                                data-filter-type="danhMuc"
+                                data-filter-value="">
+                          Tất cả danh mục
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                </th>
+
+                <th class="filter-heading-cell" style="width: 90px;">
+                  <div class="dropdown">
+                    <button type="button"
+                            class="filter-heading-button"
+                            id="btnLocDonViNguonLuc"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                      Đơn vị
+                      <span class="filter-active-dot"></span>
+                    </button>
+
+                    <ul class="dropdown-menu filter-dropdown-menu"
+                        aria-labelledby="btnLocDonViNguonLuc"
+                        id="menuLocDonViNguonLuc">
+                      <li>
+                        <button type="button"
+                                class="dropdown-item nguon-luc-filter-option active"
+                                data-filter-type="donVi"
+                                data-filter-value="">
+                          Tất cả đơn vị
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                </th>
+
+                <th style="width: 115px;">Cần kêu gọi</th>
+                <th style="width: 105px;">Đã nhận</th>
+                <th style="width: 105px;">Hiện còn</th>
+
+                <th class="filter-heading-cell" style="width: 145px;">
+                  <div class="dropdown">
+                    <button type="button"
+                            class="filter-heading-button"
+                            id="btnLocTrangThaiNguonLuc"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                      Trạng thái
+                      <span class="filter-active-dot"></span>
+                    </button>
+
+                    <ul class="dropdown-menu filter-dropdown-menu"
+                        aria-labelledby="btnLocTrangThaiNguonLuc"
+                        id="menuLocTrangThaiNguonLuc">
+                      <li>
+                        <button type="button"
+                                class="dropdown-item nguon-luc-filter-option active"
+                                data-filter-type="trangThai"
+                                data-filter-value="">
+                          Tất cả trạng thái
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                </th>
+
+                <th style="width: 135px;">Ngày cập nhật</th>
               </tr>
             </thead>
 
             <tbody>
               @forelse ($nguonLucs as $nguonLuc)
                 @php
-                  $trangThaiNguonLuc = $nguonLuc->trangThai ?? '-';
+                  $trangThaiNguonLuc = $nguonLuc->trangThaiTong ?? '-';
 
-                  $classNguonLuc = match ($trangThaiNguonLuc) {
+                  $classTrangThaiNguonLuc = match ($trangThaiNguonLuc) {
                       'Đang kêu gọi' => 'status-active',
-                      'Ngừng tiếp nhận' => 'status-paused',
-                      'Đã đủ' => 'status-completed',
+                      'Đủ số lượng' => 'status-completed',
+                      'Đã đóng' => 'status-secondary',
                       default => 'status-default',
                   };
+
+                  $tenHangHoa = $nguonLuc->hangHoa->tenHangHoa ?? '-';
+                  $tenDanhMuc = $nguonLuc->hangHoa->danhMucHang->tenDanhMucHang ?? '-';
+                  $donViTinh = $nguonLuc->hangHoa->donViTinh ?? '-';
+
+                  $noiDungTimKiemNguonLuc = mb_strtolower(
+                      implode(' ', [
+                          $nguonLuc->idHangHoa,
+                          $tenHangHoa,
+                          $tenDanhMuc,
+                          $donViTinh,
+                          $trangThaiNguonLuc,
+                          $nguonLuc->tongSoLuongCanKeuGoi ?? '',
+                          $nguonLuc->tongSoLuongDaNhan ?? '',
+                          $nguonLuc->tongSoLuongHienCo ?? '',
+                      ]),
+                      'UTF-8'
+                  );
                 @endphp
 
-                <tr>
+                <tr class="nguon-luc-row"
+                    data-search="{{ $noiDungTimKiemNguonLuc }}"
+                    data-danh-muc="{{ $tenDanhMuc }}"
+                    data-don-vi="{{ $donViTinh }}"
+                    data-trang-thai="{{ $trangThaiNguonLuc }}">
                   <td class="text-center">
-                    {{ $nguonLuc->idNguonLuc }}
+                    {{ $nguonLuc->idHangHoa ?? '-' }}
                   </td>
 
                   <td>
                     <div class="fw-semibold">
-                      {{ $nguonLuc->hangHoa->tenHangHoa ?? '-' }}
+                      {{ $tenHangHoa }}
                     </div>
-
-                    @if ($nguonLuc->hangHoa?->danhMucHang?->tenDanhMucHang)
-                      <small class="text-muted">
-                        {{ $nguonLuc->hangHoa->danhMucHang->tenDanhMucHang }}
-                      </small>
-                    @endif
-
-                    @if ($nguonLuc->hangHoa?->donViTinh)
-                      <small class="text-muted">
-                        - {{ $nguonLuc->hangHoa->donViTinh }}
-                      </small>
-                    @endif
                   </td>
 
                   <td class="text-center">
-                    {{ $nguonLuc->soLuongCanKeuGoi ?? 0 }}
+                    {{ $tenDanhMuc }}
                   </td>
 
                   <td class="text-center">
-                    {{ $nguonLuc->soLuongDaNhan ?? 0 }}
+                    {{ $donViTinh }}
                   </td>
 
                   <td class="text-center">
-                    {{ $nguonLuc->soLuongHienCo ?? 0 }}
+                    {{ number_format($nguonLuc->tongSoLuongCanKeuGoi ?? 0, 2) }}
                   </td>
 
                   <td class="text-center">
-                    {{ $nguonLuc->hanSuDung ?? '-' }}
+                    {{ number_format($nguonLuc->tongSoLuongDaNhan ?? 0, 2) }}
+                  </td>
+
+                  <td class="text-center">
+                    {{ number_format($nguonLuc->tongSoLuongHienCo ?? 0, 2) }}
                   </td>
 
                   <td class="text-center">
                     <span class="d-inline-flex align-items-center gap-2">
-                      <span class="status-dot {{ $classNguonLuc }}"></span>
-                      <span>{{ $trangThaiNguonLuc }}</span>
+                      <span class="status-dot {{ $classTrangThaiNguonLuc }}"></span>
+                      {{ $trangThaiNguonLuc }}
                     </span>
                   </td>
 
                   <td class="text-center">
-                    {{ $nguonLuc->ngayCapNhat
-                        ? \Carbon\Carbon::parse($nguonLuc->ngayCapNhat)->format('d/m/Y H:i')
+                    {{ $nguonLuc->ngayCapNhatMoiNhat
+                        ? \Carbon\Carbon::parse($nguonLuc->ngayCapNhatMoiNhat)->format('d/m/Y H:i')
                         : '-' }}
                   </td>
                 </tr>
               @empty
                 <tr>
-                  <td colspan="8"
+                  <td colspan="9"
                       class="text-center text-muted py-4">
-                    Chưa có nguồn lực nào được khai báo cho chiến dịch này.
+                    Chưa có nguồn lực nào cho chiến dịch này.
                   </td>
                 </tr>
               @endforelse
+
+              <tr id="khongCoNguonLucPhuHop" style="display: none;">
+                <td colspan="9"
+                    class="text-center text-muted py-4">
+                  Không có nguồn lực phù hợp với điều kiện tìm kiếm/lọc.
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -906,107 +1355,84 @@
 
       {{-- TAB 6: PHÂN PHỐI --}}
       <div class="tab-pane fade" id="phan-phoi" role="tabpanel">
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
           <div>
             <h5 class="mb-0">Đợt phân phối</h5>
-
-            <small class="text-muted">
-              Danh sách các đợt phân phối hàng cứu trợ từ nguồn lực chiến dịch.
-            </small>
           </div>
 
           @if (!$chienDichDaHoanThanh)
             <a href="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich/' . $chienDich->idChienDich . '/phan-phoi/create') }}"
-               class="btn btn-primary">
+              class="btn btn-primary">
               Tạo đợt phân phối
             </a>
           @endif
         </div>
 
-        @forelse ($dotPhanPhois as $dotPhanPhoi)
-          <div class="border rounded p-3 mb-3">
-            <div class="d-flex justify-content-between align-items-start mb-2">
-              <div>
-                <div class="fw-semibold">
-                  Đợt phân phối #{{ $dotPhanPhoi->idDotPhanPhoi }}
-                </div>
+        <div class="table-responsive">
+          <table class="table table-hover mb-0 chien-dich-phan-phoi-table">
+            <thead>
+              <tr class="text-uppercase text-center">
+                <th style="width: 80px;">Mã</th>
+                <th style="width: 180px;">Ngày phân phối</th>
+                <th style="width: 150px;">Số dòng</th>
+                <th style="width: 180px;">Tổng lượng giao</th>
+                <th style="width: 180px;">Trạng thái</th>
+              </tr>
+            </thead>
 
-                <small class="text-muted">
-                  Ngày phân phối: {{ $dotPhanPhoi->ngayPhanPhoi ?? '-' }}
-                </small>
-              </div>
+            <tbody>
+              @forelse ($dotPhanPhois as $dotPhanPhoi)
+                @php
+                  $soDongChiTiet = $dotPhanPhoi->chiTietPhanPhois->count();
+                  $tongLuongGiao = $dotPhanPhoi->chiTietPhanPhois->sum('soLuongGiao');
 
-              <div class="text-end">
-                <span>{{ $dotPhanPhoi->trangThai ?? '-' }}</span>
-              </div>
-            </div>
+                  $classTrangThaiDot = match ($dotPhanPhoi->trangThai ?? '') {
+                      'Đang chuẩn bị' => 'status-paused',
+                      'Đang phân phối' => 'status-active',
+                      'Hoàn thành' => 'status-completed',
+                      'Đã hủy' => 'status-default',
+                      default => 'status-default',
+                  };
+                @endphp
 
-            @if ($dotPhanPhoi->ghiChu)
-              <p class="mb-2">
-                <strong>Ghi chú:</strong> {{ $dotPhanPhoi->ghiChu }}
-              </p>
-            @endif
+                <tr class="clickable-row"
+                    data-href="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich/' . $chienDich->idChienDich . '/phan-phoi/' . $dotPhanPhoi->idDotPhanPhoi) }}">
+                  <td class="text-center">
+                    {{ $dotPhanPhoi->idDotPhanPhoi }}
+                  </td>
 
-            <div class="table-responsive">
-              <table class="table table-sm table-bordered mb-0">
-                <thead>
-                  <tr class="text-center">
-                    <th class="text-start">Nguồn lực</th>
-                    <th style="width: 130px;">Số lượng giao</th>
-                    <th class="text-start">Yêu cầu nhận hỗ trợ</th>
-                    <th style="width: 160px;">Người nhận</th>
-                    <th style="width: 140px;">Trạng thái</th>
-                  </tr>
-                </thead>
+                  <td class="text-center cell-nowrap">
+                    {{ $dotPhanPhoi->ngayPhanPhoi
+                        ? \Carbon\Carbon::parse($dotPhanPhoi->ngayPhanPhoi)->format('d/m/Y H:i')
+                        : '-' }}
+                  </td>
 
-                <tbody>
-                  @foreach ($dotPhanPhoi->chiTietPhanPhois as $chiTiet)
-                    <tr>
-                      <td>
-                        {{ $chiTiet->nguonLuc->hangHoa->tenHangHoa ?? '-' }}
+                  <td class="text-center cell-nowrap">
+                    {{ $soDongChiTiet }}
+                  </td>
 
-                        @if ($chiTiet->nguonLuc?->hangHoa?->donViTinh)
-                          <small class="text-muted">
-                            ({{ $chiTiet->nguonLuc->hangHoa->donViTinh }})
-                          </small>
-                        @endif
-                      </td>
+                  <td class="text-center cell-nowrap">
+                    {{ number_format($tongLuongGiao, 2) }}
+                  </td>
 
-                      <td class="text-center">
-                        {{ $chiTiet->soLuongGiao }}
-                      </td>
-
-                      <td>
-                        #{{ $chiTiet->tiepNhan->yeuCau->idYeuCau ?? '-' }}
-                        - {{ $chiTiet->tiepNhan->yeuCau->tieuDeYeuCau ?? '-' }}
-
-                        <br>
-
-                        <small class="text-muted">
-                          {{ $chiTiet->tiepNhan->yeuCau->diaDiem->chiTietDiaDiem ?? '' }},
-                          {{ $chiTiet->tiepNhan->yeuCau->diaDiem->phuongXa ?? '' }},
-                          {{ $chiTiet->tiepNhan->yeuCau->diaDiem->tinhThanh ?? '' }}
-                        </small>
-                      </td>
-
-                      <td class="text-center">
-                        {{ $chiTiet->nguoiNhan ?? '-' }}
-                      </td>
-
-                      <td class="text-center">
-                        {{ $chiTiet->trangThai ?? '-' }}
-                      </td>
-                    </tr>
-                  @endforeach
-                </tbody>
-              </table>
-            </div>
-          </div>
-        @empty
-          <div class="text-center text-muted py-4">
-            Chưa có đợt phân phối nào cho chiến dịch này.
-          </div>
-        @endforelse
+                  <td class="text-center cell-nowrap">
+                    <span class="d-inline-flex align-items-center justify-content-center gap-2">
+                      <span class="status-dot {{ $classTrangThaiDot }}"></span>
+                      <span>{{ $dotPhanPhoi->trangThai ?? '-' }}</span>
+                    </span>
+                  </td>
+                </tr>
+              @empty
+                <tr>
+                  <td colspan="5"
+                      class="text-center text-muted py-4">
+                    Chưa có đợt phân phối nào cho chiến dịch này.
+                  </td>
+                </tr>
+              @endforelse
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -1060,6 +1486,217 @@
           )
           .openPopup();
       }
+    }
+
+    const nguonLucRows = Array.from(
+      document.querySelectorAll('.nguon-luc-row')
+    );
+
+    const timKiemNguonLucInput = document.getElementById('timKiemNguonLuc');
+    const xoaLocNguonLucButton = document.getElementById('xoaLocNguonLuc');
+    const khongCoNguonLucPhuHop = document.getElementById('khongCoNguonLucPhuHop');
+
+    const boLocNguonLuc = {
+      danhMuc: '',
+      donVi: '',
+      trangThai: '',
+    };
+
+    const cauHinhLocNguonLuc = {
+      danhMuc: {
+        menuId: 'menuLocDanhMucNguonLuc',
+        buttonId: 'btnLocDanhMucNguonLuc',
+        dataKey: 'danhMuc',
+        allText: 'Tất cả danh mục',
+      },
+      donVi: {
+        menuId: 'menuLocDonViNguonLuc',
+        buttonId: 'btnLocDonViNguonLuc',
+        dataKey: 'donVi',
+        allText: 'Tất cả đơn vị',
+      },
+      trangThai: {
+        menuId: 'menuLocTrangThaiNguonLuc',
+        buttonId: 'btnLocTrangThaiNguonLuc',
+        dataKey: 'trangThai',
+        allText: 'Tất cả trạng thái',
+      },
+    };
+
+    function boDauTiengVietJS(value) {
+      return (value || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd');
+    }
+
+    function layGiaTriLocNguonLuc(dataKey) {
+      const values = [];
+
+      nguonLucRows.forEach(function (row) {
+        const value = row.dataset[dataKey] || '';
+
+        if (value !== '' && value !== '-' && !values.includes(value)) {
+          values.push(value);
+        }
+      });
+
+      return values.sort(function (a, b) {
+        return a.localeCompare(b, 'vi');
+      });
+    }
+
+    function taoNutLocNguonLuc(filterType, value, label) {
+      const li = document.createElement('li');
+      const button = document.createElement('button');
+
+      button.type = 'button';
+      button.className = 'dropdown-item nguon-luc-filter-option';
+      button.dataset.filterType = filterType;
+      button.dataset.filterValue = value;
+      button.textContent = label;
+
+      button.addEventListener('click', function () {
+        boLocNguonLuc[filterType] = value;
+        locNguonLuc();
+      });
+
+      li.appendChild(button);
+
+      return li;
+    }
+
+    function khoiTaoMenuLocNguonLuc() {
+      Object.keys(cauHinhLocNguonLuc).forEach(function (filterType) {
+        const config = cauHinhLocNguonLuc[filterType];
+        const menu = document.getElementById(config.menuId);
+
+        if (!menu) {
+          return;
+        }
+
+        menu.innerHTML = '';
+
+        menu.appendChild(
+          taoNutLocNguonLuc(filterType, '', config.allText)
+        );
+
+        layGiaTriLocNguonLuc(config.dataKey).forEach(function (value) {
+          menu.appendChild(
+            taoNutLocNguonLuc(filterType, value, value)
+          );
+        });
+      });
+    }
+
+    function capNhatTrangThaiNutLocNguonLuc() {
+      document
+        .querySelectorAll('.nguon-luc-filter-option')
+        .forEach(function (button) {
+          const filterType = button.dataset.filterType;
+          const filterValue = button.dataset.filterValue || '';
+
+          button.classList.toggle(
+            'active',
+            boLocNguonLuc[filterType] === filterValue
+          );
+        });
+
+      Object.keys(cauHinhLocNguonLuc).forEach(function (filterType) {
+        const config = cauHinhLocNguonLuc[filterType];
+        const button = document.getElementById(config.buttonId);
+
+        if (!button) {
+          return;
+        }
+
+        button.classList.toggle(
+          'is-filtering',
+          boLocNguonLuc[filterType] !== ''
+        );
+      });
+
+      const dangTimKiem =
+        (timKiemNguonLucInput?.value.trim() || '') !== '';
+
+      const dangLoc =
+        dangTimKiem
+        || boLocNguonLuc.danhMuc !== ''
+        || boLocNguonLuc.donVi !== ''
+        || boLocNguonLuc.trangThai !== '';
+
+      if (xoaLocNguonLucButton) {
+        xoaLocNguonLucButton.classList.toggle('d-none', !dangLoc);
+      }
+    }
+
+    function locNguonLuc() {
+      const tuKhoa = boDauTiengVietJS(
+        timKiemNguonLucInput?.value.trim() || ''
+      );
+
+      let soDongHienThi = 0;
+
+      nguonLucRows.forEach(function (row) {
+        const noiDung = boDauTiengVietJS(row.dataset.search || '');
+
+        const hopTuKhoa =
+          tuKhoa === '' || noiDung.includes(tuKhoa);
+
+        const hopDanhMuc =
+          boLocNguonLuc.danhMuc === ''
+          || row.dataset.danhMuc === boLocNguonLuc.danhMuc;
+
+        const hopDonVi =
+          boLocNguonLuc.donVi === ''
+          || row.dataset.donVi === boLocNguonLuc.donVi;
+
+        const hopTrangThai =
+          boLocNguonLuc.trangThai === ''
+          || row.dataset.trangThai === boLocNguonLuc.trangThai;
+
+        const hienThi =
+          hopTuKhoa && hopDanhMuc && hopDonVi && hopTrangThai;
+
+        row.style.display = hienThi ? '' : 'none';
+
+        if (hienThi) {
+          soDongHienThi++;
+        }
+      });
+
+      if (khongCoNguonLucPhuHop) {
+        khongCoNguonLucPhuHop.style.display =
+          soDongHienThi === 0 && nguonLucRows.length > 0 ? '' : 'none';
+      }
+
+      capNhatTrangThaiNutLocNguonLuc();
+    }
+
+    khoiTaoMenuLocNguonLuc();
+    locNguonLuc();
+
+    if (timKiemNguonLucInput) {
+      timKiemNguonLucInput.addEventListener('input', locNguonLuc);
+    }
+
+    if (xoaLocNguonLucButton) {
+      xoaLocNguonLucButton.addEventListener('click', function () {
+        if (timKiemNguonLucInput) {
+          timKiemNguonLucInput.value = '';
+        }
+
+        boLocNguonLuc.danhMuc = '';
+        boLocNguonLuc.donVi = '';
+        boLocNguonLuc.trangThai = '';
+
+        locNguonLuc();
+      });
+    }
+
+    if (window.feather) {
+      feather.replace();
     }
   });
 </script>

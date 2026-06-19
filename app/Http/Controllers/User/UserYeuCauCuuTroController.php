@@ -225,9 +225,82 @@ class UserYeuCauCuuTroController extends Controller
             ->with('success', 'Hủy yêu cầu cứu trợ thành công.');
     }
 
-    /**
-     * Người dùng xác nhận đã nhận đủ hỗ trợ.
-     */
+    public function canThemHoTro(int $idYeuCau)
+    {
+        $idNguoiDung = session('idNguoiDung');
+
+        if (!$idNguoiDung) {
+            return redirect('/login')
+                ->with('error', 'Vui lòng đăng nhập để tiếp tục.');
+        }
+
+        $yeuCau = YeuCauCuuTro::with('tiepNhans')
+            ->where('idYeuCau', $idYeuCau)
+            ->where('idNguoiGui', $idNguoiDung)
+            ->firstOrFail();
+
+        if (in_array($yeuCau->trangThai, ['Hoàn thành', 'Đã hủy'], true)) {
+            return back()
+                ->with('error', 'Yêu cầu này không thể chuyển sang trạng thái cần thêm hỗ trợ.');
+        }
+
+        $soDongCapNhat = TiepNhanYeuCau::where('idYeuCau', $idYeuCau)
+            ->where('trangThai', 'Đã tiếp nhận')
+            ->update([
+                'trangThai' => 'Cần thêm hỗ trợ',
+            ]);
+
+        if ($soDongCapNhat <= 0) {
+            return back()
+                ->with('error', 'Không có lượt tiếp nhận nào có thể chuyển sang cần thêm hỗ trợ.');
+        }
+
+        $yeuCau->update([
+            'trangThai' => 'Cần thêm hỗ trợ',
+        ]);
+
+        return back()
+            ->with('success', 'Đã báo yêu cầu cần thêm hỗ trợ.');
+    }
+
+    public function thuHoiCanThemHoTro(int $idYeuCau)
+    {
+        $idNguoiDung = session('idNguoiDung');
+
+        if (!$idNguoiDung) {
+            return redirect('/login')
+                ->with('error', 'Vui lòng đăng nhập để tiếp tục.');
+        }
+
+        $yeuCau = YeuCauCuuTro::with('tiepNhans')
+            ->where('idYeuCau', $idYeuCau)
+            ->where('idNguoiGui', $idNguoiDung)
+            ->firstOrFail();
+
+        if (in_array($yeuCau->trangThai, ['Hoàn thành', 'Đã hủy'], true)) {
+            return back()
+                ->with('error', 'Yêu cầu này không thể thu hồi trạng thái cần thêm hỗ trợ.');
+        }
+
+        $soDongCapNhat = TiepNhanYeuCau::where('idYeuCau', $idYeuCau)
+            ->where('trangThai', 'Cần thêm hỗ trợ')
+            ->update([
+                'trangThai' => 'Đã tiếp nhận',
+            ]);
+
+        if ($soDongCapNhat <= 0) {
+            return back()
+                ->with('error', 'Không có lượt tiếp nhận nào đang ở trạng thái cần thêm hỗ trợ.');
+        }
+
+        $yeuCau->update([
+            'trangThai' => 'Đã tiếp nhận',
+        ]);
+
+        return back()
+            ->with('success', 'Đã thu hồi trạng thái cần thêm hỗ trợ.');
+    }
+
     public function xacNhanHoanThanh(int $idYeuCau)
     {
         $idNguoiDung = session('idNguoiDung');

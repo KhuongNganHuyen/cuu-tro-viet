@@ -9,6 +9,8 @@ use App\Models\SuKienCuuTro;
 use App\Models\ThanhVienNhom;
 use App\Models\TiepNhanYeuCau;
 use App\Models\YeuCauCuuTro;
+use App\Models\HangHoa;
+use App\Models\NguonLucChienDich;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -59,7 +61,7 @@ class NhomYeuCauCuuTroController extends Controller
         ];
     }
 
-    public function index(int $idNhom)
+    public function index(Request $request, int $idNhom)
     {
         $kiemTra = $this->kiemTraThanhVien($idNhom);
 
@@ -70,10 +72,11 @@ class NhomYeuCauCuuTroController extends Controller
         $nhom = $kiemTra['nhom'];
         $laNhomTruong = $kiemTra['laNhomTruong'];
 
-        /*
-         * Một yêu cầu vẫn có thể được nhiều nhóm tiếp nhận.
-         * Không hiển thị lại nếu chính nhóm hiện tại đã tiếp nhận yêu cầu đó.
-         */
+        $tuKhoa = trim((string) $request->input('tuKhoa'));
+        $mucDoDangChon = trim((string) $request->input('mucDoKhanCap'));
+        $trangThaiDangChon = trim((string) $request->input('trangThai'));
+        $tinhThanhDangChon = trim((string) $request->input('tinhThanh'));
+
         $yeuCausChoTiepNhan = YeuCauCuuTro::with([
                 'nguoiGui',
                 'diaDiem',
@@ -82,11 +85,11 @@ class NhomYeuCauCuuTroController extends Controller
             ])
             ->whereIn('trangThai', [
                 'Chờ tiếp nhận',
-                'Đã tiếp nhận',
                 'Cần thêm hỗ trợ',
             ])
             ->whereDoesntHave('tiepNhans', function ($query) use ($idNhom) {
-                $query->where('idNhom', $idNhom);
+                $query->where('idNhom', $idNhom)
+                    ->where('trangThai', '!=', 'Hoàn thành');
             })
             ->orderByRaw("
                 CASE
@@ -110,14 +113,101 @@ class NhomYeuCauCuuTroController extends Controller
             ->whereHas('tiepNhans', function ($query) use ($idNhom) {
                 $query->where('idNhom', $idNhom);
             })
+            ->orderByRaw("
+                CASE
+                    WHEN trangThai = 'Hoàn thành' THEN 1
+                    ELSE 0
+                END
+            ")
             ->orderBy('idYeuCau', 'desc')
             ->get();
+
+        $tatCaYeuCauTruocLoc = $yeuCausChoTiepNhan
+            ->merge($yeuCausDaTiepNhan);
+
+        $danhSachTinhThanh = $tatCaYeuCauTruocLoc
+            ->pluck('diaDiem.tinhThanh')
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
+
+        $boLocYeuCau = function ($yeuCau) use (
+            $tuKhoa,
+            $mucDoDangChon,
+            $trangThaiDangChon,
+            $tinhThanhDangChon
+        ) {
+            if (
+                $mucDoDangChon !== ''
+                && $yeuCau->mucDoKhanCap !== $mucDoDangChon
+            ) {
+                return false;
+            }
+
+            if (
+                $trangThaiDangChon !== ''
+                && $yeuCau->trangThai !== $trangThaiDangChon
+            ) {
+                return false;
+            }
+
+            if (
+                $tinhThanhDangChon !== ''
+                && ($yeuCau->diaDiem->tinhThanh ?? '') !== $tinhThanhDangChon
+            ) {
+                return false;
+            }
+
+            if ($tuKhoa !== '') {
+                $diaDiem = $yeuCau->diaDiem;
+
+                $noiDungTimKiem = implode(' ', [
+                    $yeuCau->idYeuCau,
+                    $yeuCau->tieuDeYeuCau,
+                    $yeuCau->moTa,
+                    $yeuCau->nguoiGui->hoTen ?? '',
+                    $yeuCau->soNguoi,
+                    $yeuCau->mucDoKhanCap,
+                    $yeuCau->trangThai,
+                    $yeuCau->thoiGianGui,
+                    $diaDiem->chiTietDiaDiem ?? '',
+                    $diaDiem->phuongXa ?? '',
+                    $diaDiem->tinhThanh ?? '',
+                ]);
+
+                $noiDungKhongDau = $this->boDauTiengViet($noiDungTimKiem);
+                $tuKhoaKhongDau = $this->boDauTiengViet($tuKhoa);
+
+                return str_contains(
+                    mb_strtolower($noiDungTimKiem, 'UTF-8'),
+                    mb_strtolower($tuKhoa, 'UTF-8')
+                ) || str_contains(
+                    mb_strtolower($noiDungKhongDau, 'UTF-8'),
+                    mb_strtolower($tuKhoaKhongDau, 'UTF-8')
+                );
+            }
+
+            return true;
+        };
+
+        $yeuCausChoTiepNhan = $yeuCausChoTiepNhan
+            ->filter($boLocYeuCau)
+            ->values();
+
+        $yeuCausDaTiepNhan = $yeuCausDaTiepNhan
+            ->filter($boLocYeuCau)
+            ->values();
 
         return view('nhom.yeu_cau_cuu_tro.index', compact(
             'nhom',
             'laNhomTruong',
             'yeuCausChoTiepNhan',
-            'yeuCausDaTiepNhan'
+            'yeuCausDaTiepNhan',
+            'danhSachTinhThanh',
+            'mucDoDangChon',
+            'trangThaiDangChon',
+            'tinhThanhDangChon'
         ));
     }
 
@@ -132,6 +222,8 @@ class NhomYeuCauCuuTroController extends Controller
         $nhom = $kiemTra['nhom'];
         $laNhomTruong = $kiemTra['laNhomTruong'];
 
+        $this->capNhatTrangThaiTongYeuCau($idYeuCau);
+
         $yeuCau = YeuCauCuuTro::with([
                 'nguoiGui',
                 'diaDiem',
@@ -140,17 +232,39 @@ class NhomYeuCauCuuTroController extends Controller
             ])
             ->findOrFail($idYeuCau);
 
-        $tiepNhanCuaNhom = TiepNhanYeuCau::with('chienDich')
+        $tiepNhanDangXuLyCuaNhom = TiepNhanYeuCau::with('chienDich')
             ->where('idYeuCau', $idYeuCau)
             ->where('idNhom', $idNhom)
+            ->where('trangThai', '!=', 'Hoàn thành')
+            ->orderBy('idTiepNhan', 'desc')
             ->first();
 
-        $daDuocNhomTiepNhan = $tiepNhanCuaNhom !== null;
+        $tiepNhanGanNhatCuaNhom = TiepNhanYeuCau::with('chienDich')
+            ->where('idYeuCau', $idYeuCau)
+            ->where('idNhom', $idNhom)
+            ->orderBy('idTiepNhan', 'desc')
+            ->first();
+
+        $tiepNhanCuaNhom = $tiepNhanDangXuLyCuaNhom
+            ?: $tiepNhanGanNhatCuaNhom;
+
+        $daDuocNhomTiepNhan = $tiepNhanDangXuLyCuaNhom !== null;
 
         $tiepNhanDangCanThem = TiepNhanYeuCau::with('nhom')
             ->where('idYeuCau', $idYeuCau)
             ->where('trangThai', 'Cần thêm hỗ trợ')
+            ->where('idNhom', '!=', $idNhom)
             ->first();
+
+        $cacTiepNhanKhacDangCanThem = TiepNhanYeuCau::with([
+                'nhom',
+                'chienDich',
+            ])
+            ->where('idYeuCau', $idYeuCau)
+            ->where('trangThai', 'Cần thêm hỗ trợ')
+            ->where('idNhom', '!=', $idNhom)
+            ->orderBy('idTiepNhan', 'asc')
+            ->get();
 
         return view('nhom.yeu_cau_cuu_tro.show', compact(
             'nhom',
@@ -158,7 +272,8 @@ class NhomYeuCauCuuTroController extends Controller
             'yeuCau',
             'daDuocNhomTiepNhan',
             'tiepNhanCuaNhom',
-            'tiepNhanDangCanThem'
+            'tiepNhanDangCanThem',
+            'cacTiepNhanKhacDangCanThem'
         ));
     }
 
@@ -188,20 +303,21 @@ class NhomYeuCauCuuTroController extends Controller
             );
         }
 
-        if ($this->nhomDaTiepNhanYeuCau($idNhom, $idYeuCau)) {
+        if ($this->nhomDangXuLyYeuCau($idNhom, $idYeuCau)) {
             return redirect(
                 '/nhom/' . $idNhom . '/yeu-cau-cuu-tro/' . $idYeuCau
             )->with(
                 'error',
-                'Nhóm đã tiếp nhận yêu cầu này trước đó.'
+                'Nhóm đang tiếp nhận yêu cầu này nên không thể tiếp nhận thêm lượt mới.'
             );
         }
 
         $chienDichs = ChienDichCuuTro::where('idNhom', $idNhom)
-            ->whereIn('trangThai', [
-                'Sắp diễn ra',
-                'Đang diễn ra',
-                'Đang hoạt động',
+            ->whereNotIn('trangThai', [
+                'Hoàn thành',
+                'Đã hoàn thành',
+                'Đã hủy',
+                'Đã ẩn',
             ])
             ->orderBy('idChienDich', 'desc')
             ->get();
@@ -226,12 +342,13 @@ class NhomYeuCauCuuTroController extends Controller
 
         $request->validate([
             'idChienDich' => 'required|exists:ChienDichCuuTro,idChienDich',
-            'thoiGianDuKienHoTro' => 'nullable|date',
+            'thoiGianDuKienHoTro' => 'nullable|date|after_or_equal:today',
             'noiDungDamNhan' => 'required|string',
         ], [
             'idChienDich.required' => 'Vui lòng chọn chiến dịch tiếp nhận yêu cầu.',
             'idChienDich.exists' => 'Chiến dịch không hợp lệ.',
-            'thoiGianDuKienHoTro.date' => 'Thời gian dự kiến hỗ trợ không hợp lệ.',
+            'thoiGianDuKienHoTro.date' => 'Ngày dự kiến hỗ trợ không hợp lệ.',
+            'thoiGianDuKienHoTro.after_or_equal' => 'Ngày dự kiến hỗ trợ phải từ hôm nay trở đi.',
             'noiDungDamNhan.required' => 'Vui lòng nhập nội dung nhóm sẽ đảm nhận.',
         ]);
 
@@ -246,21 +363,22 @@ class NhomYeuCauCuuTroController extends Controller
             );
         }
 
-        if ($this->nhomDaTiepNhanYeuCau($idNhom, $idYeuCau)) {
+        if ($this->nhomDangXuLyYeuCau($idNhom, $idYeuCau)) {
             return redirect(
                 '/nhom/' . $idNhom . '/yeu-cau-cuu-tro/' . $idYeuCau
             )->with(
                 'error',
-                'Nhóm đã tiếp nhận yêu cầu này trước đó.'
+                'Nhóm đang tiếp nhận yêu cầu này nên không thể tiếp nhận thêm lượt mới.'
             );
         }
 
         $chienDich = ChienDichCuuTro::where('idChienDich', $request->idChienDich)
             ->where('idNhom', $idNhom)
-            ->whereIn('trangThai', [
-                'Sắp diễn ra',
-                'Đang diễn ra',
-                'Đang hoạt động',
+            ->whereNotIn('trangThai', [
+                'Hoàn thành',
+                'Đã hoàn thành',
+                'Đã hủy',
+                'Đã ẩn',
             ])
             ->first();
 
@@ -320,12 +438,12 @@ class NhomYeuCauCuuTroController extends Controller
             );
         }
 
-        if ($this->nhomDaTiepNhanYeuCau($idNhom, $idYeuCau)) {
+        if ($this->nhomDangXuLyYeuCau($idNhom, $idYeuCau)) {
             return redirect(
                 '/nhom/' . $idNhom . '/yeu-cau-cuu-tro/' . $idYeuCau
             )->with(
                 'error',
-                'Nhóm đã tiếp nhận yêu cầu này trước đó.'
+                'Nhóm đang tiếp nhận yêu cầu này nên không thể tạo chiến dịch tiếp nhận mới.'
             );
         }
 
@@ -333,10 +451,24 @@ class NhomYeuCauCuuTroController extends Controller
             ->orderBy('idSuKien', 'desc')
             ->get();
 
+        $hangHoas = HangHoa::with('danhMucHang')
+            ->where('trangThai', 'Đang sử dụng')
+            ->where(function ($query) use ($idNhom) {
+                $query->where('idNhom', $idNhom)
+                    ->orWhereNull('idNhom');
+            })
+            ->orderByRaw(
+                'CASE WHEN idNhom = ? THEN 0 ELSE 1 END',
+                [$idNhom]
+            )
+            ->orderBy('idHangHoa', 'asc')
+            ->get();
+
         return view('nhom.yeu_cau_cuu_tro.tao_chien_dich', compact(
             'nhom',
             'yeuCau',
-            'suKiens'
+            'suKiens',
+            'hangHoas'
         ));
     }
 
@@ -395,19 +527,88 @@ class NhomYeuCauCuuTroController extends Controller
             );
         }
 
-        if ($this->nhomDaTiepNhanYeuCau($idNhom, $idYeuCau)) {
+        if ($this->nhomDangXuLyYeuCau($idNhom, $idYeuCau)) {
             return redirect(
                 '/nhom/' . $idNhom . '/yeu-cau-cuu-tro/' . $idYeuCau
             )->with(
                 'error',
-                'Nhóm đã tiếp nhận yêu cầu này trước đó.'
+                'Nhóm đang tiếp nhận yêu cầu này nên không thể tạo chiến dịch tiếp nhận mới.'
             );
         }
+
+        $nguonLucInput = $request->input('nguonLuc', []);
+
+        $nguonLucDuocChon = collect($nguonLucInput)
+            ->filter(function ($duLieu) {
+                return !empty($duLieu['chon']);
+            });
+
+        if ($nguonLucDuocChon->isEmpty()) {
+            return back()
+                ->withInput()
+                ->with(
+                    'error',
+                    'Vui lòng chọn ít nhất một mặt hàng cần kêu gọi cho chiến dịch.'
+                );
+        }
+
+        $idHangHoaDuocChon = $nguonLucDuocChon
+            ->keys()
+            ->map(function ($idHangHoa) {
+                return (int) $idHangHoa;
+            })
+            ->values();
+
+        $idHangHoaHopLes = HangHoa::whereIn(
+                'idHangHoa',
+                $idHangHoaDuocChon
+            )
+            ->where('trangThai', 'Đang sử dụng')
+            ->where(function ($query) use ($idNhom) {
+                $query->where('idNhom', $idNhom)
+                    ->orWhereNull('idNhom');
+            })
+            ->pluck('idHangHoa')
+            ->map(function ($idHangHoa) {
+                return (int) $idHangHoa;
+            })
+            ->toArray();
+
+        foreach ($nguonLucDuocChon as $idHangHoa => $duLieu) {
+            $idHangHoa = (int) $idHangHoa;
+
+            if (!in_array($idHangHoa, $idHangHoaHopLes, true)) {
+                return back()
+                    ->withInput()
+                    ->with(
+                        'error',
+                        'Có mặt hàng không hợp lệ hoặc không thuộc phạm vi sử dụng của nhóm.'
+                    );
+            }
+
+            $soLuongCanKeuGoi = $duLieu['soLuongCanKeuGoi'] ?? null;
+
+            if (
+                !is_numeric($soLuongCanKeuGoi)
+                || (float) $soLuongCanKeuGoi <= 0
+            ) {
+                return back()
+                    ->withInput()
+                    ->with(
+                        'error',
+                        'Vui lòng nhập số lượng cần kêu gọi lớn hơn 0 cho các mặt hàng đã chọn.'
+                    );
+            }
+        }
+
+        $idChienDichMoi = null;
 
         DB::transaction(function () use (
             $request,
             $idNhom,
-            $yeuCau
+            $yeuCau,
+            $nguonLucDuocChon,
+            &$idChienDichMoi
         ) {
             $chienDich = ChienDichCuuTro::create([
                 'idNhom' => $idNhom,
@@ -423,6 +624,21 @@ class NhomYeuCauCuuTroController extends Controller
                 'trangThai' => $request->trangThaiChienDich,
             ]);
 
+            $idChienDichMoi = $chienDich->idChienDich;
+
+            foreach ($nguonLucDuocChon as $idHangHoa => $duLieu) {
+                NguonLucChienDich::create([
+                    'idChienDich' => $chienDich->idChienDich,
+                    'idHangHoa' => (int) $idHangHoa,
+                    'soLuongCanKeuGoi' => (float) $duLieu['soLuongCanKeuGoi'],
+                    'soLuongDaNhan' => 0,
+                    'soLuongHienCo' => 0,
+                    'hanSuDung' => null,
+                    'trangThai' => 'Đang kêu gọi',
+                    'ngayCapNhat' => now(),
+                ]);
+            }
+
             $this->taoLuotTiepNhan(
                 $yeuCau,
                 $chienDich,
@@ -432,22 +648,14 @@ class NhomYeuCauCuuTroController extends Controller
             );
         });
 
-        $chienDichMoi = ChienDichCuuTro::where('idNhom', $idNhom)
-            ->where('tenChienDich', trim($request->tenChienDich))
-            ->orderBy('idChienDich', 'desc')
-            ->first();
-
         return redirect(
-            '/nhom/' . $idNhom . '/chien-dich/' . $chienDichMoi->idChienDich
+            '/nhom/' . $idNhom . '/chien-dich/' . $idChienDichMoi
         )->with(
             'success',
             'Tạo chiến dịch từ yêu cầu cứu trợ thành công.'
         );
     }
 
-    /**
-     * Nhóm báo phần mình đảm nhận đang thiếu nguồn lực.
-     */
     public function canThemHoTro(
         Request $request,
         int $idNhom,
@@ -479,18 +687,10 @@ class NhomYeuCauCuuTroController extends Controller
             );
         }
 
-        $dangCoNhomKhacCanThem = TiepNhanYeuCau::where(
-                'idYeuCau',
-                $idYeuCau
-            )
-            ->where('idTiepNhan', '!=', $idTiepNhan)
-            ->where('trangThai', 'Cần thêm hỗ trợ')
-            ->exists();
-
-        if ($dangCoNhomKhacCanThem) {
+        if ($tiepNhan->trangThai === 'Cần thêm hỗ trợ') {
             return back()->with(
                 'error',
-                'Đang có một nhóm khác cần hỗ trợ bổ sung. Vui lòng xử lý lượt đó trước.'
+                'Lượt tiếp nhận này đã ở trạng thái cần thêm hỗ trợ.'
             );
         }
 
@@ -510,9 +710,141 @@ class NhomYeuCauCuuTroController extends Controller
         );
     }
 
-    /**
-     * Nhóm hoàn thành phần việc của lượt tiếp nhận.
-     */
+    public function thuHoiCanThemHoTro(
+        int $idNhom,
+        int $idYeuCau,
+        int $idTiepNhan
+    ) {
+        $kiemTra = $this->kiemTraThanhVien($idNhom);
+
+        if (!$kiemTra['hopLe']) {
+            return $kiemTra['redirect'];
+        }
+
+        $tiepNhan = TiepNhanYeuCau::where('idTiepNhan', $idTiepNhan)
+            ->where('idYeuCau', $idYeuCau)
+            ->where('idNhom', $idNhom)
+            ->firstOrFail();
+
+        if ($tiepNhan->trangThai !== 'Cần thêm hỗ trợ') {
+            return back()->with(
+                'error',
+                'Lượt tiếp nhận này không ở trạng thái cần thêm hỗ trợ.'
+            );
+        }
+
+        $tiepNhan->update([
+            'trangThai' => 'Đã tiếp nhận',
+        ]);
+
+        $this->capNhatTrangThaiTongYeuCau($idYeuCau);
+
+        return back()->with(
+            'success',
+            'Đã thu hồi trạng thái cần thêm hỗ trợ.'
+        );
+    }
+
+    public function hoTroNhomDangThieu(
+        Request $request,
+        int $idNhom,
+        int $idYeuCau,
+        int $idTiepNhan
+    ) {
+        $kiemTra = $this->kiemTraThanhVien($idNhom);
+
+        if (!$kiemTra['hopLe']) {
+            return $kiemTra['redirect'];
+        }
+
+        $request->validate([
+            'loaiHoTro' => 'required|in:ho_tro_mot_phan,ho_tro_day_du,khong_the_ho_tro',
+            'noiDungHoTro' => 'required_unless:loaiHoTro,khong_the_ho_tro|nullable|string',
+        ], [
+            'loaiHoTro.required' => 'Vui lòng chọn hình thức hỗ trợ.',
+            'loaiHoTro.in' => 'Hình thức hỗ trợ không hợp lệ.',
+            'noiDungHoTro.required_unless' => 'Vui lòng nhập nội dung hỗ trợ.',
+        ]);
+
+        DB::transaction(function () use (
+            $request,
+            $idNhom,
+            $idYeuCau,
+            $idTiepNhan
+        ) {
+            $tiepNhanCuaNhom = TiepNhanYeuCau::where('idTiepNhan', $idTiepNhan)
+                ->where('idYeuCau', $idYeuCau)
+                ->where('idNhom', $idNhom)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if (!in_array($tiepNhanCuaNhom->trangThai, ['Đã tiếp nhận', 'Cần thêm hỗ trợ'], true)) {
+                abort(422, 'Chỉ lượt tiếp nhận chưa hoàn thành mới có thể hỗ trợ nhóm khác.');
+            }
+
+            $cacLuotDangCanThem = TiepNhanYeuCau::where('idYeuCau', $idYeuCau)
+                ->where('idNhom', '!=', $idNhom)
+                ->where('trangThai', 'Cần thêm hỗ trợ')
+                ->lockForUpdate()
+                ->get();
+
+            if ($cacLuotDangCanThem->isEmpty()) {
+                abort(422, 'Không có nhóm khác đang cần thêm hỗ trợ.');
+            }
+
+            $loaiHoTro = $request->loaiHoTro;
+
+            if ($loaiHoTro === 'khong_the_ho_tro') {
+                $tiepNhanCuaNhom->update([
+                    'trangThai' => 'Cần thêm hỗ trợ',
+                ]);
+
+                return;
+            }
+
+            if ($loaiHoTro === 'ho_tro_mot_phan') {
+                $tiepNhanCuaNhom->update([
+                    'noiDungDamNhan' => $this->noiThemNoiDungDamNhan(
+                        $tiepNhanCuaNhom->noiDungDamNhan,
+                        'Hỗ trợ 1 phần: ' . trim((string) $request->noiDungHoTro)
+                    ),
+                    'trangThai' => 'Cần thêm hỗ trợ',
+                ]);
+
+                return;
+            }
+
+            if ($loaiHoTro === 'ho_tro_day_du') {
+                $tiepNhanCuaNhom->update([
+                    'noiDungDamNhan' => $this->noiThemNoiDungDamNhan(
+                        $tiepNhanCuaNhom->noiDungDamNhan,
+                        'Hỗ trợ: ' . trim((string) $request->noiDungHoTro)
+                    ),
+                    'trangThai' => 'Đã tiếp nhận',
+                ]);
+
+                TiepNhanYeuCau::whereIn(
+                        'idTiepNhan',
+                        $cacLuotDangCanThem->pluck('idTiepNhan')
+                    )
+                    ->update([
+                        'trangThai' => 'Đã tiếp nhận',
+                    ]);
+            }
+        });
+
+        $this->capNhatTrangThaiTongYeuCau($idYeuCau);
+
+        $thongBao = match ($request->loaiHoTro) {
+            'ho_tro_mot_phan' => 'Đã ghi nhận nhóm hỗ trợ một phần. Yêu cầu sẽ công khai nếu tất cả nhóm đang xử lý đều cần thêm hỗ trợ.',
+            'ho_tro_day_du' => 'Đã ghi nhận nhóm hỗ trợ đầy đủ và cập nhật các lượt đang thiếu.',
+            'khong_the_ho_tro' => 'Đã ghi nhận nhóm không thể hỗ trợ thêm.',
+            default => 'Đã cập nhật hỗ trợ.',
+        };
+
+        return back()->with('success', $thongBao);
+    }
+
     public function hoanThanhTiepNhan(
         int $idNhom,
         int $idYeuCau,
@@ -553,25 +885,20 @@ class NhomYeuCauCuuTroController extends Controller
     ): bool {
         return in_array($yeuCau->trangThai, [
             'Chờ tiếp nhận',
-            'Đã tiếp nhận',
             'Cần thêm hỗ trợ',
         ], true);
     }
 
-    private function nhomDaTiepNhanYeuCau(
+    private function nhomDangXuLyYeuCau(
         int $idNhom,
         int $idYeuCau
     ): bool {
         return TiepNhanYeuCau::where('idNhom', $idNhom)
             ->where('idYeuCau', $idYeuCau)
+            ->where('trangThai', '!=', 'Hoàn thành')
             ->exists();
     }
 
-    /**
-     * Hàm dùng chung cho:
-     * - Thêm yêu cầu vào chiến dịch có sẵn.
-     * - Tạo chiến dịch mới từ yêu cầu.
-     */
     private function taoLuotTiepNhan(
         YeuCauCuuTro $yeuCau,
         ChienDichCuuTro $chienDich,
@@ -597,37 +924,24 @@ class NhomYeuCauCuuTroController extends Controller
                 abort(422, 'Yêu cầu không còn được phép tiếp nhận.');
             }
 
-            $daTiepNhan = TiepNhanYeuCau::where(
+            $dangXuLy = TiepNhanYeuCau::where(
                     'idYeuCau',
                     $yeuCauKhoa->idYeuCau
                 )
                 ->where('idNhom', $idNhom)
+                ->where('trangThai', '!=', 'Hoàn thành')
                 ->exists();
 
-            if ($daTiepNhan) {
-                abort(422, 'Nhóm đã tiếp nhận yêu cầu này.');
+            if ($dangXuLy) {
+                abort(422, 'Nhóm đang tiếp nhận yêu cầu này.');
             }
 
-            /*
-             * Nếu đang có một nhóm báo thiếu, lượt cũ trở lại Đã tiếp nhận
-             * khi nhóm mới nhận phần hỗ trợ bổ sung.
-             */
-            $tiepNhanDangCanThem = TiepNhanYeuCau::where(
-                    'idYeuCau',
-                    $yeuCauKhoa->idYeuCau
-                )
+            TiepNhanYeuCau::where('idYeuCau', $yeuCauKhoa->idYeuCau)
                 ->where('trangThai', 'Cần thêm hỗ trợ')
-                ->lockForUpdate()
-                ->first();
-
-            if (
-                $tiepNhanDangCanThem
-                && $tiepNhanDangCanThem->idNhom != $idNhom
-            ) {
-                $tiepNhanDangCanThem->update([
+                ->where('idNhom', '!=', $idNhom)
+                ->update([
                     'trangThai' => 'Đã tiếp nhận',
                 ]);
-            }
 
             $tiepNhanMoi = TiepNhanYeuCau::create([
                 'idYeuCau' => $yeuCauKhoa->idYeuCau,
@@ -650,10 +964,6 @@ class NhomYeuCauCuuTroController extends Controller
         });
     }
 
-    /**
-     * Chỉ hệ thống gọi hàm này.
-     * Nhóm không được trực tiếp chỉnh trạng thái tổng của yêu cầu.
-     */
     private function capNhatTrangThaiTongYeuCau(
         int $idYeuCau
     ): void {
@@ -688,12 +998,18 @@ class NhomYeuCauCuuTroController extends Controller
             return;
         }
 
-        $coLuotCanThemHoTro = $tiepNhans->contains(function ($tiepNhan) {
-            return $tiepNhan->trangThai === 'Cần thêm hỗ trợ';
+        $tiepNhansChuaHoanThanh = $tiepNhans->filter(function ($tiepNhan) {
+            return $tiepNhan->trangThai !== 'Hoàn thành';
         });
 
+        $tatCaChuaHoanThanhDeuCanThem =
+            $tiepNhansChuaHoanThanh->isNotEmpty()
+            && $tiepNhansChuaHoanThanh->every(function ($tiepNhan) {
+                return $tiepNhan->trangThai === 'Cần thêm hỗ trợ';
+            });
+
         $yeuCau->update([
-            'trangThai' => $coLuotCanThemHoTro
+            'trangThai' => $tatCaChuaHoanThanhDeuCanThem
                 ? 'Cần thêm hỗ trợ'
                 : 'Đã tiếp nhận',
         ]);
@@ -722,7 +1038,6 @@ class NhomYeuCauCuuTroController extends Controller
                     continue;
                 }
 
-                // Tránh trường hợp người dùng tự nhập dấu "-" rồi hệ thống thêm lần nữa.
                 $dong = preg_replace('/^\s*-\s*/u', '', $dong);
                 $dong = trim((string) $dong);
 
@@ -738,5 +1053,36 @@ class NhomYeuCauCuuTroController extends Controller
         $cacDongMoi = $chuanHoaDanhSach($noiDungMoi);
 
         return implode(PHP_EOL, array_merge($cacDongCu, $cacDongMoi));
+    }
+
+    private function boDauTiengViet(string $chuoi): string
+    {
+        $chuoi = mb_strtolower($chuoi, 'UTF-8');
+
+        $coDau = [
+            'à', 'á', 'ạ', 'ả', 'ã', 'â', 'ầ', 'ấ', 'ậ', 'ẩ', 'ẫ',
+            'ă', 'ằ', 'ắ', 'ặ', 'ẳ', 'ẵ',
+            'è', 'é', 'ẹ', 'ẻ', 'ẽ', 'ê', 'ề', 'ế', 'ệ', 'ể', 'ễ',
+            'ì', 'í', 'ị', 'ỉ', 'ĩ',
+            'ò', 'ó', 'ọ', 'ỏ', 'õ', 'ô', 'ồ', 'ố', 'ộ', 'ổ', 'ỗ',
+            'ơ', 'ờ', 'ớ', 'ợ', 'ở', 'ỡ',
+            'ù', 'ú', 'ụ', 'ủ', 'ũ', 'ư', 'ừ', 'ứ', 'ự', 'ử', 'ữ',
+            'ỳ', 'ý', 'ỵ', 'ỷ', 'ỹ',
+            'đ',
+        ];
+
+        $khongDau = [
+            'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a',
+            'a', 'a', 'a', 'a', 'a', 'a',
+            'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',
+            'i', 'i', 'i', 'i', 'i',
+            'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o',
+            'o', 'o', 'o', 'o', 'o', 'o',
+            'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u',
+            'y', 'y', 'y', 'y', 'y',
+            'd',
+        ];
+
+        return str_replace($coDau, $khongDau, $chuoi);
     }
 }

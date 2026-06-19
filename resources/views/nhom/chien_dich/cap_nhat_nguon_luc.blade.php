@@ -124,24 +124,6 @@
     display: inline-flex;
   }
 
-  .source-badge {
-    display: inline-block;
-    padding: 3px 8px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 500;
-  }
-
-  .source-system {
-    background-color: #e7f1ff;
-    color: #0d6efd;
-  }
-
-  .source-group {
-    background-color: #e8f5e9;
-    color: #198754;
-  }
-
   .selected-label {
     font-size: 12px;
     color: #198754;
@@ -166,8 +148,8 @@
 @php
   $danhSachTrangThai = [
       'Đang kêu gọi',
-      'Ngừng tiếp nhận',
-      'Đã đủ',
+      'Đủ số lượng',
+      'Đã đóng',
   ];
 @endphp
 
@@ -424,16 +406,8 @@
                   {{ $hangHoa->donViTinh ?? '-' }}
                 </td>
 
-                <td class="text-center">
-                  @if ($laHangCuaNhom)
-                    <span class="source-badge source-group">
-                      Của nhóm
-                    </span>
-                  @else
-                    <span class="source-badge source-system">
-                      Hệ thống
-                    </span>
-                  @endif
+                <td class="text-center text-muted">
+                  {{ $laHangCuaNhom ? 'Của nhóm' : 'Hệ thống' }}
                 </td>
 
                 <td>

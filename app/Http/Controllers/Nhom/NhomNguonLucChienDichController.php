@@ -218,8 +218,8 @@ class NhomNguonLucChienDichController extends Controller
 
         $trangThaiHopLe = [
             'Đang kêu gọi',
-            'Ngừng tiếp nhận',
-            'Đã đủ',
+            'Đủ số lượng',
+            'Đã đóng',
         ];
 
         $duLieuNguonLuc = $request->input('nguonLuc', []);
@@ -307,7 +307,6 @@ class NhomNguonLucChienDichController extends Controller
                     'soLuongCanKeuGoi' => $duLieu['soLuongCanKeuGoi'],
                     'soLuongDaNhan' => 0,
                     'soLuongHienCo' => 0,
-                    'hanSuDung' => null,
                     'trangThai' => $duLieu['trangThai'],
                     'ngayCapNhat' => now(),
                 ]);
@@ -340,7 +339,7 @@ class NhomNguonLucChienDichController extends Controller
                 'error',
                 'Một số nguồn lực đã phát sinh đóng góp hoặc phân phối nên không thể xóa: '
                     . implode(', ', $nguonLucKhongTheXoa)
-                    . '. Bạn có thể chuyển trạng thái sang Ngừng tiếp nhận.'
+                    . '. Bạn có thể chuyển trạng thái sang Đã đóng.'
             );
         }
 

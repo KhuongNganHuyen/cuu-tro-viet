@@ -17,7 +17,6 @@ class NguonLucChienDich extends Model
         'soLuongCanKeuGoi',
         'soLuongDaNhan',
         'soLuongHienCo',
-        'hanSuDung',
         'trangThai',
         'ngayCapNhat',
     ];
