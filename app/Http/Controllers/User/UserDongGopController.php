@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Models\ThongBao;
 use App\Models\DongGop;
 use App\Models\ChiTietDongGop;
 use App\Models\ChienDichCuuTro;
@@ -247,6 +248,32 @@ class UserDongGopController extends Controller
                 'hanSuDung' => $duLieu['hanSuDung'] ?? null,
                 'trangThai' => 'Chờ xác nhận',
             ]);
+        }
+
+        $dongGop->load('nguoiUngHo');
+
+        $chienDich = ChienDichCuuTro::with('nhom.thanhViens')
+            ->find($dongGop->idChienDich);
+
+        if ($chienDich && $chienDich->nhom) {
+            foreach ($chienDich->nhom->thanhViens as $thanhVien) {
+                ThongBao::create([
+                    'tieuDe' => ($dongGop->nguoiUngHo->hoTen ?? 'Người dân')
+                        . ' đóng góp cho chiến dịch '
+                        . $chienDich->tenChienDich,
+                    'noiDung' => implode("\n", [
+                        'Ghi chú: ' . ($dongGop->ghiChu ?: 'Không có ghi chú'),
+                    ]),
+                    'doiTuong' => 'Cá nhân',
+                    'nguoiTao' => $dongGop->nguoiUngHo->hoTen ?? 'Người đóng góp',
+                    'idNguoiNhan' => $thanhVien->idNguoiDung,
+                    'anhDaiDien' => $dongGop->nguoiUngHo->anhDaiDien ?? null,
+                    'hinhAnh' => null,
+                    'duongDan' => '/nhom/' . $chienDich->idNhom . '/chien-dich/' . $chienDich->idChienDich . '#dong-gop',
+                    'thoiGianTao' => now(),
+                    'trangThai' => 'Hiển thị',
+                ]);
+            }
         }
 
         return redirect('/user/dong-gop')

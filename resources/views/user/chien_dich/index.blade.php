@@ -1,6 +1,6 @@
-@extends('layouts.admin')
+@extends('layouts.user')
 
-@section('title', 'Quản lý chiến dịch cứu trợ | Cứu Trợ Việt')
+@section('title', 'Chiến dịch cứu trợ | Cứu Trợ Việt')
 
 @section('content')
 <div class="page-header">
@@ -9,13 +9,13 @@
       <div class="col-md-12">
         <div class="page-header-title">
           <h5 class="m-b-10">
-            Quản lý chiến dịch cứu trợ
+            Chiến dịch cứu trợ
           </h5>
         </div>
 
         <ul class="breadcrumb">
           <li class="breadcrumb-item">
-            <a href="{{ url('/admin/dashboard') }}">
+            <a href="{{ url('/user/dashboard') }}">
               Tổng quan
             </a>
           </li>
@@ -48,7 +48,7 @@
       <strong>{{ request('tuKhoa') }}</strong>
     </div>
 
-    <a href="{{ url('/admin/chien-dich') }}"
+    <a href="{{ url('/user/chien-dich') }}"
        class="btn btn-sm btn-light flex-shrink-0">
       Xóa tìm kiếm
     </a>
@@ -116,7 +116,7 @@
         <tbody>
           @forelse ($chienDichs as $chienDich)
             <tr class="clickable-row"
-                data-href="{{ url('/admin/chien-dich/' . $chienDich->idChienDich) }}">
+                data-href="{{ url('/user/chien-dich/' . $chienDich->idChienDich) }}">
 
               <td class="text-center fw-semibold">
                 {{ $chienDich->idChienDich }}
@@ -209,7 +209,6 @@
                       'Đang hoạt động' => 'status-active',
                       'Hoàn thành' => 'status-completed',
                       'Tạm ngưng' => 'status-paused',
-                      'Đã hủy' => 'status-cancelled',
                       default => 'status-default',
                   };
                 @endphp
@@ -242,6 +241,35 @@
 </div>
 
 <style>
+  .chien-dich-search-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .search-input-wrapper {
+    position: relative;
+    width: 320px;
+    max-width: 100%;
+  }
+
+  .search-input-wrapper .icon-search {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    width: 16px;
+    height: 16px;
+    transform: translateY(-50%);
+    color: #6c757d;
+    pointer-events: none;
+  }
+
+  .chien-dich-search-input {
+    height: 38px;
+    padding-left: 38px;
+  }
+
   .chien-dich-table {
     table-layout: fixed;
     width: 100%;
@@ -310,17 +338,24 @@
     background-color: #0d6efd;
   }
 
-  .status-cancelled {
-    background-color: #dc3545;
-  }
-
   .status-default {
     background-color: #6c757d;
   }
 
   @media (max-width: 1199.98px) {
     .chien-dich-table {
-      min-width: 1240px;
+      min-width: 1180px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .chien-dich-search-form,
+    .search-input-wrapper {
+      width: 100%;
+    }
+
+    .chien-dich-search-form .btn {
+      flex: 1 1 auto;
     }
   }
 </style>
@@ -330,11 +365,7 @@
     document
       .querySelectorAll('.clickable-row')
       .forEach(function (row) {
-        row.addEventListener('click', function (event) {
-          if (event.target.closest('a, button, form, input, select')) {
-            return;
-          }
-
+        row.addEventListener('click', function () {
           const href = row.dataset.href;
 
           if (href) {

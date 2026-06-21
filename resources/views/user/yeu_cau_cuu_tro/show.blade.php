@@ -199,7 +199,7 @@
 
         <div class="mb-4">
           <div class="text-muted small mb-1">
-            Yêu cầu #{{ $yeuCau->idYeuCau }}
+            Yêu cầu {{ $yeuCau->idYeuCau }}
           </div>
 
           <h4 class="mb-2">
@@ -396,10 +396,6 @@
           <h6 class="mb-1">
             Danh sách nhóm và chiến dịch tiếp nhận
           </h6>
-
-          <small class="text-muted">
-            Nhấn vào từng nhóm để xem nội dung đảm nhận.
-          </small>
         </div>
 
         <div class="table-responsive">

@@ -1,6 +1,6 @@
-@extends('layouts.nhom')
+@extends('layouts.admin')
 
-@section('title', 'Chi tiết chiến dịch | Cứu Trợ Việt')
+@section('title', 'Chi tiết chiến dịch cứu trợ | Cứu Trợ Việt')
 
 @section('content')
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -189,7 +189,7 @@
   .muc-do-muted { color: #6c757d; }
 
   .dong-gop-detail-table {
-    min-width: 1450px;
+    min-width: 1180px;
   }
 
   .dong-gop-detail-table th:nth-child(1),
@@ -574,6 +574,7 @@
       'Đang diễn ra' => 'status-active',
       'Tạm ngưng' => 'status-paused',
       'Hoàn thành' => 'status-completed',
+      'Đã hủy' => 'status-danger',
       default => 'status-default',
   };
 
@@ -595,6 +596,14 @@
   $kinhDoChienDich = $chienDich->diaDiem->kinhDo ?? null;
 
   $coToaDoChienDich = $viDoChienDich && $kinhDoChienDich;
+
+  $chienDichBiHuy = $chienDich->trangThai === 'Đã hủy';
+
+  $coTheTamNgung = !in_array($chienDich->trangThai, ['Hoàn thành', 'Đã hủy', 'Tạm ngưng'], true);
+
+  $coTheMoLai = $chienDich->trangThai === 'Tạm ngưng';
+
+  $coTheHuyChienDich = !in_array($chienDich->trangThai, ['Hoàn thành', 'Đã hủy'], true);
 @endphp
 
 <div class="page-header">
@@ -607,19 +616,11 @@
 
         <ul class="breadcrumb">
           <li class="breadcrumb-item">
-            <a href="{{ url('/user/nhom-cua-toi') }}">Nhóm của tôi</a>
+            <a href="{{ url('/admin/dashboard') }}">Tổng quan</a>
           </li>
 
           <li class="breadcrumb-item">
-            <a href="{{ url('/nhom/' . $nhom->idNhom . '/dashboard') }}">
-              {{ $nhom->tenNhom }}
-            </a>
-          </li>
-
-          <li class="breadcrumb-item">
-            <a href="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich') }}">
-              Chiến dịch
-            </a>
+            <a href="{{ url('/admin/chien-dich') }}">Chiến dịch cứu trợ</a>
           </li>
 
           <li class="breadcrumb-item" aria-current="page">
@@ -643,9 +644,32 @@
   </div>
 @endif
 
+@if ($errors->any())
+  <div class="alert alert-danger">
+    <div class="fw-semibold mb-1">Vui lòng kiểm tra lại thông tin:</div>
+
+    <ul class="mb-0">
+      @foreach ($errors->all() as $error)
+        <li>{{ $error }}</li>
+      @endforeach
+    </ul>
+  </div>
+@endif
+
 @if ($chienDichDaHoanThanh)
   <div class="alert alert-secondary">
-    Chiến dịch đã hoàn thành. Các thông tin chỉ được xem, không thể chỉnh sửa hoặc phát sinh thao tác mới.
+    Chiến dịch đã hoàn thành. Các thông tin chỉ được xem, không thể phát sinh thao tác mới.
+  </div>
+@endif
+
+@if ($chienDichBiHuy)
+  <div class="alert alert-danger">
+    Chiến dịch này đã bị hủy.
+    @if (!empty($chienDich->lyDoHuy))
+      <div class="mt-1">
+        <strong>Lý do:</strong> {{ $chienDich->lyDoHuy }}
+      </div>
+    @endif
   </div>
 @endif
 
@@ -675,15 +699,43 @@
         </div>
       </div>
 
-      <div class="d-flex gap-2 flex-shrink-0">
-        @if ($laNhomTruong && !$chienDichDaHoanThanh)
-          <a href="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich/' . $chienDich->idChienDich . '/edit') }}"
-             class="btn btn-warning">
-            Sửa thông tin
-          </a>
+      <div class="d-flex flex-wrap gap-2 justify-content-end flex-shrink-0">
+        @if ($coTheTamNgung)
+          <form action="{{ url('/admin/chien-dich/' . $chienDich->idChienDich . '/tam-ngung') }}"
+                method="POST"
+                onsubmit="return confirm('Bạn có chắc muốn tạm ngưng chiến dịch này không?')">
+            @csrf
+            @method('PATCH')
+
+            <button type="submit" class="btn btn-outline-warning">
+              Tạm ngưng
+            </button>
+          </form>
         @endif
 
-        <a href="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich') }}"
+        @if ($coTheMoLai)
+          <form action="{{ url('/admin/chien-dich/' . $chienDich->idChienDich . '/mo-lai') }}"
+                method="POST"
+                onsubmit="return confirm('Bạn có chắc muốn mở lại chiến dịch này không?')">
+            @csrf
+            @method('PATCH')
+
+            <button type="submit" class="btn btn-outline-success">
+              Mở lại
+            </button>
+          </form>
+        @endif
+
+        @if ($coTheHuyChienDich)
+          <button type="button"
+                  class="btn btn-outline-danger"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalHuyChienDich">
+            Hủy chiến dịch
+          </button>
+        @endif
+
+        <a href="{{ url('/admin/chien-dich') }}"
            class="btn btn-secondary">
           Quay lại
         </a>
@@ -743,17 +795,6 @@
                 type="button"
                 role="tab">
           Nguồn lực
-        </button>
-      </li>
-
-      <li class="nav-item" role="presentation">
-        <button class="nav-link"
-                id="phan-phoi-tab"
-                data-bs-toggle="tab"
-                data-bs-target="#phan-phoi"
-                type="button"
-                role="tab">
-          Phân phối
         </button>
       </li>
 
@@ -907,13 +948,6 @@
           <div>
             <h5 class="mb-0">Cập nhật tiến độ</h5>
           </div>
-
-          @if (!$chienDichDaHoanThanh)
-            <a href="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich/' . $chienDich->idChienDich . '/cap-nhat/create') }}"
-              class="btn btn-primary">
-              Thêm cập nhật
-            </a>
-          @endif
         </div>
 
         @forelse ($capNhats as $capNhat)
@@ -1029,7 +1063,7 @@
                 @endphp
 
                 <tr class="clickable-row"
-                    data-href="{{ url('/nhom/' . $nhom->idNhom . '/yeu-cau-cuu-tro/' . $tiepNhan->idYeuCau) }}">
+                    data-href="{{ url('/admin/yeu-cau-cuu-tro/' . ($yeuCau->idYeuCau ?? $tiepNhan->idYeuCau)) }}">
                   <td class="text-center">
                     {{ $yeuCau->idYeuCau ?? '-' }}
                   </td>
@@ -1170,33 +1204,6 @@
 
                 <th style="width: 150px;">Số lượng</th>
                 <th style="width: 135px;">Hạn sử dụng</th>
-
-                <th class="filter-heading-cell" style="width: 180px;">
-                  <div class="dropdown">
-                    <button type="button"
-                            class="filter-heading-button"
-                            id="btnLocTrangThaiDongGop"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                      Trạng thái
-                      <span class="filter-active-dot"></span>
-                    </button>
-
-                    <ul class="dropdown-menu filter-dropdown-menu"
-                        aria-labelledby="btnLocTrangThaiDongGop"
-                        id="menuLocTrangThaiDongGop">
-                      <li>
-                        <button type="button"
-                                class="dropdown-item dong-gop-filter-option active"
-                                data-filter-type="trangThai"
-                                data-filter-value="">
-                          Tất cả trạng thái
-                        </button>
-                      </li>
-                    </ul>
-                  </div>
-                </th>
-                <th style="width: 130px;">Thao tác</th>
               </tr>
             </thead>
 
@@ -1310,65 +1317,24 @@
                         -
                       @endif
                     </td>
-
-                    <td class="text-center">
-                      <span class="d-inline-flex align-items-center justify-content-center gap-2">
-                        <span class="status-dot {{ $classTrangThaiDongGop }}"></span>
-                        {{ $trangThaiChiTiet }}
-                      </span>
-                    </td>
-
-                    <td class="text-center">
-                      @if ($chiTiet->trangThai === 'Chờ xác nhận' && !$chienDichDaHoanThanh)
-                        <div class="d-inline-flex gap-1">
-                          <form action="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich/' . $chienDich->idChienDich . '/dong-gop/' . $chiTiet->idChiTietDongGop . '/xac-nhan') }}"
-                                method="POST"
-                                onsubmit="return confirm('Xác nhận đóng góp này và cộng vào nguồn lực chiến dịch?')">
-                            @csrf
-                            @method('PATCH')
-
-                            <button type="submit"
-                                    class="btn btn-sm btn-light border text-success"
-                                    title="Xác nhận">
-                              <i class="ti ti-check"></i>
-                            </button>
-                          </form>
-
-                          <form action="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich/' . $chienDich->idChienDich . '/dong-gop/' . $chiTiet->idChiTietDongGop . '/tu-choi') }}"
-                                method="POST"
-                                onsubmit="return confirm('Bạn có chắc muốn từ chối đóng góp này không?')">
-                            @csrf
-                            @method('PATCH')
-
-                            <button type="submit"
-                                    class="btn btn-sm btn-light border text-danger"
-                                    title="Từ chối">
-                              <i class="ti ti-x"></i>
-                            </button>
-                          </form>
-                        </div>
-                      @else
-                        -
-                      @endif
-                    </td>
                   </tr>
                 @empty
                   <tr>
-                    <td colspan="10" class="text-center text-muted py-4">
+                    <td colspan="8" class="text-center text-muted py-4">
                       Lượt đóng góp #{{ $dongGop->idDongGop }} chưa có chi tiết hàng hóa.
                     </td>
                   </tr>
                 @endforelse
               @empty
                 <tr>
-                  <td colspan="10" class="text-center text-muted py-4">
+                  <td colspan="8" class="text-center text-muted py-4">
                     Chưa có lượt đóng góp nào cho chiến dịch này.
                   </td>
                 </tr>
               @endforelse
 
               <tr id="khongCoDongGopPhuHop" style="display: none;">
-                <td colspan="10" class="text-center text-muted py-4">
+                <td colspan="8" class="text-center text-muted py-4">
                   Không có đóng góp phù hợp với điều kiện tìm kiếm/lọc.
                 </td>
               </tr>
@@ -1384,13 +1350,6 @@
             <div>
               <h5 class="mb-0">Nguồn lực chiến dịch</h5>
             </div>
-
-            @if ($laNhomTruong && !$chienDichDaHoanThanh)
-              <a href="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich/' . $chienDich->idChienDich . '/nguon-luc/cap-nhat') }}"
-                class="btn btn-primary">
-                Cập nhật nguồn lực
-              </a>
-            @endif
           </div>
 
           <div class="nguon-luc-divider"></div>
@@ -1513,18 +1472,121 @@
             <tbody>
               @forelse ($nguonLucs as $nguonLuc)
                 @php
-                  $trangThaiNguonLuc = $nguonLuc->trangThaiTong ?? '-';
+                  $tenHangHoa = $nguonLuc->hangHoa->tenHangHoa ?? '-';
+                  $tenDanhMuc = $nguonLuc->hangHoa->danhMucHang->tenDanhMucHang ?? '-';
+                  $donViTinh = $nguonLuc->hangHoa->donViTinh ?? '-';
+
+                  // Trang người dùng chỉ xem dữ liệu. Một số màn nhóm dùng các field tổng hợp
+                  // như tongSoLuongCanKeuGoi/tongSoLuongDaNhan/tongSoLuongHienCo,
+                  // còn dữ liệu lấy trực tiếp từ bảng nguồn lực có thể dùng tên field gốc.
+                  $soLuongCanKeuGoi = (float) (
+                      $nguonLuc->tongSoLuongCanKeuGoi
+                      ?? $nguonLuc->soLuongCanKeuGoi
+                      ?? $nguonLuc->soLuongCan
+                      ?? $nguonLuc->soLuongMucTieu
+                      ?? 0
+                  );
+
+                  $soLuongDaNhan = (float) (
+                      $nguonLuc->tongSoLuongDaNhan
+                      ?? $nguonLuc->soLuongDaNhan
+                      ?? $nguonLuc->soLuongDaDongGop
+                      ?? 0
+                  );
+
+                  if ($soLuongDaNhan <= 0 && isset($dongGops)) {
+                      $soLuongDaNhan = (float) $dongGops
+                          ->flatMap(function ($dongGop) {
+                              return $dongGop->chiTietDongGops;
+                          })
+                          ->filter(function ($chiTiet) use ($nguonLuc) {
+                              return (int) ($chiTiet->idHangHoa ?? optional($chiTiet->hangHoa)->idHangHoa ?? 0)
+                                  === (int) ($nguonLuc->idHangHoa ?? 0);
+                          })
+                          ->sum(function ($chiTiet) {
+                              return $chiTiet->soLuong ?? 0;
+                          });
+                  }
+
+                  $soLuongDaPhanPhoi = (float) (
+                      $nguonLuc->tongSoLuongDaPhanPhoi
+                      ?? $nguonLuc->soLuongDaPhanPhoi
+                      ?? 0
+                  );
+
+                  if ($soLuongDaPhanPhoi <= 0 && isset($dotPhanPhois)) {
+                      $soLuongDaPhanPhoi = (float) $dotPhanPhois
+                          ->flatMap(function ($dotPhanPhoi) {
+                              return $dotPhanPhoi->chiTietPhanPhois;
+                          })
+                          ->filter(function ($chiTiet) use ($nguonLuc) {
+                              return (int) (optional($chiTiet->nguonLuc)->idHangHoa ?? 0)
+                                  === (int) ($nguonLuc->idHangHoa ?? 0);
+                          })
+                          ->sum(function ($chiTiet) {
+                              return $chiTiet->soLuongGiao ?? 0;
+                          });
+                  }
+
+                  $soLuongHienCo = (float) (
+                      $nguonLuc->tongSoLuongHienCo
+                      ?? $nguonLuc->soLuongHienCo
+                      ?? $nguonLuc->soLuongConLai
+                      ?? 0
+                  );
+
+                  if ($soLuongHienCo <= 0 && $soLuongDaNhan > 0) {
+                      $soLuongHienCo = max($soLuongDaNhan - $soLuongDaPhanPhoi, 0);
+                  }
+
+                  $tongCanKeuGoi = (float) ($nguonLuc->tongSoLuongCanKeuGoi
+                      ?? $nguonLuc->soLuongCanKeuGoi
+                      ?? 0);
+
+                  $tongDaNhan = (float) ($nguonLuc->tongSoLuongDaNhan
+                      ?? $nguonLuc->soLuongDaNhan
+                      ?? 0);
+
+                  $tongHienCo = (float) ($nguonLuc->tongSoLuongHienCo
+                      ?? $nguonLuc->soLuongHienCo
+                      ?? $tongDaNhan);
+
+                  $trangThaiNguonLuc = $nguonLuc->trangThaiTong
+                      ?? $nguonLuc->trangThai
+                      ?? null;
+
+                  if (!$trangThaiNguonLuc || $trangThaiNguonLuc === '-') {
+                      if ($tongCanKeuGoi > 0 && $tongDaNhan >= $tongCanKeuGoi) {
+                          $trangThaiNguonLuc = 'Đủ số lượng';
+                      } elseif ($tongCanKeuGoi > 0) {
+                          $trangThaiNguonLuc = 'Đang kêu gọi';
+                      } else {
+                          $trangThaiNguonLuc = 'Chưa cập nhật';
+                      }
+                  }
+
+                  if (!$trangThaiNguonLuc || $trangThaiNguonLuc === '-') {
+                      if ($soLuongCanKeuGoi <= 0 && $soLuongDaNhan <= 0) {
+                          $trangThaiNguonLuc = 'Chưa cập nhật';
+                      } elseif ($soLuongCanKeuGoi > 0 && $soLuongDaNhan >= $soLuongCanKeuGoi) {
+                          $trangThaiNguonLuc = 'Đủ số lượng';
+                      } else {
+                          $trangThaiNguonLuc = 'Đang kêu gọi';
+                      }
+                  }
 
                   $classTrangThaiNguonLuc = match ($trangThaiNguonLuc) {
                       'Đang kêu gọi' => 'status-active',
                       'Đủ số lượng' => 'status-completed',
                       'Đã đóng' => 'status-secondary',
+                      'Chưa cập nhật' => 'status-warning',
                       default => 'status-default',
                   };
 
-                  $tenHangHoa = $nguonLuc->hangHoa->tenHangHoa ?? '-';
-                  $tenDanhMuc = $nguonLuc->hangHoa->danhMucHang->tenDanhMucHang ?? '-';
-                  $donViTinh = $nguonLuc->hangHoa->donViTinh ?? '-';
+                  $ngayCapNhatNguonLuc = $nguonLuc->ngayCapNhatMoiNhat
+                      ?? $nguonLuc->ngayCapNhat
+                      ?? $nguonLuc->updated_at
+                      ?? null;
 
                   $noiDungTimKiemNguonLuc = mb_strtolower(
                       implode(' ', [
@@ -1533,9 +1595,9 @@
                           $tenDanhMuc,
                           $donViTinh,
                           $trangThaiNguonLuc,
-                          $nguonLuc->tongSoLuongCanKeuGoi ?? '',
-                          $nguonLuc->tongSoLuongDaNhan ?? '',
-                          $nguonLuc->tongSoLuongHienCo ?? '',
+                          $soLuongCanKeuGoi,
+                          $soLuongDaNhan,
+                          $soLuongHienCo,
                       ]),
                       'UTF-8'
                   );
@@ -1565,15 +1627,15 @@
                   </td>
 
                   <td class="text-center">
-                    {{ number_format($nguonLuc->tongSoLuongCanKeuGoi ?? 0, 2) }}
+                    {{ number_format($tongCanKeuGoi, 2) }}
                   </td>
 
                   <td class="text-center">
-                    {{ number_format($nguonLuc->tongSoLuongDaNhan ?? 0, 2) }}
+                    {{ number_format($tongDaNhan, 2) }}
                   </td>
 
                   <td class="text-center">
-                    {{ number_format($nguonLuc->tongSoLuongHienCo ?? 0, 2) }}
+                    {{ number_format($tongHienCo, 2) }}
                   </td>
 
                   <td class="text-center">
@@ -1584,8 +1646,8 @@
                   </td>
 
                   <td class="text-center">
-                    {{ $nguonLuc->ngayCapNhatMoiNhat
-                        ? \Carbon\Carbon::parse($nguonLuc->ngayCapNhatMoiNhat)->format('d/m/Y H:i')
+                    {{ $ngayCapNhatNguonLuc
+                        ? \Carbon\Carbon::parse($ngayCapNhatNguonLuc)->format('d/m/Y H:i')
                         : '-' }}
                   </td>
                 </tr>
@@ -1604,88 +1666,6 @@
                   Không có nguồn lực phù hợp với điều kiện tìm kiếm/lọc.
                 </td>
               </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {{-- TAB 6: PHÂN PHỐI --}}
-      <div class="tab-pane fade" id="phan-phoi" role="tabpanel">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
-          <div>
-            <h5 class="mb-0">Đợt phân phối</h5>
-          </div>
-
-          @if (!$chienDichDaHoanThanh)
-            <a href="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich/' . $chienDich->idChienDich . '/phan-phoi/create') }}"
-              class="btn btn-primary">
-              Tạo đợt phân phối
-            </a>
-          @endif
-        </div>
-
-        <div class="table-responsive">
-          <table class="table table-hover mb-0 chien-dich-phan-phoi-table">
-            <thead>
-              <tr class="text-uppercase text-center">
-                <th style="width: 80px;">Mã</th>
-                <th style="width: 180px;">Ngày phân phối</th>
-                <th style="width: 150px;">Số dòng</th>
-                <th style="width: 180px;">Tổng lượng giao</th>
-                <th style="width: 180px;">Trạng thái</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              @forelse ($dotPhanPhois as $dotPhanPhoi)
-                @php
-                  $soDongChiTiet = $dotPhanPhoi->chiTietPhanPhois->count();
-                  $tongLuongGiao = $dotPhanPhoi->chiTietPhanPhois->sum('soLuongGiao');
-
-                  $classTrangThaiDot = match ($dotPhanPhoi->trangThai ?? '') {
-                      'Đang chuẩn bị' => 'status-paused',
-                      'Đang phân phối' => 'status-active',
-                      'Hoàn thành' => 'status-completed',
-                      'Đã hủy' => 'status-default',
-                      default => 'status-default',
-                  };
-                @endphp
-
-                <tr class="clickable-row"
-                    data-href="{{ url('/nhom/' . $nhom->idNhom . '/chien-dich/' . $chienDich->idChienDich . '/phan-phoi/' . $dotPhanPhoi->idDotPhanPhoi) }}">
-                  <td class="text-center">
-                    {{ $dotPhanPhoi->idDotPhanPhoi }}
-                  </td>
-
-                  <td class="text-center cell-nowrap">
-                    {{ $dotPhanPhoi->ngayPhanPhoi
-                        ? \Carbon\Carbon::parse($dotPhanPhoi->ngayPhanPhoi)->format('d/m/Y H:i')
-                        : '-' }}
-                  </td>
-
-                  <td class="text-center cell-nowrap">
-                    {{ $soDongChiTiet }}
-                  </td>
-
-                  <td class="text-center cell-nowrap">
-                    {{ number_format($tongLuongGiao, 2) }}
-                  </td>
-
-                  <td class="text-center cell-nowrap">
-                    <span class="d-inline-flex align-items-center justify-content-center gap-2">
-                      <span class="status-dot {{ $classTrangThaiDot }}"></span>
-                      <span>{{ $dotPhanPhoi->trangThai ?? '-' }}</span>
-                    </span>
-                  </td>
-                </tr>
-              @empty
-                <tr>
-                  <td colspan="5"
-                      class="text-center text-muted py-4">
-                    Chưa có đợt phân phối nào cho chiến dịch này.
-                  </td>
-                </tr>
-              @endforelse
             </tbody>
           </table>
         </div>
@@ -1998,6 +1978,64 @@
   </div>
 </div>
 
+
+@if ($coTheHuyChienDich)
+  <div class="modal fade"
+       id="modalHuyChienDich"
+       tabindex="-1"
+       aria-labelledby="modalHuyChienDichLabel"
+       aria-hidden="true">
+    <div class="modal-dialog">
+      <form action="{{ url('/admin/chien-dich/' . $chienDich->idChienDich . '/huy') }}"
+            method="POST"
+            class="modal-content">
+        @csrf
+        @method('PATCH')
+
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalHuyChienDichLabel">
+            Hủy chiến dịch cứu trợ
+          </h5>
+
+          <button type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Đóng">
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="mb-0">
+            <label class="form-label">
+              Lý do hủy <span class="text-danger">*</span>
+            </label>
+
+            <textarea name="lyDoHuy"
+                      class="form-control"
+                      rows="4"
+                      placeholder="Nhập lý do hủy chiến dịch..."
+                      required>{{ old('lyDoHuy') }}</textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button"
+                  class="btn btn-light"
+                  data-bs-dismiss="modal">
+            Đóng
+          </button>
+
+          <button type="submit"
+                  class="btn btn-danger"
+                  onclick="return confirm('Bạn có chắc muốn hủy chiến dịch này không?')">
+            Xác nhận hủy
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+@endif
+
 @if ($coToaDoChienDich || count($duLieuThongKeChienDich['diemBanDo']) > 0)
   <script id="chienDichToaDoData" type="application/json">
   {!! json_encode([
@@ -2065,7 +2103,6 @@
     const boLocDongGop = {
       hangHoa: '',
       danhMuc: '',
-      trangThai: '',
     };
 
     const cauHinhLocDongGop = {
@@ -2080,12 +2117,6 @@
         buttonId: 'btnLocDanhMucDongGop',
         dataKey: 'danhMuc',
         allText: 'Tất cả danh mục',
-      },
-      trangThai: {
-        menuId: 'menuLocTrangThaiDongGop',
-        buttonId: 'btnLocTrangThaiDongGop',
-        dataKey: 'trangThai',
-        allText: 'Tất cả trạng thái',
       },
     };
 
@@ -2176,8 +2207,7 @@
       const dangLoc =
         dangTimKiem
         || boLocDongGop.hangHoa !== ''
-        || boLocDongGop.danhMuc !== ''
-        || boLocDongGop.trangThai !== '';
+        || boLocDongGop.danhMuc !== '';
 
       if (xoaLocDongGopButton) {
         xoaLocDongGopButton.classList.toggle('d-none', !dangLoc);
@@ -2205,12 +2235,8 @@
           boLocDongGop.danhMuc === ''
           || row.dataset.danhMuc === boLocDongGop.danhMuc;
 
-        const hopTrangThai =
-          boLocDongGop.trangThai === ''
-          || row.dataset.trangThai === boLocDongGop.trangThai;
-
         const hienThi =
-          hopTuKhoa && hopHangHoa && hopDanhMuc && hopTrangThai;
+          hopTuKhoa && hopHangHoa && hopDanhMuc;
 
         row.style.display = hienThi ? '' : 'none';
 
@@ -2412,17 +2438,21 @@
         const hopTuKhoa =
           tuKhoa === '' || noiDung.includes(tuKhoa);
 
+        const trangThaiDong = row.dataset.trangThai || '';
+        const danhMucDong = row.dataset.danhMuc || '';
+        const donViDong = row.dataset.donVi || '';
+
         const hopDanhMuc =
           boLocNguonLuc.danhMuc === ''
-          || row.dataset.danhMuc === boLocNguonLuc.danhMuc;
+          || danhMucDong === boLocNguonLuc.danhMuc;
 
         const hopDonVi =
           boLocNguonLuc.donVi === ''
-          || row.dataset.donVi === boLocNguonLuc.donVi;
+          || donViDong === boLocNguonLuc.donVi;
 
         const hopTrangThai =
           boLocNguonLuc.trangThai === ''
-          || row.dataset.trangThai === boLocNguonLuc.trangThai;
+          || trangThaiDong === boLocNguonLuc.trangThai;
 
         const hienThi =
           hopTuKhoa && hopDanhMuc && hopDonVi && hopTrangThai;

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\SuKienCuuTro;
+use App\Models\ThongBao;
 use Illuminate\Http\Request;
 
 class SuKienCuuTroController extends Controller
@@ -93,6 +94,21 @@ class SuKienCuuTroController extends Controller
             'trangThai' => $request->trangThai,
             'ngayTao' => now(),
         ]);
+
+        if ($suKien->loaiSuKien === 'Khẩn cấp') {
+            ThongBao::create([
+                'tieuDe' => 'Sự kiện khẩn cấp mới: ' . $suKien->tenSuKien,
+                'noiDung' => $suKien->moTa,
+                'doiTuong' => 'Tất cả',
+                'nguoiTao' => 'Quản trị viên',
+                'idNguoiNhan' => null,
+                'anhDaiDien' => null,
+                'hinhAnh' => null,
+                'duongDan' => '/thong-bao',
+                'thoiGianTao' => now(),
+                'trangThai' => 'Hiển thị',
+            ]);
+        }
 
         return redirect('/admin/su-kien-cuu-tro?loai=' . urlencode($request->loaiSuKien))
             ->with('success', 'Thêm sự kiện cứu trợ thành công.')

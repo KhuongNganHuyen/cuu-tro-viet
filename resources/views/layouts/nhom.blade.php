@@ -37,6 +37,21 @@
     $vaiTro = session('vaiTro', 'Người dùng');
   @endphp
 
+  @php
+    $idNguoiDungDangNhap = session('idNguoiDung');
+    $vaiTroDangNhap = session('vaiTro', 'Người dùng');
+
+    $thongBaoHeader = \App\Models\ThongBao::where('trangThai', 'Hiển thị')
+        ->where(function ($query) use ($idNguoiDungDangNhap, $vaiTroDangNhap) {
+            $query->where('doiTuong', 'Tất cả')
+                ->orWhere('doiTuong', $vaiTroDangNhap)
+                ->orWhere('idNguoiNhan', $idNguoiDungDangNhap);
+        })
+        ->orderBy('idThongBao', 'desc')
+        ->take(3)
+        ->get();
+  @endphp
+
   <nav class="pc-sidebar">
     <div class="navbar-wrapper">
       <div class="m-header">
@@ -137,7 +152,7 @@
 
             <div class="dropdown-menu dropdown-notification dropdown-menu-end pc-h-dropdown">
               <div class="dropdown-header d-flex align-items-center justify-content-between">
-                <h5 class="m-0">Thông báo nhóm</h5>
+                <h5 class="m-0">Thông báo</h5>
                 <a href="#!" class="pc-head-link bg-transparent">
                   <i class="ti ti-x text-danger"></i>
                 </a>
@@ -148,23 +163,47 @@
               <div class="dropdown-header px-0 text-wrap header-notification-scroll position-relative"
                 style="max-height: calc(100vh - 215px)">
                 <div class="list-group list-group-flush w-100">
-                  <a class="list-group-item list-group-item-action">
-                    <div class="d-flex">
-                      <div class="flex-shrink-0">
-                        <div class="avtar avtar-s bg-light-primary">
-                          <i class="ti ti-flag"></i>
+                  @forelse ($thongBaoHeader as $thongBao)
+                    <a href="{{ url('/thong-bao?mo=' . $thongBao->idThongBao) }}"
+                      class="list-group-item list-group-item-action">
+                      <div class="d-flex">
+                        <div class="flex-shrink-0">
+                          @if (!empty($thongBao->anhDaiDien))
+                            <img src="{{ asset('storage/' . $thongBao->anhDaiDien) }}"
+                                alt="avatar"
+                                class="rounded-circle border"
+                                style="width: 48px; height: 48px; object-fit: cover;">
+                          @else
+                            <div class="avtar avtar-s bg-light-primary">
+                              <i class="ti ti-bell"></i>
+                            </div>
+                          @endif
+                        </div>
+
+                        <div class="flex-grow-1 ms-2">
+                          <p class="text-body mb-1">
+                            {{ $thongBao->tieuDe }}
+                          </p>
+
+                          <span class="text-muted">
+                            {{ $thongBao->thoiGianTao
+                                ? \Carbon\Carbon::parse($thongBao->thoiGianTao)->diffForHumans()
+                                : '' }}
+                          </span>
                         </div>
                       </div>
-
-                      <div class="flex-grow-1 ms-2">
-                        <p class="text-body mb-1">
-                          Thông báo chiến dịch và hoạt động nhóm sẽ hiển thị tại đây.
-                        </p>
-                        <span class="text-muted">Thông báo hệ thống</span>
-                      </div>
+                    </a>
+                  @empty
+                    <div class="text-center text-muted py-3">
+                      Chưa có thông báo nào.
                     </div>
-                  </a>
+                  @endforelse
                 </div>
+
+              <div class="dropdown-divider"></div>
+
+              <div class="text-center py-2">
+                <a href="{{ url('/thong-bao') }}" class="link-primary">Xem tất cả</a>
               </div>
             </div>
           </li>
@@ -200,7 +239,7 @@
               </div>
 
               <div class="tab-content">
-                <a href="{{ url('/user/ho-so') }}" class="dropdown-item">
+                <a href="{{ url('/ho-so') }}" class="dropdown-item">
                   <i class="ti ti-user"></i>
                   <span>Hồ sơ cá nhân</span>
                 </a>

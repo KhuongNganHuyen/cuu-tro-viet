@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Nhom;
 
 use App\Http\Controllers\Controller;
+use App\Models\ThongBao;
 use App\Models\ChienDichCuuTro;
 use App\Models\NhomTinhNguyen;
 use App\Models\SuKienCuuTro;
@@ -395,6 +396,28 @@ class NhomYeuCauCuuTroController extends Controller
             $request->thoiGianDuKienHoTro,
             $request->noiDungDamNhan
         );
+
+        $nhom = $kiemTra['nhom'];
+
+        ThongBao::create([
+            'tieuDe' => $nhom->tenNhom . ' tiếp nhận yêu cầu ' . $yeuCau->tieuDeYeuCau,
+            'noiDung' => implode("\n", [
+                'Dự kiến hỗ trợ: ' . (
+                    $request->thoiGianDuKienHoTro
+                        ? \Carbon\Carbon::parse($request->thoiGianDuKienHoTro)->format('d/m/Y')
+                        : 'Chưa xác định'
+                ),
+                $request->noiDungDamNhan,
+            ]),
+            'doiTuong' => 'Cá nhân',
+            'nguoiTao' => $nhom->tenNhom ?? 'Nhóm tình nguyện',
+            'idNguoiNhan' => $yeuCau->idNguoiGui,
+            'anhDaiDien' => $nhom->anhDaiDien ?? null,
+            'hinhAnh' => null,
+            'duongDan' => '/user/yeu-cau-cuu-tro/' . $yeuCau->idYeuCau,
+            'thoiGianTao' => now(),
+            'trangThai' => 'Hiển thị',
+        ]);
 
         return redirect(
             '/nhom/' . $idNhom . '/yeu-cau-cuu-tro/' . $idYeuCau

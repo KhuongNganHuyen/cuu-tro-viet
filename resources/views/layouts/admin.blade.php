@@ -95,32 +95,6 @@
           </a>
         </li>
 
-        <li class="pc-item">
-          <a href="{{ url('/admin/dong-gop') }}" class="pc-link">
-            <span class="pc-micon"><i class="ti ti-gift"></i></span>
-            <span class="pc-mtext">Đóng góp</span>
-          </a>
-        </li>
-
-        <li class="pc-item pc-caption">
-          <label>Quản lý phân phối</label>
-          <i class="ti ti-truck-delivery"></i>
-        </li>
-
-        <li class="pc-item">
-          <a href="{{ url('/admin/dot-phan-phoi') }}" class="pc-link">
-            <span class="pc-micon"><i class="ti ti-calendar-event"></i></span>
-            <span class="pc-mtext">Đợt phân phối</span>
-          </a>
-        </li>
-
-        <li class="pc-item">
-          <a href="{{ url('/admin/chi-tiet-phan-phoi') }}" class="pc-link">
-            <span class="pc-micon"><i class="ti ti-file-text"></i></span>
-            <span class="pc-mtext">Chi tiết phân phối</span>
-          </a>
-        </li>
-
         <li class="pc-item pc-caption">
           <label>Danh mục hệ thống</label>
           <i class="ti ti-category"></i>
@@ -144,18 +118,6 @@
           <a href="{{ url('/admin/danh-muc-hang') }}" class="pc-link">
             <span class="pc-micon"><i class="ti ti-package"></i></span>
             <span class="pc-mtext">Danh mục hàng</span>
-          </a>
-        </li>
-
-        <li class="pc-item pc-caption">
-          <label>Báo cáo</label>
-          <i class="ti ti-chart-bar"></i>
-        </li>
-
-        <li class="pc-item">
-          <a href="{{ url('/admin/thong-ke') }}" class="pc-link">
-            <span class="pc-micon"><i class="ti ti-chart-pie"></i></span>
-            <span class="pc-mtext">Thống kê báo cáo</span>
           </a>
         </li>
       </ul>
@@ -208,6 +170,21 @@
       $vaiTro = session('vaiTro', 'Chưa xác định');
     @endphp
 
+    @php
+      $idNguoiDungDangNhap = session('idNguoiDung');
+      $vaiTroDangNhap = session('vaiTro', 'Người dùng');
+
+      $thongBaoHeader = \App\Models\ThongBao::where('trangThai', 'Hiển thị')
+          ->where(function ($query) use ($idNguoiDungDangNhap, $vaiTroDangNhap) {
+              $query->where('doiTuong', 'Tất cả')
+                  ->orWhere('doiTuong', $vaiTroDangNhap)
+                  ->orWhere('idNguoiNhan', $idNguoiDungDangNhap);
+          })
+          ->orderBy('idThongBao', 'desc')
+          ->take(3)
+          ->get();
+    @endphp
+
     <div class="ms-auto">
       <ul class="list-unstyled">
         <li class="dropdown pc-h-item">
@@ -235,63 +212,48 @@
             <div class="dropdown-header px-0 text-wrap header-notification-scroll position-relative"
               style="max-height: calc(100vh - 215px)">
               <div class="list-group list-group-flush w-100">
-                <a class="list-group-item list-group-item-action">
-                  <div class="d-flex">
-                    <div class="flex-shrink-0">
-                      <div class="avtar avtar-s bg-light-primary">
-                        <i class="ti ti-alert-circle"></i>
+                @forelse ($thongBaoHeader as $thongBao)
+                  <a href="{{ url('/thong-bao?mo=' . $thongBao->idThongBao) }}"
+                    class="list-group-item list-group-item-action">
+                    <div class="d-flex">
+                      <div class="flex-shrink-0">
+                        @if (!empty($thongBao->anhDaiDien))
+                          <img src="{{ asset('storage/' . $thongBao->anhDaiDien) }}"
+                              alt="avatar"
+                              class="rounded-circle border"
+                              style="width: 48px; height: 48px; object-fit: cover;">
+                        @else
+                          <div class="avtar avtar-s bg-light-primary">
+                            <i class="ti ti-bell"></i>
+                          </div>
+                        @endif
+                      </div>
+
+                      <div class="flex-grow-1 ms-2">
+                        <p class="text-body mb-1">
+                          {{ $thongBao->tieuDe }}
+                        </p>
+
+                        <span class="text-muted">
+                          {{ $thongBao->doiTuong }} ·
+                          {{ $thongBao->thoiGianTao
+                              ? \Carbon\Carbon::parse($thongBao->thoiGianTao)->diffForHumans()
+                              : '' }}
+                        </span>
                       </div>
                     </div>
-
-                    <div class="flex-grow-1 ms-2">
-                      <p class="text-body mb-1">
-                        Có yêu cầu cứu trợ mới cần xem xét.
-                      </p>
-                      <span class="text-muted">Thông báo hệ thống</span>
-                    </div>
+                  </a>
+                @empty
+                  <div class="text-center text-muted py-3">
+                    Chưa có thông báo nào.
                   </div>
-                </a>
-
-                <a class="list-group-item list-group-item-action">
-                  <div class="d-flex">
-                    <div class="flex-shrink-0">
-                      <div class="avtar avtar-s bg-light-success">
-                        <i class="ti ti-users"></i>
-                      </div>
-                    </div>
-
-                    <div class="flex-grow-1 ms-2">
-                      <p class="text-body mb-1">
-                        Có nhóm tình nguyện đang chờ duyệt.
-                      </p>
-                      <span class="text-muted">Dành cho quản trị viên</span>
-                    </div>
-                  </div>
-                </a>
-
-                <a class="list-group-item list-group-item-action">
-                  <div class="d-flex">
-                    <div class="flex-shrink-0">
-                      <div class="avtar avtar-s bg-light-warning">
-                        <i class="ti ti-gift"></i>
-                      </div>
-                    </div>
-
-                    <div class="flex-grow-1 ms-2">
-                      <p class="text-body mb-1">
-                        Có đóng góp mới cần xác nhận.
-                      </p>
-                      <span class="text-muted">Thông báo nghiệp vụ</span>
-                    </div>
-                  </div>
-                </a>
+                @endforelse
               </div>
-            </div>
 
             <div class="dropdown-divider"></div>
 
             <div class="text-center py-2">
-              <a href="#!" class="link-primary">Xem tất cả</a>
+              <a href="{{ url('/thong-bao') }}" class="link-primary">Xem tất cả</a>
             </div>
           </div>
         </li>
@@ -362,12 +324,12 @@
 
             <div class="tab-content" id="mysrpTabContent">
               <div class="tab-pane fade show active" id="drp-tab-1" role="tabpanel" aria-labelledby="drp-t1" tabindex="0">
-                <a href="#!" class="dropdown-item">
+                <a href="{{ url('/ho-so') }}" class="dropdown-item">
                   <i class="ti ti-user"></i>
-                  <span>Thông tin tài khoản</span>
+                  <span>Hồ sơ cá nhân</span>
                 </a>
 
-                <a href="#!" class="dropdown-item">
+                <a href="{{ url('/doi-mat-khau') }}" class="dropdown-item">
                   <i class="ti ti-lock"></i>
                   <span>Đổi mật khẩu</span>
                 </a>

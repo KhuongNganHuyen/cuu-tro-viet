@@ -35,7 +35,7 @@
 
       <div class="navbar-content">
         <ul class="pc-navbar">
-          <li class="pc-item">
+          <li class="pc-item {{ request()->is('user/dashboard') ? 'active' : '' }}">
             <a href="{{ url('/user/dashboard') }}" class="pc-link">
               <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
               <span class="pc-mtext">Tổng quan</span>
@@ -43,35 +43,56 @@
           </li>
 
           <li class="pc-item pc-caption">
-            <label>Hoạt động cứu trợ</label>
-            <i class="ti ti-heart-handshake"></i>
+            <label>Khám phá cứu trợ</label>
+            <i class="ti ti-world"></i>
           </li>
 
-          <li class="pc-item">
-            <a href="{{ url('/user/yeu-cau-cuu-tro') }}" class="pc-link">
-              <span class="pc-micon"><i class="ti ti-alert-circle"></i></span>
-              <span class="pc-mtext">Yêu cầu cứu trợ</span>
+          <li class="pc-item {{ request()->is('user/nhom-tinh-nguyen*') ? 'active' : '' }}">
+            <a href="{{ url('/user/nhom-tinh-nguyen') }}" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-users"></i></span>
+              <span class="pc-mtext">Nhóm tình nguyện</span>
             </a>
           </li>
 
-          <li class="pc-item">
+          <li class="pc-item {{ request()->is('user/chien-dich*') ? 'active' : '' }}">
+            <a href="{{ url('/user/chien-dich') }}" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-flag"></i></span>
+              <span class="pc-mtext">Chiến dịch cứu trợ</span>
+            </a>
+          </li>
+
+          <li class="pc-item {{ request()->is('user/yeu-cau-cong-dong*') ? 'active' : '' }}">
+            <a href="{{ url('/user/yeu-cau-cong-dong') }}" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-alert-circle"></i></span>
+              <span class="pc-mtext">Yêu cầu cộng đồng</span>
+            </a>
+          </li>
+
+          <li class="pc-item pc-caption">
+            <label>Hoạt động của tôi</label>
+            <i class="ti ti-heart-handshake"></i>
+          </li>
+
+          <li class="pc-item {{ request()->is('user/yeu-cau-cuu-tro*') ? 'active' : '' }}">
+            <a href="{{ url('/user/yeu-cau-cuu-tro') }}" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-file-plus"></i></span>
+              <span class="pc-mtext">Yêu cầu của tôi</span>
+            </a>
+          </li>
+
+          <li class="pc-item {{ request()->is('user/dong-gop*') ? 'active' : '' }}">
             <a href="{{ url('/user/dong-gop') }}" class="pc-link">
               <span class="pc-micon"><i class="ti ti-gift"></i></span>
               <span class="pc-mtext">Đóng góp của tôi</span>
             </a>
           </li>
 
-            <li class="pc-item pc-caption">
-            <label>Nhóm tình nguyện</label>
-            <i class="ti ti-users"></i>
-            </li>
-
-            <li class="pc-item">
+          <li class="pc-item {{ request()->is('user/nhom-cua-toi*') ? 'active' : '' }}">
             <a href="{{ url('/user/nhom-cua-toi') }}" class="pc-link">
-                <span class="pc-micon"><i class="ti ti-users"></i></span>
-                <span class="pc-mtext">Nhóm tình nguyện của tôi</span>
+              <span class="pc-micon"><i class="ti ti-user-check"></i></span>
+              <span class="pc-mtext">Nhóm của tôi</span>
             </a>
-            </li>
+          </li>
         </ul>
       </div>
     </div>
@@ -121,6 +142,21 @@
         $vaiTro = session('vaiTro', 'Người dùng');
       @endphp
 
+      @php
+        $idNguoiDungDangNhap = session('idNguoiDung');
+        $vaiTroDangNhap = session('vaiTro', 'Người dùng');
+
+        $thongBaoHeader = \App\Models\ThongBao::where('trangThai', 'Hiển thị')
+            ->where(function ($query) use ($idNguoiDungDangNhap, $vaiTroDangNhap) {
+                $query->where('doiTuong', 'Tất cả')
+                    ->orWhere('doiTuong', $vaiTroDangNhap)
+                    ->orWhere('idNguoiNhan', $idNguoiDungDangNhap);
+            })
+            ->orderBy('idThongBao', 'desc')
+            ->take(3)
+            ->get();
+      @endphp
+
       <div class="ms-auto">
         <ul class="list-unstyled">
           <li class="dropdown pc-h-item">
@@ -148,63 +184,47 @@
               <div class="dropdown-header px-0 text-wrap header-notification-scroll position-relative"
                 style="max-height: calc(100vh - 215px)">
                 <div class="list-group list-group-flush w-100">
-                  <a class="list-group-item list-group-item-action">
-                    <div class="d-flex">
-                      <div class="flex-shrink-0">
-                        <div class="avtar avtar-s bg-light-primary">
-                          <i class="ti ti-alert-circle"></i>
+                  @forelse ($thongBaoHeader as $thongBao)
+                    <a href="{{ url('/thong-bao?mo=' . $thongBao->idThongBao) }}"
+                      class="list-group-item list-group-item-action">
+                      <div class="d-flex">
+                        <div class="flex-shrink-0">
+                          @if (!empty($thongBao->anhDaiDien))
+                            <img src="{{ asset('storage/' . $thongBao->anhDaiDien) }}"
+                                alt="avatar"
+                                class="rounded-circle border"
+                                style="width: 48px; height: 48px; object-fit: cover;">
+                          @else
+                            <div class="avtar avtar-s bg-light-primary">
+                              <i class="ti ti-bell"></i>
+                            </div>
+                          @endif
+                        </div>
+
+                        <div class="flex-grow-1 ms-2">
+                          <p class="text-body mb-1">
+                            {{ $thongBao->tieuDe }}
+                          </p>
+
+                          <span class="text-muted">
+                            {{ $thongBao->thoiGianTao
+                                ? \Carbon\Carbon::parse($thongBao->thoiGianTao)->diffForHumans()
+                                : '' }}
+                          </span>
                         </div>
                       </div>
-
-                      <div class="flex-grow-1 ms-2">
-                        <p class="text-body mb-1">
-                          Trạng thái yêu cầu cứu trợ của bạn sẽ được thông báo tại đây.
-                        </p>
-                        <span class="text-muted">Thông báo hệ thống</span>
-                      </div>
+                    </a>
+                  @empty
+                    <div class="text-center text-muted py-3">
+                      Chưa có thông báo nào.
                     </div>
-                  </a>
-
-                  <a class="list-group-item list-group-item-action">
-                    <div class="d-flex">
-                      <div class="flex-shrink-0">
-                        <div class="avtar avtar-s bg-light-success">
-                          <i class="ti ti-gift"></i>
-                        </div>
-                      </div>
-
-                      <div class="flex-grow-1 ms-2">
-                        <p class="text-body mb-1">
-                          Thông tin xác nhận đóng góp sẽ được cập nhật tại đây.
-                        </p>
-                        <span class="text-muted">Dành cho nhà hảo tâm</span>
-                      </div>
-                    </div>
-                  </a>
-
-                  <a class="list-group-item list-group-item-action">
-                    <div class="d-flex">
-                      <div class="flex-shrink-0">
-                        <div class="avtar avtar-s bg-light-warning">
-                          <i class="ti ti-users-group"></i>
-                        </div>
-                      </div>
-
-                      <div class="flex-grow-1 ms-2">
-                        <p class="text-body mb-1">
-                          Trạng thái đăng ký tạo nhóm tình nguyện sẽ hiển thị tại đây.
-                        </p>
-                        <span class="text-muted">Thông báo nhóm</span>
-                      </div>
-                    </div>
-                  </a>
+                  @endforelse
                 </div>
-              </div>
 
               <div class="dropdown-divider"></div>
 
               <div class="text-center py-2">
-                <a href="#!" class="link-primary">Xem tất cả</a>
+                <a href="{{ url('/thong-bao') }}" class="link-primary">Xem tất cả</a>
               </div>
             </div>
           </li>
@@ -275,12 +295,12 @@
 
               <div class="tab-content" id="userDrpTabContent">
                 <div class="tab-pane fade show active" id="user-drp-tab-1" role="tabpanel" aria-labelledby="user-drp-t1" tabindex="0">
-                  <a href="{{ url('/user/ho-so') }}" class="dropdown-item">
+                  <a href="{{ url('/ho-so') }}" class="dropdown-item">
                     <i class="ti ti-user"></i>
                     <span>Hồ sơ cá nhân</span>
                   </a>
 
-                  <a href="#!" class="dropdown-item">
+                  <a href="{{ url('/doi-mat-khau') }}" class="dropdown-item">
                     <i class="ti ti-lock"></i>
                     <span>Đổi mật khẩu</span>
                   </a>

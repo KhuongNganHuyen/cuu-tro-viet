@@ -96,7 +96,7 @@
             <th style="width: 170px;">Ngày tham gia</th>
 
             @if ($laNhomTruong)
-              <th style="width: 80px;"></th>
+              <th style="width: 50px;"></th>
             @endif
           </tr>
         </thead>

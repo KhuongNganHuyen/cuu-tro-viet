@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\User;
 
+use App\Http\Controllers\Controller;
 use App\Models\ChienDichCuuTro;
 use App\Models\CapNhatChienDich;
 use App\Models\DongGop;
@@ -10,17 +11,22 @@ use App\Models\TiepNhanYeuCau;
 use App\Models\DotPhanPhoi;
 use Illuminate\Http\Request;
 
-class ChienDichCuuTroController extends Controller
+class UserChienDichController extends Controller
 {
     public function index(Request $request)
     {
+        $idNguoiDung = session('idNguoiDung');
+
+        if (!$idNguoiDung) {
+            return redirect('/login')->with('error', 'Vui lòng đăng nhập để tiếp tục.');
+        }
+
         $tuKhoa = trim((string) $request->input('tuKhoa'));
 
-        $chienDichs = ChienDichCuuTro::with([
-                'nhom.nhomTruong',
-                'suKien',
-                'diaDiem',
-            ])
+        $chienDichs = ChienDichCuuTro::with(['suKien', 'diaDiem', 'nhom.nhomTruong'])
+            ->whereHas('nhom', function ($query) {
+                $query->whereNotIn('trangThai', ['Chờ duyệt', 'Từ chối', 'Bị khóa']);
+            })
             ->orderBy('idChienDich', 'desc')
             ->get();
 
@@ -31,8 +37,6 @@ class ChienDichCuuTroController extends Controller
             $chienDichs = $chienDichs
                 ->filter(function ($chienDich) use ($tuKhoaThuong, $tuKhoaKhongDau) {
                     $diaDiem = $chienDich->diaDiem;
-                    $nhom = $chienDich->nhom;
-                    $suKien = $chienDich->suKien;
 
                     $diaChi = implode(' ', [
                         $diaDiem->chiTietDiaDiem ?? '',
@@ -46,18 +50,18 @@ class ChienDichCuuTroController extends Controller
 
                     $noiDungTimKiem = implode(' ', [
                         $chienDich->idChienDich,
-                        $chienDich->tenChienDich ?? '',
-                        $chienDich->moTa ?? '',
-                        $chienDich->ngayTao ?? '',
-                        $chienDich->ngayBatDau ?? '',
-                        $chienDich->ngayKetThuc ?? '',
-                        $chienDich->trangThai ?? '',
-                        $chienDich->ghiChuXacNhan ?? '',
+                        $chienDich->tenChienDich,
+                        $chienDich->moTa,
+                        $chienDich->ngayTao,
+                        $chienDich->ngayBatDau,
+                        $chienDich->ngayKetThuc,
+                        $chienDich->ghiChuXacNhan,
+                        $chienDich->trangThai,
                         $xacNhan,
-                        $nhom->tenNhom ?? '',
-                        $nhom->nhomTruong->hoTen ?? '',
-                        $suKien->tenSuKien ?? '',
-                        $suKien->loaiSuKien ?? '',
+                        $chienDich->nhom->tenNhom ?? '',
+                        $chienDich->nhom->nhomTruong->hoTen ?? '',
+                        $chienDich->suKien->tenSuKien ?? '',
+                        $chienDich->suKien->loaiSuKien ?? '',
                         $diaChi,
                     ]);
 
@@ -70,19 +74,26 @@ class ChienDichCuuTroController extends Controller
                 ->values();
         }
 
-        return view('admin.chien_dich.index', compact('chienDichs', 'tuKhoa'));
+        return view('user.chien_dich.index', compact('chienDichs'));
     }
 
     public function show(int $idChienDich)
     {
-        $chienDich = ChienDichCuuTro::with([
-                'nhom.nhomTruong',
-                'suKien',
-                'diaDiem',
-            ])
-            ->findOrFail($idChienDich);
+        $idNguoiDung = session('idNguoiDung');
+
+        if (!$idNguoiDung) {
+            return redirect('/login')->with('error', 'Vui lòng đăng nhập để tiếp tục.');
+        }
+
+        $chienDich = ChienDichCuuTro::with(['suKien', 'diaDiem', 'nhom.nhomTruong'])
+            ->whereHas('nhom', function ($query) {
+                $query->whereNotIn('trangThai', ['Chờ duyệt', 'Từ chối', 'Bị khóa']);
+            })
+            ->where('idChienDich', $idChienDich)
+            ->firstOrFail();
 
         $nhom = $chienDich->nhom;
+        $laNhomTruong = false;
 
         $capNhats = CapNhatChienDich::with('thanhVien.nguoiDung')
             ->where('idChienDich', $idChienDich)
@@ -141,70 +152,16 @@ class ChienDichCuuTroController extends Controller
             ->orderBy('idDotPhanPhoi', 'desc')
             ->get();
 
-        return view('admin.chien_dich.show', compact(
+        return view('user.chien_dich.show', compact(
             'nhom',
             'chienDich',
+            'laNhomTruong',
             'capNhats',
             'dongGops',
             'nguonLucs',
             'tiepNhanYeuCaus',
             'dotPhanPhois'
         ));
-    }
-
-    public function tamNgung(int $idChienDich)
-    {
-        $chienDich = ChienDichCuuTro::findOrFail($idChienDich);
-
-        if (in_array($chienDich->trangThai, ['Hoàn thành', 'Đã hủy', 'Tạm ngưng'], true)) {
-            return back()->with('error', 'Không thể tạm ngưng chiến dịch ở trạng thái hiện tại.');
-        }
-
-        $chienDich->trangThai = 'Tạm ngưng';
-        $chienDich->save();
-
-        return back()->with('success', 'Đã tạm ngưng chiến dịch.');
-    }
-
-    public function moLai(int $idChienDich)
-    {
-        $chienDich = ChienDichCuuTro::findOrFail($idChienDich);
-
-        if ($chienDich->trangThai !== 'Tạm ngưng') {
-            return back()->with('error', 'Chỉ có thể mở lại chiến dịch đang tạm ngưng.');
-        }
-
-        $chienDich->trangThai = 'Đang hoạt động';
-        $chienDich->save();
-
-        return back()->with('success', 'Đã mở lại chiến dịch.');
-    }
-
-    public function huy(Request $request, int $idChienDich)
-    {
-        $chienDich = ChienDichCuuTro::findOrFail($idChienDich);
-
-        if (in_array($chienDich->trangThai, ['Hoàn thành', 'Đã hủy'], true)) {
-            return back()->with('error', 'Không thể hủy chiến dịch ở trạng thái hiện tại.');
-        }
-
-        $request->validate([
-            'lyDoHuy' => ['required', 'string', 'max:500'],
-        ], [
-            'lyDoHuy.required' => 'Vui lòng nhập lý do hủy chiến dịch.',
-            'lyDoHuy.max' => 'Lý do hủy không được vượt quá 500 ký tự.',
-        ]);
-
-        $chienDich->trangThai = 'Đã hủy';
-
-        if (array_key_exists('lyDoHuy', $chienDich->getAttributes()) || $chienDich->isFillable('lyDoHuy')) {
-            $chienDich->lyDoHuy = $request->lyDoHuy;
-        }
-
-        $chienDich->save();
-
-        return redirect('/admin/chien-dich/' . $chienDich->idChienDich)
-            ->with('success', 'Đã hủy chiến dịch.');
     }
 
     private function boDauTiengViet(string $chuoi): string

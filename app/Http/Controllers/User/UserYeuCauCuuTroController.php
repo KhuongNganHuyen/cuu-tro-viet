@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Models\ThongBao;
 use App\Models\DiaDiem;
 use App\Models\TiepNhanYeuCau;
 use App\Models\YeuCauCuuTro;
@@ -147,7 +148,7 @@ class UserYeuCauCuuTroController extends Controller
                 ->store('yeu-cau-cuu-tro', 'public');
         }
 
-        YeuCauCuuTro::create([
+        $yeuCau = YeuCauCuuTro::create([
             'idNguoiGui' => $idNguoiDung,
             'idDiaDiem' => $diaDiem->idDiaDiem,
             'tieuDeYeuCau' => trim($request->tieuDeYeuCau),
@@ -157,6 +158,24 @@ class UserYeuCauCuuTroController extends Controller
             'hinhAnh' => $duongDanHinhAnh,
             'trangThai' => 'Chờ tiếp nhận',
             'thoiGianGui' => now(),
+        ]);
+
+        $yeuCau->load('nguoiGui');
+        
+        ThongBao::create([
+            'tieuDe' => 'Yêu cầu cứu trợ mới: ' . $yeuCau->tieuDeYeuCau,
+            'noiDung' => implode("\n", [
+                'Mức độ khẩn cấp: ' . $yeuCau->mucDoKhanCap,
+                $yeuCau->moTa,
+            ]),
+            'doiTuong' => 'Tất cả',
+            'nguoiTao' => $yeuCau->nguoiGui->hoTen ?? 'Người dân',
+            'idNguoiNhan' => null,
+            'anhDaiDien' => $yeuCau->nguoiGui->anhDaiDien ?? null,
+            'hinhAnh' => $yeuCau->hinhAnh,
+            'duongDan' => '/thong-bao',
+            'thoiGianTao' => now(),
+            'trangThai' => 'Hiển thị',
         ]);
 
         return redirect('/user/yeu-cau-cuu-tro')

@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.user')
 
 @section('title', 'Chi tiết nhóm tình nguyện | Cứu Trợ Việt')
 
@@ -15,29 +15,17 @@
   $diaDiemNhom = $nhomTinhNguyen->diaDiem;
   $coToaDoNhom = $diaDiemNhom && $diaDiemNhom->viDo && $diaDiemNhom->kinhDo;
 
-  $thanhViensSapXep = $thanhViens
-      ->sort(function ($a, $b) use ($nhomTinhNguyen) {
-          $aLaNhomTruong = (($a->vaiTro ?? '') === 'Nhóm trưởng')
-              || (($a->idNguoiDung ?? null) == ($nhomTinhNguyen->idNguoiTruongNhom ?? null));
+  $trangThaiNhom = $nhomTinhNguyen->trangThai == 'Hoạt động'
+      ? 'Đang hoạt động'
+      : ($nhomTinhNguyen->trangThai ?? '-');
 
-          $bLaNhomTruong = (($b->vaiTro ?? '') === 'Nhóm trưởng')
-              || (($b->idNguoiDung ?? null) == ($nhomTinhNguyen->idNguoiTruongNhom ?? null));
-
-          if ($aLaNhomTruong !== $bLaNhomTruong) {
-              return $aLaNhomTruong ? -1 : 1;
-          }
-
-          return ($a->idThanhVien ?? 0) <=> ($b->idThanhVien ?? 0);
-      })
-      ->values();
-
-  $chienDichsSapXep = $chienDichs
-      ->sortBy('idChienDich')
-      ->values();
-
-  $yeuCauDaNhansSapXep = $yeuCauDaNhans
-      ->sortBy('idTiepNhan')
-      ->values();
+  $classChamTrangThai = match ($trangThaiNhom) {
+      'Đang hoạt động' => 'status-active',
+      'Tạm ngừng hoạt động' => 'status-paused',
+      'Ngừng hoạt động' => 'status-stopped',
+      'Bị khóa' => 'status-locked',
+      default => 'status-stopped',
+  };
 @endphp
 
 <div class="page-header">
@@ -47,14 +35,19 @@
         <div class="page-header-title">
           <h5 class="m-b-10">Chi tiết nhóm tình nguyện</h5>
         </div>
+
         <ul class="breadcrumb">
           <li class="breadcrumb-item">
-            <a href="{{ url('/admin/dashboard') }}">Tổng quan</a>
+            <a href="{{ url('/user/dashboard') }}">Tổng quan</a>
           </li>
+
           <li class="breadcrumb-item">
-            <a href="{{ url('/admin/nhom-tinh-nguyen') }}">Nhóm tình nguyện</a>
+            <a href="{{ url('/user/nhom-tinh-nguyen') }}">Nhóm tình nguyện</a>
           </li>
-          <li class="breadcrumb-item" aria-current="page">Chi tiết</li>
+
+          <li class="breadcrumb-item" aria-current="page">
+            Chi tiết
+          </li>
         </ul>
       </div>
     </div>
@@ -78,91 +71,53 @@
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
       <ul class="nav nav-tabs card-header-tabs" id="nhomTabs" role="tablist">
         <li class="nav-item" role="presentation">
-          <button class="nav-link active" id="thong-tin-tab" data-bs-toggle="tab" data-bs-target="#thong-tin"
-            type="button" role="tab">
+          <button class="nav-link active"
+                  id="thong-tin-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#thong-tin"
+                  type="button"
+                  role="tab">
             Thông tin nhóm
           </button>
         </li>
 
         <li class="nav-item" role="presentation">
-          <button class="nav-link" id="thanh-vien-tab" data-bs-toggle="tab" data-bs-target="#thanh-vien"
-            type="button" role="tab">
+          <button class="nav-link"
+                  id="thanh-vien-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#thanh-vien"
+                  type="button"
+                  role="tab">
             Thành viên
           </button>
         </li>
 
         <li class="nav-item" role="presentation">
-          <button class="nav-link" id="chien-dich-tab" data-bs-toggle="tab" data-bs-target="#chien-dich"
-            type="button" role="tab">
+          <button class="nav-link"
+                  id="chien-dich-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#chien-dich"
+                  type="button"
+                  role="tab">
             Chiến dịch
           </button>
         </li>
 
         <li class="nav-item" role="presentation">
-          <button class="nav-link" id="yeu-cau-tab" data-bs-toggle="tab" data-bs-target="#yeu-cau"
-            type="button" role="tab">
+          <button class="nav-link"
+                  id="yeu-cau-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#yeu-cau"
+                  type="button"
+                  role="tab">
             Yêu cầu đã nhận
           </button>
         </li>
       </ul>
 
-      <div class="d-flex flex-wrap gap-2 justify-content-end">
-        @if ($nhomTinhNguyen->trangThai == 'Chờ duyệt')
-          <form action="{{ url('/admin/nhom-tinh-nguyen/' . $nhomTinhNguyen->idNhom . '/duyet') }}" method="POST"
-            onsubmit="return confirm('Bạn có chắc muốn duyệt nhóm tình nguyện này không?')">
-            @csrf
-            @method('PATCH')
-
-            <button type="submit" class="btn btn-success">
-              Duyệt nhóm
-            </button>
-          </form>
-
-          <form action="{{ url('/admin/nhom-tinh-nguyen/' . $nhomTinhNguyen->idNhom . '/tu-choi') }}" method="POST"
-            onsubmit="return confirm('Bạn có chắc muốn từ chối đăng ký tạo nhóm này không?')">
-            @csrf
-            @method('PATCH')
-
-            <button type="submit" class="btn btn-outline-danger">
-              Từ chối
-            </button>
-          </form>
-        @elseif ($nhomTinhNguyen->trangThai != 'Từ chối')
-          <a href="{{ url('/admin/nhom-tinh-nguyen/' . $nhomTinhNguyen->idNhom . '/edit') }}" class="btn btn-warning">
-            Sửa thông tin
-          </a>
-
-          <form action="{{ url('/admin/nhom-tinh-nguyen/' . $nhomTinhNguyen->idNhom . '/doi-trang-thai') }}" method="POST"
-            onsubmit="return confirm('Bạn có chắc muốn thay đổi trạng thái nhóm này không?')">
-            @csrf
-            @method('PATCH')
-
-            @if ($nhomTinhNguyen->trangThai == 'Bị khóa')
-              <button type="submit" class="btn btn-outline-success">
-                Mở khóa nhóm
-              </button>
-            @else
-              <button type="submit" class="btn btn-outline-danger">
-                Khóa nhóm
-              </button>
-            @endif
-          </form>
-
-          <form action="{{ url('/admin/nhom-tinh-nguyen/' . $nhomTinhNguyen->idNhom) }}" method="POST"
-            onsubmit="return confirm('Bạn có chắc muốn xóa nhóm tình nguyện này không?')">
-            @csrf
-            @method('DELETE')
-
-            <button type="submit" class="btn btn-outline-danger">
-              Xóa
-            </button>
-          </form>
-        @endif
-
-        <a href="{{ url('/admin/nhom-tinh-nguyen') }}" class="btn btn-secondary">
-          Quay lại
-        </a>
-      </div>
+      <a href="{{ url('/user/nhom-tinh-nguyen') }}" class="btn btn-secondary">
+        Quay lại
+      </a>
     </div>
   </div>
 
@@ -175,32 +130,13 @@
               <div class="group-avatar-box">
                 <img src="{{ $duongDanAnhNhom }}"
                      alt="Ảnh đại diện nhóm"
-                     class="rounded-circle mb-3"
-                     style="width: 140px; height: 140px; object-fit: cover;">
+                     class="rounded-circle mb-3 group-avatar-img">
 
                 <h5 class="mb-1">{{ $nhomTinhNguyen->tenNhom }}</h5>
 
-                @php
-                  $trangThaiNhom = $nhomTinhNguyen->trangThai;
-
-                  $classChamTrangThai = match ($trangThaiNhom) {
-                      'Đang hoạt động', 'Hoạt động' => 'status-active',
-                      'Chờ duyệt' => 'status-pending',
-                      'Tạm ngừng hoạt động' => 'status-paused',
-                      'Ngừng hoạt động' => 'status-stopped',
-                      'Bị khóa' => 'status-locked',
-                      'Từ chối' => 'status-rejected',
-                      default => 'status-stopped',
-                  };
-
-                  $tenTrangThaiHienThi = $trangThaiNhom == 'Hoạt động'
-                      ? 'Đang hoạt động'
-                      : $trangThaiNhom;
-                @endphp
-
                 <span class="d-inline-flex align-items-center gap-2">
                   <span class="rounded-circle status-dot {{ $classChamTrangThai }} d-inline-block"></span>
-                  {{ $tenTrangThaiHienThi }}
+                  {{ $trangThaiNhom }}
                 </span>
               </div>
             </div>
@@ -208,18 +144,24 @@
             <div class="col-lg-7 col-md-7">
               <div class="row mb-3">
                 <div class="col-md-4 text-muted">Mã nhóm</div>
-                <div class="col-md-8">{{ $nhomTinhNguyen->idNhom }}</div>
+                <div class="col-md-8 fw-semibold">{{ $nhomTinhNguyen->idNhom }}</div>
               </div>
 
               <div class="row mb-3">
                 <div class="col-md-4 text-muted">Tên nhóm</div>
-                <div class="col-md-8 text-break">{{ $nhomTinhNguyen->tenNhom }}</div>
+                <div class="col-md-8 fw-semibold text-break">{{ $nhomTinhNguyen->tenNhom }}</div>
               </div>
 
               <div class="row mb-3">
                 <div class="col-md-4 text-muted">Nhóm trưởng</div>
                 <div class="col-md-8">
                   {{ $nhomTinhNguyen->nhomTruong->hoTen ?? '-' }}
+
+                  @if (!empty($nhomTinhNguyen->nhomTruong?->tenDangNhap))
+                    <small class="text-muted d-block">
+                      {{ $nhomTinhNguyen->nhomTruong->tenDangNhap }}
+                    </small>
+                  @endif
                 </div>
               </div>
 
@@ -247,7 +189,7 @@
                 <div class="col-md-8">
                   <span class="d-inline-flex align-items-center gap-2">
                     <span class="rounded-circle status-dot {{ $classChamTrangThai }} d-inline-block"></span>
-                    {{ $tenTrangThaiHienThi }}
+                    {{ $trangThaiNhom }}
                   </span>
                 </div>
               </div>
@@ -260,7 +202,7 @@
               <div class="row">
                 <div class="col-md-4 text-muted">Mô tả</div>
                 <div class="col-md-8 text-break">
-                  {{ $nhomTinhNguyen->moTa ?? '-' }}
+                  {{ $nhomTinhNguyen->moTa ?? 'Chưa có mô tả cho nhóm này.' }}
                 </div>
               </div>
             </div>
@@ -285,7 +227,7 @@
             <div id="nhomViTriMap"></div>
           @else
             <div class="alert alert-warning mb-0">
-              Địa điểm của nhóm chưa có vĩ độ và kinh độ. Bạn có thể vào phần sửa nhóm để cập nhật vị trí.
+              Nhóm này chưa có vĩ độ và kinh độ để hiển thị bản đồ.
             </div>
           @endif
         </div>
@@ -306,13 +248,19 @@
             </thead>
 
             <tbody>
-              @forelse ($thanhViensSapXep as $thanhVien)
+              @forelse ($thanhViens as $thanhVien)
                 <tr>
                   <td>{{ $thanhVien->idThanhVien }}</td>
-                  <td>{{ $thanhVien->nguoiDung->hoTen ?? '-' }}</td>
+                  <td class="fw-semibold">{{ $thanhVien->nguoiDung->hoTen ?? '-' }}</td>
                   <td>{{ $thanhVien->nguoiDung->email ?? '-' }}</td>
                   <td>{{ $thanhVien->nguoiDung->sdt ?? '-' }}</td>
-                  <td>{{ $thanhVien->vaiTro ?? '-' }}</td>
+                  <td>
+                    @if (($thanhVien->vaiTro ?? '') === 'Nhóm trưởng')
+                      Nhóm trưởng
+                    @else
+                      {{ $thanhVien->vaiTro ?? '-' }}
+                    @endif
+                  </td>
                   <td>{{ $thanhVien->ngayThamGia ?? '-' }}</td>
                 </tr>
               @empty
@@ -331,22 +279,30 @@
         <div class="table-responsive">
           <table class="table table-hover mb-0">
             <thead>
-              <tr class="text-uppercase">
+              <tr class="text-uppercase text-center">
                 <th style="width: 90px;">Mã</th>
-                <th>Tên chiến dịch</th>
-                <th>Sự kiện cứu trợ</th>
-                <th>Địa điểm</th>
-                <th style="width: 160px;">Trạng thái</th>
+                <th class="text-start">Tên chiến dịch</th>
+                <th class="text-start">Sự kiện cứu trợ</th>
+                <th class="text-start">Địa điểm</th>
+                <th style="width: 150px;">Trạng thái</th>
               </tr>
             </thead>
 
             <tbody>
-              @forelse ($chienDichsSapXep as $chienDich)
-                <tr class="clickable-detail-row"
-                    data-href="{{ url('/admin/chien-dich/' . $chienDich->idChienDich) }}">
-                  <td>{{ $chienDich->idChienDich }}</td>
-                  <td>{{ $chienDich->tenChienDich }}</td>
-                  <td>{{ $chienDich->suKien->tenSuKien ?? '-' }}</td>
+              @forelse ($chienDichs as $chienDich)
+                <tr class="clickable-row"
+                    data-href="{{ url('/user/chien-dich/' . $chienDich->idChienDich) }}">
+                  <td class="text-center fw-semibold">{{ $chienDich->idChienDich }}</td>
+                  <td class="fw-semibold">{{ $chienDich->tenChienDich }}</td>
+                  <td>
+                    @if ($chienDich->suKien)
+                      {{ $chienDich->suKien->loaiSuKien ?? '-' }}
+                      -
+                      {{ $chienDich->suKien->tenSuKien ?? '-' }}
+                    @else
+                      -
+                    @endif
+                  </td>
                   <td>
                     @if ($chienDich->diaDiem)
                       @if ($chienDich->diaDiem->chiTietDiaDiem)
@@ -362,7 +318,7 @@
                       -
                     @endif
                   </td>
-                  <td>{{ $chienDich->trangThai ?? '-' }}</td>
+                  <td class="text-center">{{ $chienDich->trangThai ?? '-' }}</td>
                 </tr>
               @empty
                 <tr>
@@ -380,44 +336,54 @@
         <div class="table-responsive">
           <table class="table table-hover mb-0">
             <thead>
-              <tr class="text-uppercase">
+              <tr class="text-uppercase text-center">
                 <th style="width: 90px;">Mã</th>
-                <th>Yêu cầu cứu trợ</th>
-                <th>Địa điểm</th>
-                <th style="width: 150px;">Trạng thái</th>
+                <th class="text-start">Yêu cầu cứu trợ</th>
+                <th class="text-start">Địa điểm</th>
+                <th style="width: 160px;">Trạng thái</th>
                 <th style="width: 180px;">Thời gian</th>
               </tr>
             </thead>
 
             <tbody>
-              @forelse ($yeuCauDaNhansSapXep as $tiepNhan)
+              @forelse ($yeuCauDaNhans as $tiepNhan)
                 @php
-                  $yeuCau = $tiepNhan->yeuCau ?? null;
+                  $yeuCau = $tiepNhan->yeuCau;
                 @endphp
 
-                <tr class="{{ $yeuCau ? 'clickable-detail-row' : '' }}"
+                <tr class="{{ $yeuCau ? 'clickable-row' : '' }}"
                     @if ($yeuCau)
-                      data-href="{{ url('/admin/yeu-cau-cuu-tro/' . $yeuCau->idYeuCau) }}"
+                      data-href="{{ url('/user/yeu-cau-cong-dong/' . $yeuCau->idYeuCau) }}"
                     @endif>
-                  <td>{{ $tiepNhan->idTiepNhan }}</td>
-                  <td>{{ $tiepNhan->yeuCau->tieuDeYeuCau ?? '-' }}</td>
+                  <td class="text-center fw-semibold">{{ $tiepNhan->idTiepNhan }}</td>
                   <td>
-                    @if ($tiepNhan->yeuCau && $tiepNhan->yeuCau->diaDiem)
-                      @if ($tiepNhan->yeuCau->diaDiem->chiTietDiaDiem)
-                        {{ $tiepNhan->yeuCau->diaDiem->chiTietDiaDiem }},
+                    <div class="fw-semibold">
+                      {{ $yeuCau->tieuDeYeuCau ?? '-' }}
+                    </div>
+
+                    @if (!empty($yeuCau?->nguoiGui?->hoTen))
+                      <small class="text-muted">
+                        Người gửi: {{ $yeuCau->nguoiGui->hoTen }}
+                      </small>
+                    @endif
+                  </td>
+                  <td>
+                    @if ($yeuCau && $yeuCau->diaDiem)
+                      @if ($yeuCau->diaDiem->chiTietDiaDiem)
+                        {{ $yeuCau->diaDiem->chiTietDiaDiem }},
                       @endif
 
-                      @if ($tiepNhan->yeuCau->diaDiem->phuongXa)
-                        {{ $tiepNhan->yeuCau->diaDiem->phuongXa }},
+                      @if ($yeuCau->diaDiem->phuongXa)
+                        {{ $yeuCau->diaDiem->phuongXa }},
                       @endif
 
-                      {{ $tiepNhan->yeuCau->diaDiem->tinhThanh ?? '-' }}
+                      {{ $yeuCau->diaDiem->tinhThanh ?? '-' }}
                     @else
                       -
                     @endif
                   </td>
-                  <td>{{ $tiepNhan->trangThai ?? '-' }}</td>
-                  <td>{{ $tiepNhan->thoiGianTiepNhan ?? '-' }}</td>
+                  <td class="text-center">{{ $tiepNhan->trangThai ?? '-' }}</td>
+                  <td class="text-center">{{ $tiepNhan->thoiGianTiepNhan ?? '-' }}</td>
                 </tr>
               @empty
                 <tr>
@@ -443,6 +409,15 @@
   .table td {
     vertical-align: middle;
   }
+  .clickable-row {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  .clickable-row:hover {
+    background-color: #f5f7fb;
+  }
+
 
   .group-info-wrapper {
     max-width: 1050px;
@@ -455,13 +430,10 @@
     text-align: center;
   }
 
-  .clickable-detail-row {
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-  }
-
-  .clickable-detail-row:hover {
-    background-color: #f5f7fb;
+  .group-avatar-img {
+    width: 140px;
+    height: 140px;
+    object-fit: cover;
   }
 
   #nhomViTriMap {
@@ -479,10 +451,6 @@
     background-color: #198754;
   }
 
-  .status-pending {
-    background-color: #ffc107;
-  }
-
   .status-paused {
     background-color: #fd7e14;
   }
@@ -494,11 +462,22 @@
   .status-locked {
     background-color: #212529;
   }
-
-  .status-rejected {
-    background-color: #dc3545;
-  }
 </style>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.clickable-row').forEach(function (row) {
+      row.addEventListener('click', function () {
+        const href = row.dataset.href;
+
+        if (href) {
+          window.location.href = href;
+        }
+      });
+    });
+  });
+</script>
 
 @if ($coToaDoNhom)
   <div id="nhomMapData"
@@ -515,24 +494,18 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      document.querySelectorAll('.clickable-detail-row').forEach(function (row) {
-        row.addEventListener('click', function (event) {
-          if (event.target.closest('a, button, form, input, select')) {
-            return;
-          }
-
-          const href = row.dataset.href;
-
-          if (href) {
-            window.location.href = href;
-          }
-        });
-      });
-
       const mapData = document.getElementById('nhomMapData');
+
+      if (!mapData || !window.L) {
+        return;
+      }
 
       const lat = parseFloat(mapData.dataset.lat);
       const lng = parseFloat(mapData.dataset.lng);
+
+      if (Number.isNaN(lat) || Number.isNaN(lng)) {
+        return;
+      }
 
       const tenNhom = mapData.dataset.tenNhom || 'Nhóm tình nguyện';
       const chiTietDiaDiem = mapData.dataset.chiTiet || '';
@@ -564,14 +537,13 @@
         attribution: '&copy; OpenStreetMap'
       }).addTo(map);
 
-      const popupContent =
-        '<strong>' + tenNhom + '</strong><br>' +
-        diaChi + '<br>' +
-        '<small>Vĩ độ: ' + lat + ', Kinh độ: ' + lng + '</small>';
-
       L.marker([lat, lng])
         .addTo(map)
-        .bindPopup(popupContent)
+        .bindPopup(
+          '<strong>' + tenNhom + '</strong><br>' +
+          diaChi + '<br>' +
+          '<small>Vĩ độ: ' + lat + ', Kinh độ: ' + lng + '</small>'
+        )
         .openPopup();
     });
   </script>

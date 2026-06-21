@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Nhom;
 
 use App\Http\Controllers\Controller;
+use App\Models\ThongBao;
 use App\Models\NhomTinhNguyen;
 use App\Models\ThanhVienNhom;
 use App\Models\ChienDichCuuTro;
@@ -542,6 +543,31 @@ class NhomChienDichController extends Controller
                     'ngayCapNhat' => now(),
                 ]);
             }
+
+            $chienDich->load(['suKien', 'diaDiem', 'nhom']);
+
+            $diaDiemText = collect([
+                $chienDich->diaDiem->chiTietDiaDiem ?? null,
+                $chienDich->diaDiem->phuongXa ?? null,
+                $chienDich->diaDiem->tinhThanh ?? null,
+            ])->filter()->implode(', ');
+
+            ThongBao::create([
+                'tieuDe' => 'Chiến dịch mới: ' . $chienDich->tenChienDich,
+                'noiDung' => implode("\n", [
+                    'Sự kiện: ' . ($chienDich->suKien->tenSuKien ?? '-'),
+                    'Địa điểm: ' . ($diaDiemText ?: '-'),
+                    $chienDich->moTa,
+                ]),
+                'doiTuong' => 'Tất cả',
+                'nguoiTao' => $chienDich->nhom->tenNhom ?? 'Nhóm tình nguyện',
+                'idNguoiNhan' => null,
+                'anhDaiDien' => $chienDich->nhom->anhDaiDien ?? null,
+                'hinhAnh' => null,
+                'duongDan' => '/thong-bao',
+                'thoiGianTao' => now(),
+                'trangThai' => 'Hiển thị',
+            ]);
         });
 
         return redirect('/nhom/' . $idNhom . '/chien-dich')
@@ -884,6 +910,7 @@ class NhomChienDichController extends Controller
         }
 
         $thanhVien = $kiemTra['thanhVien'];
+        $nhom = $kiemTra['nhom'];
 
         $chienDich = ChienDichCuuTro::where('idNhom', $idNhom)
             ->where('idChienDich', $idChienDich)
@@ -914,13 +941,73 @@ class NhomChienDichController extends Controller
                 ->store('cap-nhat-chien-dich', 'public');
         }
 
-        CapNhatChienDich::create([
+        $capNhat = CapNhatChienDich::create([
             'idChienDich' => $chienDich->idChienDich,
             'idThanhVien' => $thanhVien->idThanhVien,
             'noiDung' => $request->noiDung,
             'hinhAnh' => $duongDanHinhAnh,
             'thoiGianCapNhat' => now(),
         ]);
+
+        $thanhVien->load('nguoiDung');
+        $chienDich->load(['nhom']);
+
+        $idNguoiDaDongGop = DongGop::where('idChienDich', $chienDich->idChienDich)
+            ->pluck('idNguoiUngHo');
+
+        $idNguoiGuiYeuCau = TiepNhanYeuCau::with('yeuCau')
+            ->where('idChienDich', $chienDich->idChienDich)
+            ->get()
+            ->pluck('yeuCau.idNguoiGui')
+            ->filter();
+
+        $idNguoiNhanBenNgoai = $idNguoiDaDongGop
+            ->merge($idNguoiGuiYeuCau)
+            ->filter()
+            ->unique()
+            ->values();
+
+        foreach ($idNguoiNhanBenNgoai as $idNguoiNhan) {
+            ThongBao::create([
+                'tieuDe' => 'Cập nhật chiến dịch ' . $chienDich->tenChienDich . ' ngày ' . now()->format('d/m/Y'),
+                'noiDung' => implode("\n", [
+                    'Người đăng: ' . ($thanhVien->nguoiDung->hoTen ?? 'Thành viên nhóm') . ' · ' . now()->format('d/m/Y H:i'),
+                    $request->noiDung,
+                ]),
+                'doiTuong' => 'Cá nhân',
+                'nguoiTao' => $chienDich->nhom->tenNhom ?? 'Nhóm tình nguyện',
+                'idNguoiNhan' => $idNguoiNhan,
+                'anhDaiDien' => $chienDich->nhom->anhDaiDien ?? null,
+                'hinhAnh' => $duongDanHinhAnh,
+                'duongDan' => '/thong-bao',
+                'thoiGianTao' => now(),
+                'trangThai' => 'Hiển thị',
+            ]);
+        }
+
+        $idThanhVienNhom = ThanhVienNhom::where('idNhom', $chienDich->idNhom)
+            ->pluck('idNguoiDung')
+            ->filter()
+            ->unique()
+            ->values();
+
+        foreach ($idThanhVienNhom as $idNguoiNhan) {
+            ThongBao::create([
+                'tieuDe' => 'Cập nhật chiến dịch ' . $chienDich->tenChienDich . ' ngày ' . now()->format('d/m/Y'),
+                'noiDung' => implode("\n", [
+                    'Người đăng: ' . ($thanhVien->nguoiDung->hoTen ?? 'Thành viên nhóm') . ' · ' . now()->format('d/m/Y H:i'),
+                    $request->noiDung,
+                ]),
+                'doiTuong' => 'Cá nhân',
+                'nguoiTao' => $chienDich->nhom->tenNhom ?? 'Nhóm tình nguyện',
+                'idNguoiNhan' => $idNguoiNhan,
+                'anhDaiDien' => $chienDich->nhom->anhDaiDien ?? null,
+                'hinhAnh' => $duongDanHinhAnh,
+                'duongDan' => '/nhom/' . $chienDich->idNhom . '/chien-dich/' . $chienDich->idChienDich . '#cap-nhat',
+                'thoiGianTao' => now(),
+                'trangThai' => 'Hiển thị',
+            ]);
+        }
 
         return redirect('/nhom/' . $idNhom . '/chien-dich/' . $idChienDich)
             ->with('success', 'Thêm cập nhật tiến độ thành công.');

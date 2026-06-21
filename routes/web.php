@@ -3,6 +3,9 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ThongBaoController;
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\ChienDichCuuTroController;
 use App\Http\Controllers\DanhMucHangController;
 use App\Http\Controllers\DiaDiemController;
@@ -11,10 +14,12 @@ use App\Http\Controllers\NguoiDungController;
 use App\Http\Controllers\NhomTinhNguyenController;
 use App\Http\Controllers\SuKienCuuTroController;
 use App\Http\Controllers\ThanhVienNhomController;
-use App\Http\Controllers\TiepNhanYeuCauController;
 use App\Http\Controllers\YeuCauCuuTroController;
 
 use App\Http\Controllers\User\UserDashboardController;
+use App\Http\Controllers\User\UserNhomTinhNguyenController;
+use App\Http\Controllers\User\UserChienDichController;
+use App\Http\Controllers\User\UserYeuCauCongDongController;
 use App\Http\Controllers\User\UserDongGopController;
 use App\Http\Controllers\User\UserNhomController;
 use App\Http\Controllers\User\UserYeuCauCuuTroController;
@@ -49,6 +54,14 @@ Route::post('/register', [AuthController::class, 'register']);
 
 Route::post('/logout', [AuthController::class, 'logout']);
 
+Route::get('/ho-so', [ProfileController::class, 'edit']);
+Route::put('/ho-so', [ProfileController::class, 'update']);
+
+Route::get('/doi-mat-khau', [ProfileController::class, 'editPassword']);
+Route::put('/doi-mat-khau', [ProfileController::class, 'updatePassword']);
+
+Route::get('/thong-bao', [ThongBaoController::class, 'index']);
+
 /*
 |--------------------------------------------------------------------------
 | ADMIN
@@ -56,7 +69,7 @@ Route::post('/logout', [AuthController::class, 'logout']);
 */
 
 Route::get('/admin/dashboard', fn() => view('admin.dashboard'));
-
+Route::get('/admin/dashboard', [AdminDashboardController::class, 'index']);
 Route::resource('/admin/dia-diem', DiaDiemController::class);
 
 Route::resource('/admin/su-kien-cuu-tro', SuKienCuuTroController::class);
@@ -83,14 +96,16 @@ Route::get('/admin/nhom-tinh-nguyen/{idNhom}/thanh-vien/create', [ThanhVienNhomC
 Route::post('/admin/nhom-tinh-nguyen/{idNhom}/thanh-vien', [ThanhVienNhomController::class, 'store']);
 Route::delete('/admin/thanh-vien-nhom/{idThanhVien}', [ThanhVienNhomController::class, 'destroy']);
 
-Route::resource('/admin/chien-dich', ChienDichCuuTroController::class);
+Route::get('/admin/chien-dich', [ChienDichCuuTroController::class, 'index']);
+Route::get('/admin/chien-dich/{idChienDich}', [ChienDichCuuTroController::class, 'show']);
 
-Route::resource('/admin/yeu-cau-cuu-tro', YeuCauCuuTroController::class);
+Route::patch('/admin/chien-dich/{idChienDich}/tam-ngung', [ChienDichCuuTroController::class, 'tamNgung']);
+Route::patch('/admin/chien-dich/{idChienDich}/mo-lai', [ChienDichCuuTroController::class, 'moLai']);
+Route::patch('/admin/chien-dich/{idChienDich}/huy', [ChienDichCuuTroController::class, 'huy']);
 
-Route::get('/admin/tiep-nhan-yeu-cau', [TiepNhanYeuCauController::class, 'index']);
-Route::get('/admin/yeu-cau-cuu-tro/{idYeuCau}/tiep-nhan', [TiepNhanYeuCauController::class, 'create']);
-Route::post('/admin/yeu-cau-cuu-tro/{idYeuCau}/tiep-nhan', [TiepNhanYeuCauController::class, 'store']);
-Route::delete('/admin/tiep-nhan-yeu-cau/{idTiepNhan}', [TiepNhanYeuCauController::class, 'destroy']);
+Route::get('/admin/yeu-cau-cuu-tro', [YeuCauCuuTroController::class, 'index']);
+Route::get('/admin/yeu-cau-cuu-tro/{id}', [YeuCauCuuTroController::class, 'show']);
+Route::patch('/admin/yeu-cau-cuu-tro/{id}/huy', [YeuCauCuuTroController::class, 'huyYeuCau']);
 
 /*
 |--------------------------------------------------------------------------
@@ -100,15 +115,12 @@ Route::delete('/admin/tiep-nhan-yeu-cau/{idTiepNhan}', [TiepNhanYeuCauController
 
 Route::get('/user/dashboard', [UserDashboardController::class, 'index']);
 
-Route::get('/user/nhom-cua-toi', [UserNhomController::class, 'index']);
-Route::get('/user/nhom-cua-toi/create', [UserNhomController::class, 'create']);
-Route::post('/user/nhom-cua-toi', [UserNhomController::class, 'store']);
-Route::get('/user/nhom-cua-toi/{id}', [UserNhomController::class, 'show']);
-
-Route::get('/user/dong-gop', [UserDongGopController::class, 'index']);
-Route::get('/user/dong-gop/create', [UserDongGopController::class, 'create']);
-Route::get('/user/dong-gop/{idDongGop}', [UserDongGopController::class, 'show']);
-Route::post('/user/dong-gop', [UserDongGopController::class, 'store']);
+Route::get('/user/nhom-tinh-nguyen', [UserNhomTinhNguyenController::class, 'index']);
+Route::get('/user/nhom-tinh-nguyen/{idNhom}', [UserNhomTinhNguyenController::class, 'show']);
+Route::get('/user/chien-dich', [UserChienDichController::class, 'index']);
+Route::get('/user/chien-dich/{idChienDich}', [UserChienDichController::class, 'show']);
+Route::get('/user/yeu-cau-cong-dong', [UserYeuCauCongDongController::class, 'index']);
+Route::get('/user/yeu-cau-cong-dong/{idYeuCau}', [UserYeuCauCongDongController::class, 'show']);
 
 Route::get('/user/yeu-cau-cuu-tro', [UserYeuCauCuuTroController::class, 'index']);
 Route::get('/user/yeu-cau-cuu-tro/create', [UserYeuCauCuuTroController::class, 'create']);
@@ -119,6 +131,15 @@ Route::patch('/user/yeu-cau-cuu-tro/{idYeuCau}/can-them-ho-tro', [UserYeuCauCuuT
 Route::patch('/user/yeu-cau-cuu-tro/{idYeuCau}/thu-hoi-can-them-ho-tro', [UserYeuCauCuuTroController::class, 'thuHoiCanThemHoTro']);
 Route::patch('/user/yeu-cau-cuu-tro/{idYeuCau}/xac-nhan-hoan-thanh', [UserYeuCauCuuTroController::class, 'xacNhanHoanThanh']);
 
+Route::get('/user/dong-gop', [UserDongGopController::class, 'index']);
+Route::get('/user/dong-gop/create', [UserDongGopController::class, 'create']);
+Route::get('/user/dong-gop/{idDongGop}', [UserDongGopController::class, 'show']);
+Route::post('/user/dong-gop', [UserDongGopController::class, 'store']);
+
+Route::get('/user/nhom-cua-toi', [UserNhomController::class, 'index']);
+Route::get('/user/nhom-cua-toi/create', [UserNhomController::class, 'create']);
+Route::post('/user/nhom-cua-toi', [UserNhomController::class, 'store']);
+Route::get('/user/nhom-cua-toi/{id}', [UserNhomController::class, 'show']);
 /*
 |--------------------------------------------------------------------------
 | NHÓM
@@ -126,6 +147,8 @@ Route::patch('/user/yeu-cau-cuu-tro/{idYeuCau}/xac-nhan-hoan-thanh', [UserYeuCau
 */
 
 Route::get('/nhom/{idNhom}/dashboard', [NhomDashboardController::class, 'index']);
+Route::get('/nhom/{idNhom}/dashboard/edit', [NhomDashboardController::class, 'edit']);
+Route::patch('/nhom/{idNhom}/dashboard', [NhomDashboardController::class, 'update']);
 
 Route::get('/nhom/{idNhom}/thanh-vien', [NhomThanhVienController::class, 'index']);
 Route::get('/nhom/{idNhom}/thanh-vien/create', [NhomThanhVienController::class, 'create']);

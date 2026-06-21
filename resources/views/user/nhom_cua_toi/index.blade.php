@@ -90,7 +90,7 @@
               <tr class="text-uppercase text-center">
                 <th style="width: 90px;">Mã</th>
                 <th class="text-start">Tên nhóm</th>
-                <th class="text-start">Nhóm trưởng</th>
+                <th class="text-start" style="width: 150px;">Nhóm trưởng</th>
                 <th class="text-start">Địa điểm</th>
                 <th style="width: 170px;">Vai trò của tôi</th>
                 <th style="width: 160px;">Trạng thái</th>

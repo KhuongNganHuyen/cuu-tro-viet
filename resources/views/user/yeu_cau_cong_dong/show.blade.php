@@ -1,6 +1,6 @@
-@extends('layouts.admin')
+@extends('layouts.user')
 
-@section('title', 'Chi tiết yêu cầu cứu trợ | Cứu Trợ Việt')
+@section('title', 'Chi tiết yêu cầu cộng đồng | Cứu Trợ Việt')
 
 @section('content')
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
@@ -172,16 +172,6 @@
   .tiep-nhan-table td.col-trang-thai {
     white-space: nowrap;
   }
-
-  @media (max-width: 991.98px) {
-    #map {
-      height: 300px;
-    }
-
-    .tiep-nhan-table {
-      min-width: 900px;
-    }
-  }
 </style>
 
 @php
@@ -211,8 +201,6 @@
   ])->filter()->implode(', ');
 
   $coNhomTiepNhan = $tiepNhans->isNotEmpty();
-
-  $coTheHuyYeuCau = !in_array($yeuCau->trangThai, ['Hoàn thành', 'Đã hủy'], true);
 @endphp
 
 <div class="page-header">
@@ -220,16 +208,16 @@
     <div class="row align-items-center">
       <div class="col-md-12">
         <div class="page-header-title">
-          <h5 class="m-b-10">Chi tiết yêu cầu cứu trợ</h5>
+          <h5 class="m-b-10">Chi tiết yêu cầu cộng đồng</h5>
         </div>
 
         <ul class="breadcrumb">
           <li class="breadcrumb-item">
-            <a href="{{ url('/admin/dashboard') }}">Tổng quan</a>
+            <a href="{{ url('/user/dashboard') }}">Tổng quan</a>
           </li>
 
           <li class="breadcrumb-item">
-            <a href="{{ url('/admin/yeu-cau-cuu-tro') }}">Yêu cầu cứu trợ</a>
+            <a href="{{ url('/user/yeu-cau-cong-dong') }}">Yêu cầu cộng đồng</a>
           </li>
 
           <li class="breadcrumb-item" aria-current="page">
@@ -240,42 +228,6 @@
     </div>
   </div>
 </div>
-
-@if (session('success'))
-  <div class="alert alert-success">
-    {{ session('success') }}
-  </div>
-@endif
-
-@if (session('error'))
-  <div class="alert alert-danger">
-    {{ session('error') }}
-  </div>
-@endif
-
-@if ($errors->any())
-  <div class="alert alert-danger">
-    <div class="fw-semibold mb-1">Vui lòng kiểm tra lại thông tin:</div>
-
-    <ul class="mb-0">
-      @foreach ($errors->all() as $error)
-        <li>{{ $error }}</li>
-      @endforeach
-    </ul>
-  </div>
-@endif
-
-@if ($yeuCau->trangThai === 'Đã hủy')
-  <div class="alert alert-danger">
-    Yêu cầu cứu trợ này đã được hủy.
-
-    @if (!empty($yeuCau->lyDoHuy))
-      <div class="mt-1">
-        <strong>Lý do:</strong> {{ $yeuCau->lyDoHuy }}
-      </div>
-    @endif
-  </div>
-@endif
 
 <div class="card">
   <div class="card-header">
@@ -292,29 +244,22 @@
           </button>
         </li>
 
-        <li class="nav-item" role="presentation">
-          <button class="nav-link"
-                  id="nhom-tiep-nhan-tab"
-                  data-bs-toggle="tab"
-                  data-bs-target="#nhom-tiep-nhan"
-                  type="button"
-                  role="tab">
-            Nhóm tiếp nhận ({{ $tiepNhans->count() }})
-          </button>
-        </li>
+        @if ($coNhomTiepNhan)
+          <li class="nav-item" role="presentation">
+            <button class="nav-link"
+                    id="nhom-tiep-nhan-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#nhom-tiep-nhan"
+                    type="button"
+                    role="tab">
+              Nhóm tiếp nhận ({{ $tiepNhans->count() }})
+            </button>
+          </li>
+        @endif
       </ul>
 
-      <div class="d-flex flex-wrap gap-2 justify-content-end">
-        @if ($coTheHuyYeuCau)
-          <button type="button"
-                  class="btn btn-outline-danger"
-                  data-bs-toggle="modal"
-                  data-bs-target="#modalHuyYeuCau">
-            Hủy yêu cầu
-          </button>
-        @endif
-
-        <a href="{{ url('/admin/yeu-cau-cuu-tro') }}"
+      <div>
+        <a href="{{ url('/user/yeu-cau-cong-dong') }}"
            class="btn btn-secondary">
           Quay lại
         </a>
@@ -342,11 +287,6 @@
               </div>
 
               <div class="col-md-6 mb-3">
-                <div class="info-label">Tên đăng nhập</div>
-                <div class="info-value">{{ $yeuCau->nguoiGui->tenDangNhap ?? '-' }}</div>
-              </div>
-
-              <div class="col-md-6 mb-3">
                 <div class="info-label">Số điện thoại</div>
                 <div class="info-value">{{ $yeuCau->nguoiGui->sdt ?? '-' }}</div>
               </div>
@@ -358,7 +298,7 @@
 
               <div class="col-md-6 mb-3">
                 <div class="info-label">Số người cần hỗ trợ</div>
-                <div class="info-value">{{ $yeuCau->soNguoi ?? $yeuCau->soHoDan ?? '-' }}</div>
+                <div class="info-value">{{ $yeuCau->soNguoi ?? '-' }}</div>
               </div>
 
               <div class="col-md-6 mb-3">
@@ -386,7 +326,7 @@
                 </div>
               </div>
 
-              <div class="col-md-12 mb-3">
+              <div class="col-md-6 mb-3">
                 <div class="info-label">Địa chỉ</div>
                 <div class="info-value">
                   {{ $diaChiDayDu !== '' ? $diaChiDayDu : '-' }}
@@ -435,162 +375,93 @@
         </div>
       </div>
 
-      <div class="tab-pane fade" id="nhom-tiep-nhan" role="tabpanel">
-        <div class="card h-100">
-          <div class="card-header">
-            <h5 class="mb-0">Danh sách nhóm tiếp nhận yêu cầu</h5>
-          </div>
+      @if ($coNhomTiepNhan)
+        <div class="tab-pane fade" id="nhom-tiep-nhan" role="tabpanel">
+          <div class="card h-100">
+            <div class="card-header">
+              <h5 class="mb-0">Danh sách nhóm tiếp nhận yêu cầu</h5>
+            </div>
 
-          <div class="card-body p-0">
-            <div class="table-responsive">
-              <table class="table table-hover mb-0 tiep-nhan-table">
-                <thead>
-                  <tr class="text-uppercase">
-                    <th class="col-ma">Mã</th>
-                    <th class="col-nhom">Nhóm tiếp nhận</th>
-                    <th class="col-chien-dich">Chiến dịch</th>
-                    <th class="col-thoi-gian">Thời gian tiếp nhận</th>
-                    <th class="col-du-kien">Dự kiến hỗ trợ</th>
-                    <th class="col-trang-thai">Trạng thái</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  @forelse ($tiepNhans as $tiepNhan)
-                    @php
-                      $classTrangThaiTiepNhan = match ($tiepNhan->trangThai) {
-                          'Đã tiếp nhận' => 'status-received',
-                          'Cần thêm hỗ trợ' => 'status-more-help',
-                          'Hoàn thành' => 'status-completed',
-                          default => 'status-default',
-                      };
-
-                      $idDongChiTiet = 'noi-dung-tiep-nhan-' . $tiepNhan->idTiepNhan;
-                    @endphp
-
-                    <tr class="tiep-nhan-row"
-                        data-target-row="{{ $idDongChiTiet }}">
-                      <td class="col-ma">
-                        {{ $tiepNhan->idTiepNhan }}
-                      </td>
-
-                      <td class="col-nhom">
-                        <strong>{{ $tiepNhan->nhom->tenNhom ?? '-' }}</strong>
-
-                        @if (!empty($tiepNhan->nhom?->nhomTruong?->hoTen))
-                          <small class="text-muted d-block">
-                            Nhóm trưởng: {{ $tiepNhan->nhom->nhomTruong->hoTen }}
-                          </small>
-                        @endif
-                      </td>
-
-                      <td class="col-chien-dich">
-                        {{ $tiepNhan->chienDich->tenChienDich ?? '-' }}
-                      </td>
-
-                      <td class="col-thoi-gian">
-                        {{ $tiepNhan->thoiGianTiepNhan
-                            ? \Carbon\Carbon::parse($tiepNhan->thoiGianTiepNhan)->format('d/m/Y H:i')
-                            : '-' }}
-                      </td>
-
-                      <td class="col-du-kien">
-                        {{ $tiepNhan->thoiGianDuKienHoTro
-                            ? \Carbon\Carbon::parse($tiepNhan->thoiGianDuKienHoTro)->format('d/m/Y')
-                            : '-' }}
-                      </td>
-
-                      <td class="col-trang-thai">
-                        <span class="d-inline-flex align-items-center gap-2">
-                          <span class="status-dot {{ $classTrangThaiTiepNhan }}"></span>
-                          <span>{{ $tiepNhan->trangThai ?? '-' }}</span>
-                        </span>
-                      </td>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover mb-0 tiep-nhan-table">
+                  <thead>
+                    <tr class="text-uppercase">
+                      <th class="col-ma">Mã</th>
+                      <th class="col-nhom">Nhóm tiếp nhận</th>
+                      <th class="col-chien-dich">Chiến dịch</th>
+                      <th class="col-thoi-gian">Thời gian tiếp nhận</th>
+                      <th class="col-du-kien">Dự kiến hỗ trợ</th>
+                      <th class="col-trang-thai">Trạng thái</th>
                     </tr>
+                  </thead>
 
-                    <tr id="{{ $idDongChiTiet }}"
-                        class="tiep-nhan-detail-row d-none">
-                      <td colspan="6">
-                        <div class="info-label">Nội dung đảm nhận</div>
+                  <tbody>
+                    @foreach ($tiepNhans as $tiepNhan)
+                      @php
+                        $classTrangThaiTiepNhan = match ($tiepNhan->trangThai) {
+                            'Đã tiếp nhận' => 'status-received',
+                            'Cần thêm hỗ trợ' => 'status-more-help',
+                            'Hoàn thành' => 'status-completed',
+                            default => 'status-default',
+                        };
 
-                        <div class="tiep-nhan-content-box">
-                          {{ $tiepNhan->noiDungDamNhan ?: 'Chưa có nội dung đảm nhận.' }}
-                        </div>
-                      </td>
-                    </tr>
-                  @empty
-                    <tr>
-                      <td colspan="6" class="text-center text-muted py-4">
-                        Chưa có nhóm nào tiếp nhận yêu cầu này.
-                      </td>
-                    </tr>
-                  @endforelse
-                </tbody>
-              </table>
+                        $idDongChiTiet = 'noi-dung-tiep-nhan-' . $tiepNhan->idTiepNhan;
+                      @endphp
+
+                      <tr class="tiep-nhan-row"
+                          data-target-row="{{ $idDongChiTiet }}">
+                        <td class="col-ma">{{ $tiepNhan->idTiepNhan }}</td>
+
+                        <td class="col-nhom">
+                          <strong>{{ $tiepNhan->nhom->tenNhom ?? '-' }}</strong>
+                        </td>
+
+                        <td class="col-chien-dich">
+                          {{ $tiepNhan->chienDich->tenChienDich ?? '-' }}
+                        </td>
+
+                        <td class="col-thoi-gian">
+                          {{ $tiepNhan->thoiGianTiepNhan
+                              ? \Carbon\Carbon::parse($tiepNhan->thoiGianTiepNhan)->format('d/m/Y H:i')
+                              : '-' }}
+                        </td>
+
+                        <td class="col-du-kien">
+                          {{ $tiepNhan->thoiGianDuKienHoTro
+                              ? \Carbon\Carbon::parse($tiepNhan->thoiGianDuKienHoTro)->format('d/m/Y')
+                              : '-' }}
+                        </td>
+
+                        <td class="col-trang-thai">
+                          <span class="d-inline-flex align-items-center gap-2">
+                            <span class="status-dot {{ $classTrangThaiTiepNhan }}"></span>
+                            <span>{{ $tiepNhan->trangThai ?? '-' }}</span>
+                          </span>
+                        </td>
+                      </tr>
+
+                      <tr id="{{ $idDongChiTiet }}"
+                          class="tiep-nhan-detail-row d-none">
+                        <td colspan="6">
+                          <div class="info-label">Nội dung đảm nhận</div>
+
+                          <div class="tiep-nhan-content-box">
+                            {{ $tiepNhan->noiDungDamNhan ?: 'Chưa có nội dung đảm nhận.' }}
+                          </div>
+                        </td>
+                      </tr>
+                    @endforeach
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      @endif
     </div>
   </div>
 </div>
-
-@if ($coTheHuyYeuCau)
-  <div class="modal fade"
-       id="modalHuyYeuCau"
-       tabindex="-1"
-       aria-labelledby="modalHuyYeuCauLabel"
-       aria-hidden="true">
-    <div class="modal-dialog">
-      <form action="{{ url('/admin/yeu-cau-cuu-tro/' . $yeuCau->idYeuCau . '/huy') }}"
-            method="POST"
-            class="modal-content">
-        @csrf
-        @method('PATCH')
-
-        <div class="modal-header">
-          <h5 class="modal-title" id="modalHuyYeuCauLabel">
-            Hủy yêu cầu cứu trợ
-          </h5>
-
-          <button type="button"
-                  class="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Đóng">
-          </button>
-        </div>
-
-        <div class="modal-body">
-          <div class="mb-0">
-            <label class="form-label">
-              Lý do hủy <span class="text-danger">*</span>
-            </label>
-
-            <textarea name="lyDoHuy"
-                      class="form-control"
-                      rows="4"
-                      placeholder="Nhập lý do hủy yêu cầu..."
-                      required>{{ old('lyDoHuy') }}</textarea>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button"
-                  class="btn btn-light"
-                  data-bs-dismiss="modal">
-            Đóng
-          </button>
-
-          <button type="submit"
-                  class="btn btn-danger"
-                  onclick="return confirm('Bạn có chắc muốn hủy yêu cầu này không?')">
-            Xác nhận hủy
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-@endif
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
