@@ -18,6 +18,10 @@ class DatabaseSeeder extends Seeder
             NguoiDungSeeder::class,
             NhomTinhNguyenSeeder::class,
             ThanhVienNhomSeeder::class,
+
+            YeuCauCuuTroSeeder::class,
+            ChienDichCuuTroSeeder::class,
+            NguonLucChienDichSeeder::class,
         ]);
     }
 }

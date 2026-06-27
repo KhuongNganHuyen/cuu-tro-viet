@@ -42,6 +42,7 @@ class NhomHangHoaController extends Controller
 
         $thanhVien = ThanhVienNhom::where('idNhom', $idNhom)
             ->where('idNguoiDung', $idNguoiDung)
+            ->where('vaiTro', '!=', 'Đã rời nhóm')
             ->first();
 
         if (!$thanhVien) {

@@ -51,6 +51,7 @@ class NhomChienDichController extends Controller
 
         $thanhVien = ThanhVienNhom::where('idNhom', $idNhom)
             ->where('idNguoiDung', $idNguoiDung)
+            ->where('vaiTro', '!=', 'Đã rời nhóm')
             ->first();
 
         if (!$thanhVien) {
@@ -191,14 +192,26 @@ class NhomChienDichController extends Controller
         $laNhomTruong = $kiemTra['laNhomTruong'];
 
         $tuKhoa = trim((string) $request->input('tuKhoa'));
+        $suKienDangChon = trim((string) $request->input('idSuKien'));
+        $xacNhanDangChon = trim((string) $request->input('xacNhan'));
+        $trangThaiDangChon = trim((string) $request->input('trangThai'));
 
-        $chienDichs = ChienDichCuuTro::with([
+        $tatCaChienDichs = ChienDichCuuTro::with([
                 'suKien',
                 'diaDiem',
             ])
             ->where('idNhom', $idNhom)
             ->orderBy('idChienDich', 'desc')
             ->get();
+
+        $danhSachSuKien = $tatCaChienDichs
+            ->pluck('suKien')
+            ->filter()
+            ->unique('idSuKien')
+            ->sortBy('tenSuKien')
+            ->values();
+
+        $chienDichs = $tatCaChienDichs;
 
         if ($tuKhoa !== '') {
             $tuKhoaThuong = mb_strtolower(
@@ -262,6 +275,30 @@ class NhomChienDichController extends Controller
                 ->values();
         }
 
+        if ($suKienDangChon !== '') {
+            $chienDichs = $chienDichs
+                ->filter(function ($chienDich) use ($suKienDangChon) {
+                    return (string) $chienDich->idSuKien === $suKienDangChon;
+                })
+                ->values();
+        }
+
+        if ($xacNhanDangChon !== '') {
+            $chienDichs = $chienDichs
+                ->filter(function ($chienDich) use ($xacNhanDangChon) {
+                    return (string) (int) $chienDich->daXacNhanCuuTro === $xacNhanDangChon;
+                })
+                ->values();
+        }
+
+        if ($trangThaiDangChon !== '') {
+            $chienDichs = $chienDichs
+                ->filter(function ($chienDich) use ($trangThaiDangChon) {
+                    return $chienDich->trangThai === $trangThaiDangChon;
+                })
+                ->values();
+        }
+
         $chienDichs = $chienDichs
             ->sortByDesc(function ($chienDich) {
                 return (int) $chienDich->idChienDich;
@@ -271,7 +308,11 @@ class NhomChienDichController extends Controller
         return view('nhom.chien_dich.index', compact(
             'nhom',
             'chienDichs',
-            'laNhomTruong'
+            'laNhomTruong',
+            'danhSachSuKien',
+            'suKienDangChon',
+            'xacNhanDangChon',
+            'trangThaiDangChon'
         ));
     }
 

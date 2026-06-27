@@ -59,8 +59,7 @@
                   placeholder="Nhập mật khẩu">
               </div>
 
-              <div class="d-flex justify-content-between align-items-center mb-4">
-                <a href="#" class="text-muted">Quên mật khẩu?</a>
+              <div class="text-center mb-4">
                 <a href="{{ url('/register') }}" class="text-muted">Đăng ký tài khoản</a>
               </div>
 

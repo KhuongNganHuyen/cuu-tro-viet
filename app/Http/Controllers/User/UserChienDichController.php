@@ -22,6 +22,10 @@ class UserChienDichController extends Controller
         }
 
         $tuKhoa = trim((string) $request->input('tuKhoa'));
+        $nhomDangChon = trim((string) $request->input('idNhom'));
+        $suKienDangChon = trim((string) $request->input('idSuKien'));
+        $xacNhanDangChon = trim((string) $request->input('xacNhan'));
+        $trangThaiDangChon = trim((string) $request->input('trangThai'));
 
         $chienDichs = ChienDichCuuTro::with(['suKien', 'diaDiem', 'nhom.nhomTruong'])
             ->whereHas('nhom', function ($query) {
@@ -73,8 +77,62 @@ class UserChienDichController extends Controller
                 })
                 ->values();
         }
+            
+        if ($nhomDangChon !== '') {
+            $chienDichs = $chienDichs->filter(function ($chienDich) use ($nhomDangChon) {
+                return (string) $chienDich->idNhom === $nhomDangChon;
+            })->values();
+        }
 
-        return view('user.chien_dich.index', compact('chienDichs'));
+        if ($suKienDangChon !== '') {
+            $chienDichs = $chienDichs->filter(function ($chienDich) use ($suKienDangChon) {
+                return (string) $chienDich->idSuKien === $suKienDangChon;
+            })->values();
+        }
+
+        if ($xacNhanDangChon !== '') {
+            $chienDichs = $chienDichs->filter(function ($chienDich) use ($xacNhanDangChon) {
+                return (string) (int) $chienDich->daXacNhanCuuTro === $xacNhanDangChon;
+            })->values();
+        }
+
+        if ($trangThaiDangChon !== '') {
+            $chienDichs = $chienDichs->filter(function ($chienDich) use ($trangThaiDangChon) {
+                return $chienDich->trangThai === $trangThaiDangChon;
+            })->values();
+        }
+
+        $danhSachNhom = ChienDichCuuTro::with('nhom')
+            ->whereHas('nhom', function ($query) {
+                $query->whereNotIn('trangThai', ['Chờ duyệt', 'Từ chối', 'Bị khóa']);
+            })
+            ->get()
+            ->pluck('nhom')
+            ->filter()
+            ->unique('idNhom')
+            ->sortBy('tenNhom')
+            ->values();
+
+        $danhSachSuKien = ChienDichCuuTro::with('suKien')
+            ->whereHas('nhom', function ($query) {
+                $query->whereNotIn('trangThai', ['Chờ duyệt', 'Từ chối', 'Bị khóa']);
+            })
+            ->get()
+            ->pluck('suKien')
+            ->filter()
+            ->unique('idSuKien')
+            ->sortBy('tenSuKien')
+            ->values();
+            
+        return view('user.chien_dich.index', compact(
+            'chienDichs',
+            'danhSachNhom',
+            'danhSachSuKien',
+            'nhomDangChon',
+            'suKienDangChon',
+            'xacNhanDangChon',
+            'trangThaiDangChon'
+        ));
     }
 
     public function show(int $idChienDich)

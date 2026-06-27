@@ -30,6 +30,7 @@ class UserNhomController extends Controller
                 'nhom.nhomTruong',
             ])
             ->where('idNguoiDung', $idNguoiDung)
+            ->where('vaiTro', '!=', 'Đã rời nhóm')
             ->get();
 
         /*

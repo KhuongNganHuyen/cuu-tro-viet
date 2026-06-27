@@ -50,6 +50,11 @@ class NhomThanhVienController extends Controller
                 'idNguoiDung',
                 $idNguoiDung
             )
+            ->where(
+                'vaiTro',
+                '!=',
+                'Đã rời nhóm'
+            )
             ->first();
 
         if (!$thanhVien) {
@@ -97,6 +102,7 @@ class NhomThanhVienController extends Controller
 
         $thanhViens = ThanhVienNhom::with('nguoiDung')
             ->where('idNhom', $idNhom)
+            ->where('vaiTro', '!=', 'Đã rời nhóm')
             ->orderBy('idThanhVien', 'asc')
             ->get();
 
@@ -208,6 +214,7 @@ class NhomThanhVienController extends Controller
                 'idNhom',
                 $idNhom
             )
+            ->where('vaiTro', '!=', 'Đã rời nhóm')
             ->pluck('idNguoiDung')
             ->toArray();
 
@@ -292,7 +299,7 @@ class NhomThanhVienController extends Controller
                 'Vai trò trong nhóm không được vượt quá 255 ký tự.',
         ]);
 
-        $daTonTai = ThanhVienNhom::where(
+        $thanhVienCu = ThanhVienNhom::where(
                 'idNhom',
                 $idNhom
             )
@@ -300,9 +307,9 @@ class NhomThanhVienController extends Controller
                 'idNguoiDung',
                 $request->idNguoiDung
             )
-            ->exists();
+            ->first();
 
-        if ($daTonTai) {
+        if ($thanhVienCu && $thanhVienCu->vaiTro !== 'Đã rời nhóm') {
             return back()
                 ->withInput()
                 ->with(
@@ -332,12 +339,20 @@ class NhomThanhVienController extends Controller
                 );
         }
 
-        $thanhVienMoi = ThanhVienNhom::create([
-            'idNhom' => $idNhom,
-            'idNguoiDung' => $request->idNguoiDung,
-            'vaiTro' => $vaiTroNhap,
-            'ngayThamGia' => now(),
-        ]);
+        if ($thanhVienCu && $thanhVienCu->vaiTro === 'Đã rời nhóm') {
+            $thanhVienCu->vaiTro = $vaiTroNhap;
+            $thanhVienCu->ngayThamGia = now();
+            $thanhVienCu->save();
+
+            $thanhVienMoi = $thanhVienCu;
+        } else {
+            $thanhVienMoi = ThanhVienNhom::create([
+                'idNhom' => $idNhom,
+                'idNguoiDung' => $request->idNguoiDung,
+                'vaiTro' => $vaiTroNhap,
+                'ngayThamGia' => now(),
+            ]);
+        }
 
         return redirect(
             '/nhom/' . $idNhom . '/thanh-vien'
@@ -390,13 +405,14 @@ class NhomThanhVienController extends Controller
             );
         }
 
-        $thanhVien->delete();
+        $thanhVien->vaiTro = 'Đã rời nhóm';
+        $thanhVien->save();
 
         return redirect(
             '/nhom/' . $idNhom . '/thanh-vien'
         )->with(
             'success',
-            'Xóa thành viên khỏi nhóm thành công.'
+            'Đã xóa thành viên khỏi danh sách nhóm.'
         );
     }
 

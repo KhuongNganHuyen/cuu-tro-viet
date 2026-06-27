@@ -41,6 +41,29 @@
   </div>
 @endif
 
+@php
+  $cotDangLoc = [];
+
+  if ($nhomDangChon !== '') {
+      $cotDangLoc[] = 'Nhóm';
+  }
+
+  if ($suKienDangChon !== '') {
+      $cotDangLoc[] = 'Sự kiện cứu trợ';
+  }
+
+  if ($xacNhanDangChon !== '') {
+      $cotDangLoc[] = 'Xác nhận';
+  }
+
+  if ($trangThaiDangChon !== '') {
+      $cotDangLoc[] = 'Trạng thái';
+  }
+
+  $dangLoc = count($cotDangLoc) > 0;
+  $noiDungCotDangLoc = implode(', ', $cotDangLoc);
+@endphp
+
 @if (request('tuKhoa'))
   <div class="alert alert-info d-flex justify-content-between align-items-center gap-3">
     <div class="text-truncate">
@@ -51,6 +74,20 @@
     <a href="{{ url('/user/chien-dich') }}"
        class="btn btn-sm btn-light flex-shrink-0">
       Xóa tìm kiếm
+    </a>
+  </div>
+@endif
+
+@if ($dangLoc)
+  <div class="alert alert-info d-flex justify-content-between align-items-center gap-3">
+    <div class="text-truncate">
+      Đang lọc:
+      <strong>{{ $noiDungCotDangLoc }}</strong>
+    </div>
+
+    <a href="{{ url('/user/chien-dich' . (request('tuKhoa') ? '?tuKhoa=' . urlencode(request('tuKhoa')) : '')) }}"
+       class="btn btn-sm btn-light flex-shrink-0">
+      Xóa bộ lọc
     </a>
   </div>
 @endif
@@ -71,6 +108,36 @@
   </div>
 
   <div class="card-body">
+    <form id="boLocChienDichForm"
+          action="{{ url('/user/chien-dich') }}"
+          method="GET"
+          autocomplete="off">
+
+      <input type="hidden"
+            name="tuKhoa"
+            value="{{ request('tuKhoa') }}">
+
+      <input type="hidden"
+            name="idNhom"
+            id="filterNhom"
+            value="{{ $nhomDangChon }}">
+
+      <input type="hidden"
+            name="idSuKien"
+            id="filterSuKien"
+            value="{{ $suKienDangChon }}">
+
+      <input type="hidden"
+            name="xacNhan"
+            id="filterXacNhan"
+            value="{{ $xacNhanDangChon }}">
+
+      <input type="hidden"
+            name="trangThai"
+            id="filterTrangThai"
+            value="{{ $trangThaiDangChon }}">
+    </form>
+
     <div class="table-responsive">
       <table class="table table-hover mb-0 chien-dich-table">
         <thead>
@@ -83,12 +150,74 @@
               Tên chiến dịch
             </th>
 
-            <th class="text-start" style="width: 18%;">
-              Nhóm phụ trách
+            <th class="filter-heading-cell" style="width: 18%;">
+              <div class="dropdown">
+                <button class="filter-heading-button dropdown-toggle"
+                        type="button"
+                        data-bs-toggle="dropdown">
+                  Nhóm
+                  @if ($nhomDangChon !== '')
+                    <span class="filter-active-dot"></span>
+                  @endif
+                </button>
+
+                <ul class="dropdown-menu filter-dropdown-menu">
+                  <li>
+                    <button type="button"
+                            class="dropdown-item filter-option {{ $nhomDangChon === '' ? 'active' : '' }}"
+                            data-target="filterNhom"
+                            data-value="">
+                      Tất cả
+                    </button>
+                  </li>
+
+                  @foreach ($danhSachNhom as $nhom)
+                    <li>
+                      <button type="button"
+                              class="dropdown-item filter-option {{ $nhomDangChon === (string) $nhom->idNhom ? 'active' : '' }}"
+                              data-target="filterNhom"
+                              data-value="{{ $nhom->idNhom }}">
+                        {{ $nhom->tenNhom }}
+                      </button>
+                    </li>
+                  @endforeach
+                </ul>
+              </div>
             </th>
 
-            <th class="text-start" style="width: 18%;">
-              Sự kiện cứu trợ
+            <th class="filter-heading-cell" style="width: 18%;">
+              <div class="dropdown">
+                <button class="filter-heading-button dropdown-toggle"
+                        type="button"
+                        data-bs-toggle="dropdown">
+                  Sự kiện cứu trợ
+                  @if ($suKienDangChon !== '')
+                    <span class="filter-active-dot"></span>
+                  @endif
+                </button>
+
+                <ul class="dropdown-menu filter-dropdown-menu">
+                  <li>
+                    <button type="button"
+                            class="dropdown-item filter-option {{ $suKienDangChon === '' ? 'active' : '' }}"
+                            data-target="filterSuKien"
+                            data-value="">
+                      Tất cả
+                    </button>
+                  </li>
+
+                  @foreach ($danhSachSuKien as $suKien)
+                    <li>
+                      <button type="button"
+                              class="dropdown-item filter-option {{ $suKienDangChon === (string) $suKien->idSuKien ? 'active' : '' }}"
+                              data-target="filterSuKien"
+                              data-value="{{ $suKien->idSuKien }}">
+                        {{ $suKien->tenSuKien }}
+                      </button>
+                    </li>
+                  @endforeach
+                </ul>
+              </div>
             </th>
 
             <th class="text-start" style="width: 20%;">
@@ -103,12 +232,81 @@
               Kết thúc
             </th>
 
-            <th style="width: 130px;">
-              Xác nhận
+            <th class="filter-heading-cell" style="width: 130px;">
+              <div class="dropdown">
+                <button class="filter-heading-button dropdown-toggle"
+                        type="button"
+                        data-bs-toggle="dropdown">
+                  Xác nhận
+                  @if ($xacNhanDangChon !== '')
+                    <span class="filter-active-dot"></span>
+                  @endif
+                </button>
+
+                <ul class="dropdown-menu filter-dropdown-menu">
+                  <li>
+                    <button type="button"
+                            class="dropdown-item filter-option {{ $xacNhanDangChon === '' ? 'active' : '' }}"
+                            data-target="filterXacNhan"
+                            data-value="">
+                      Tất cả
+                    </button>
+                  </li>
+
+                  <li>
+                    <button type="button"
+                            class="dropdown-item filter-option {{ $xacNhanDangChon === '1' ? 'active' : '' }}"
+                            data-target="filterXacNhan"
+                            data-value="1">
+                      Đã xác nhận
+                    </button>
+                  </li>
+
+                  <li>
+                    <button type="button"
+                            class="dropdown-item filter-option {{ $xacNhanDangChon === '0' ? 'active' : '' }}"
+                            data-target="filterXacNhan"
+                            data-value="0">
+                      Chưa xác nhận
+                    </button>
+                  </li>
+                </ul>
+              </div>
             </th>
 
-            <th style="width: 140px;">
-              Trạng thái
+            <th class="filter-heading-cell" style="width: 140px;">
+              <div class="dropdown">
+                <button class="filter-heading-button dropdown-toggle"
+                        type="button"
+                        data-bs-toggle="dropdown">
+                  Trạng thái
+                  @if ($trangThaiDangChon !== '')
+                    <span class="filter-active-dot"></span>
+                  @endif
+                </button>
+
+                <ul class="dropdown-menu filter-dropdown-menu">
+                  <li>
+                    <button type="button"
+                            class="dropdown-item filter-option {{ $trangThaiDangChon === '' ? 'active' : '' }}"
+                            data-target="filterTrangThai"
+                            data-value="">
+                      Tất cả
+                    </button>
+                  </li>
+
+                  @foreach (['Đang hoạt động', 'Hoàn thành', 'Tạm ngưng'] as $trangThaiLoc)
+                    <li>
+                      <button type="button"
+                              class="dropdown-item filter-option {{ $trangThaiDangChon === $trangThaiLoc ? 'active' : '' }}"
+                              data-target="filterTrangThai"
+                              data-value="{{ $trangThaiLoc }}">
+                        {{ $trangThaiLoc }}
+                      </button>
+                    </li>
+                  @endforeach
+                </ul>
+              </div>
             </th>
           </tr>
         </thead>
@@ -358,14 +556,112 @@
       flex: 1 1 auto;
     }
   }
+
+  .filter-heading-cell {
+    position: relative;
+    padding: 0 !important;
+  }
+
+  .filter-heading-button {
+    width: 100%;
+    min-height: 56px;
+    padding: 12px 8px;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-align: center;
+  }
+
+  .filter-heading-button:hover,
+  .filter-heading-button:focus {
+    background-color: #f8f9fa;
+  }
+
+  .filter-heading-button::after {
+    display: none !important;
+  }
+
+  .filter-active-dot {
+    width: 6px;
+    height: 6px;
+    display: inline-block;
+    border-radius: 50%;
+    background-color: #0d6efd;
+  }
+
+  .filter-dropdown-menu {
+    min-width: 220px;
+    max-width: 360px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding: 6px 0;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    z-index: 1080;
+  }
+
+  .filter-dropdown-menu .dropdown-item {
+    padding: 8px 14px;
+    font-size: 14px;
+    white-space: normal;
+  }
+
+  .filter-dropdown-menu .dropdown-item.active {
+    color: #212529;
+    background-color: #e9ecef;
+  }
 </style>
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
+    const filterForm = document.getElementById('boLocChienDichForm');
+
+    document
+      .querySelectorAll('.filter-option')
+      .forEach(function (button) {
+        button.addEventListener('click', function (event) {
+          event.stopPropagation();
+
+          const targetId = button.dataset.target;
+          const value = button.dataset.value ?? '';
+
+          const targetInput = document.getElementById(targetId);
+
+          if (!targetInput || !filterForm) {
+            return;
+          }
+
+          targetInput.value = value;
+
+          filterForm
+            .querySelectorAll('input[type="hidden"]')
+            .forEach(function (input) {
+              if (input.value.trim() === '') {
+                input.disabled = true;
+              }
+            });
+
+          filterForm.submit();
+        });
+      });
+
     document
       .querySelectorAll('.clickable-row')
       .forEach(function (row) {
-        row.addEventListener('click', function () {
+        row.addEventListener('click', function (event) {
+          if (event.target.closest('a, button, form, input, select, .dropdown-menu')) {
+            return;
+          }
+
           const href = row.dataset.href;
 
           if (href) {

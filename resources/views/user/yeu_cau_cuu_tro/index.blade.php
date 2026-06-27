@@ -37,6 +37,21 @@
   </div>
 @endif
 
+@php
+  $cotDangLoc = [];
+
+  if ($mucDoDangChon !== '') {
+      $cotDangLoc[] = 'Mức độ';
+  }
+
+  if ($trangThaiDangChon !== '') {
+      $cotDangLoc[] = 'Trạng thái';
+  }
+
+  $dangLoc = count($cotDangLoc) > 0;
+  $noiDungCotDangLoc = implode(', ', $cotDangLoc);
+@endphp
+
 @if (request('tuKhoa'))
   <div class="alert alert-info d-flex justify-content-between align-items-center">
     <div>
@@ -47,6 +62,20 @@
     <a href="{{ url('/user/yeu-cau-cuu-tro') }}"
        class="btn btn-sm btn-light">
       Xóa tìm kiếm
+    </a>
+  </div>
+@endif
+
+@if ($dangLoc)
+  <div class="alert alert-info d-flex justify-content-between align-items-center">
+    <div>
+      Đang lọc:
+      <strong>{{ $noiDungCotDangLoc }}</strong>
+    </div>
+
+    <a href="{{ url('/user/yeu-cau-cuu-tro' . (request('tuKhoa') ? '?tuKhoa=' . urlencode(request('tuKhoa')) : '')) }}"
+       class="btn btn-sm btn-light">
+      Xóa bộ lọc
     </a>
   </div>
 @endif
@@ -68,6 +97,26 @@
   </div>
 
   <div class="card-body">
+    <form id="boLocYeuCauForm"
+          action="{{ url('/user/yeu-cau-cuu-tro') }}"
+          method="GET"
+          autocomplete="off">
+
+      <input type="hidden"
+            name="tuKhoa"
+            value="{{ request('tuKhoa') }}">
+
+      <input type="hidden"
+            name="mucDoKhanCap"
+            id="filterMucDoKhanCap"
+            value="{{ $mucDoDangChon }}">
+
+      <input type="hidden"
+            name="trangThai"
+            id="filterTrangThai"
+            value="{{ $trangThaiDangChon }}">
+    </form>
+
     <div class="table-responsive">
       <table class="table table-hover mb-0 yeu-cau-table">
         <thead>
@@ -75,8 +124,75 @@
             <th style="width: 90px;">Mã</th>
             <th class="text-start">Tiêu đề yêu cầu</th>
             <th style="width: 120px;">Số người</th>
-            <th style="width: 150px;">Mức độ</th>
-            <th style="width: 190px;">Trạng thái</th>
+            <th class="filter-heading-cell" style="width: 150px;">
+              <div class="dropdown">
+                <button class="filter-heading-button dropdown-toggle"
+                        type="button"
+                        data-bs-toggle="dropdown">
+                  Mức độ
+                  @if ($mucDoDangChon !== '')
+                    <span class="filter-active-dot"></span>
+                  @endif
+                </button>
+
+                <ul class="dropdown-menu filter-dropdown-menu">
+                  <li>
+                    <button type="button"
+                            class="dropdown-item filter-option {{ $mucDoDangChon === '' ? 'active' : '' }}"
+                            data-target="filterMucDoKhanCap"
+                            data-value="">
+                      Tất cả
+                    </button>
+                  </li>
+
+                  @foreach (['Khẩn cấp', 'Cao', 'Trung bình', 'Thấp'] as $mucDo)
+                    <li>
+                      <button type="button"
+                              class="dropdown-item filter-option {{ $mucDoDangChon === $mucDo ? 'active' : '' }}"
+                              data-target="filterMucDoKhanCap"
+                              data-value="{{ $mucDo }}">
+                        {{ $mucDo }}
+                      </button>
+                    </li>
+                  @endforeach
+                </ul>
+              </div>
+            </th>
+
+            <th class="filter-heading-cell" style="width: 190px;">
+              <div class="dropdown">
+                <button class="filter-heading-button dropdown-toggle"
+                        type="button"
+                        data-bs-toggle="dropdown">
+                  Trạng thái
+                  @if ($trangThaiDangChon !== '')
+                    <span class="filter-active-dot"></span>
+                  @endif
+                </button>
+
+                <ul class="dropdown-menu filter-dropdown-menu">
+                  <li>
+                    <button type="button"
+                            class="dropdown-item filter-option {{ $trangThaiDangChon === '' ? 'active' : '' }}"
+                            data-target="filterTrangThai"
+                            data-value="">
+                      Tất cả
+                    </button>
+                  </li>
+
+                  @foreach (['Chờ tiếp nhận', 'Đã tiếp nhận', 'Đang hỗ trợ', 'Cần thêm hỗ trợ', 'Hoàn thành', 'Đã hủy'] as $trangThaiLoc)
+                    <li>
+                      <button type="button"
+                              class="dropdown-item filter-option {{ $trangThaiDangChon === $trangThaiLoc ? 'active' : '' }}"
+                              data-target="filterTrangThai"
+                              data-value="{{ $trangThaiLoc }}">
+                        {{ $trangThaiLoc }}
+                      </button>
+                    </li>
+                  @endforeach
+                </ul>
+              </div>
+            </th>
             <th style="width: 175px;">Thời gian gửi</th>
           </tr>
         </thead>
@@ -233,6 +349,68 @@
   .muc-do-default {
     background-color: #adb5bd;
   }
+
+  .filter-heading-cell {
+    position: relative;
+    padding: 0 !important;
+  }
+
+  .filter-heading-button {
+    width: 100%;
+    min-height: 56px;
+    padding: 12px;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .filter-heading-button:hover,
+  .filter-heading-button:focus {
+    background-color: #f8f9fa;
+  }
+
+  .filter-heading-button::after {
+    display: none !important;
+  }
+
+  .filter-active-dot {
+    width: 6px;
+    height: 6px;
+    display: inline-block;
+    border-radius: 50%;
+    background-color: #0d6efd;
+  }
+
+  .filter-dropdown-menu {
+    min-width: 210px;
+    max-width: 320px;
+    max-height: 260px;
+    overflow-y: auto;
+    padding: 6px 0;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    z-index: 1080;
+  }
+
+  .filter-dropdown-menu .dropdown-item {
+    padding: 8px 14px;
+    font-size: 14px;
+    white-space: normal;
+  }
+
+  .filter-dropdown-menu .dropdown-item.active {
+    color: #212529;
+    background-color: #e9ecef;
+  }
 </style>
 
 <script>
@@ -251,5 +429,34 @@
       });
     });
   });
+
+  const filterForm = document.getElementById('boLocYeuCauForm');
+
+  document
+    .querySelectorAll('.filter-option')
+    .forEach(function (button) {
+      button.addEventListener('click', function () {
+        const targetId = button.dataset.target;
+        const value = button.dataset.value ?? '';
+
+        const targetInput = document.getElementById(targetId);
+
+        if (!targetInput || !filterForm) {
+          return;
+        }
+
+        targetInput.value = value;
+
+        filterForm
+          .querySelectorAll('input[type="hidden"]')
+          .forEach(function (input) {
+            if (input.value.trim() === '') {
+              input.disabled = true;
+            }
+          });
+
+        filterForm.submit();
+      });
+    });
 </script>
 @endsection

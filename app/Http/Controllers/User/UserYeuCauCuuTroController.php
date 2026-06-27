@@ -20,6 +20,8 @@ class UserYeuCauCuuTroController extends Controller
         }
 
         $tuKhoa = trim((string) $request->input('tuKhoa'));
+        $mucDoDangChon = trim((string) $request->input('mucDoKhanCap'));
+        $trangThaiDangChon = trim((string) $request->input('trangThai'));
 
         $yeuCaus = YeuCauCuuTro::with([
                 'diaDiem',
@@ -61,7 +63,23 @@ class UserYeuCauCuuTroController extends Controller
             })->values();
         }
 
-        return view('user.yeu_cau_cuu_tro.index', compact('yeuCaus'));
+        if ($mucDoDangChon !== '') {
+            $yeuCaus = $yeuCaus->filter(function ($yeuCau) use ($mucDoDangChon) {
+                return $yeuCau->mucDoKhanCap === $mucDoDangChon;
+            })->values();
+        }
+
+        if ($trangThaiDangChon !== '') {
+            $yeuCaus = $yeuCaus->filter(function ($yeuCau) use ($trangThaiDangChon) {
+                return $yeuCau->trangThai === $trangThaiDangChon;
+            })->values();
+        }
+
+        return view('user.yeu_cau_cuu_tro.index', compact(
+            'yeuCaus',
+            'mucDoDangChon',
+            'trangThaiDangChon'
+        ));
     }
 
     public function create()
